@@ -8,10 +8,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CrossCollisionBlock;
-import net.minecraft.world.level.block.StairBlock;
-import net.minecraft.world.level.block.WallTorchBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -24,8 +21,8 @@ public class OldVillagePieces{
 		BlockState cobble=Blocks.COBBLESTONE.defaultBlockState();
 		BlockState oakFence=Blocks.OAK_FENCE.defaultBlockState();
 		BlockState water=Blocks.WATER.defaultBlockState();
-		BlockState oakPlanks=Blocks.OAK_PLANKS.defaultBlockState();
-		BlockState oakLog=Blocks.OAK_LOG.defaultBlockState();
+		BlockState planks=Blocks.OAK_PLANKS.defaultBlockState();
+		BlockState log=Blocks.OAK_LOG.defaultBlockState();
 		BlockState gravel=Blocks.GRAVEL.defaultBlockState();
 		BlockState air=Blocks.AIR.defaultBlockState();
 		BlockState cobbleStairs=Blocks.COBBLESTONE_STAIRS.defaultBlockState();
@@ -33,6 +30,7 @@ public class OldVillagePieces{
 		BlockState glassPane=Blocks.GLASS_PANE.defaultBlockState();
 		BlockState farmland=Blocks.FARMLAND.defaultBlockState();
 		BlockState wheat=Blocks.WHEAT.defaultBlockState();
+		BlockState dirt=Blocks.DIRT.defaultBlockState();
 		private final int pieceType; // 0 = Studna, 1 = Cesta, 2 = Malý dům, 3 = Velký dům, 4 = Políčko
 		public VillagePiece(int pieceType,int genDepth,int x,int y,int z,int sizeX,int sizeY,int sizeZ,Direction orientation){
 			super(OldVillagesMod.OLD_VILLAGE_PIECE.get(),genDepth,BoundingBox.orientBox(x,y,z,0,0,0,sizeX,sizeY,sizeZ,orientation));
@@ -57,6 +55,18 @@ public class OldVillagePieces{
 				for(int y=minY;y<=maxY;y++){
 					for(int z=minZ;z<=maxZ;z++){
 						this.placeBlock(level,state,x,y,z,box);
+					}
+				}
+			}
+		}
+		private void createBase(WorldGenLevel level,BoundingBox box,int minX,int minZ,int maxX,int maxZ,BlockState blockState){
+			for(int x=minX;x<=maxX;x++){
+				for(int z=minZ;z<=maxZ;z++){
+					for(int yLoc=0;yLoc>=-20;yLoc--){
+						BlockState bs=this.getBlock(level,x,yLoc,z,box);
+						if(bs.isAir()||bs.is(Blocks.SHORT_GRASS)||bs.is(Blocks.TALL_GRASS)||bs.is(Blocks.OAK_LEAVES)||bs.is(Blocks.SPRUCE_LEAVES)||bs.is(Blocks.WATER))
+							this.placeBlock(level,blockState,x,yLoc,z,box);
+						else break;
 					}
 				}
 			}
@@ -121,16 +131,7 @@ public class OldVillagePieces{
 		}
 		private void generateSmallHouse(WorldGenLevel level,BoundingBox box){
 			// Podpora základů dolů pod dům (proti létání ve vzduchu ve svahu)
-			for(int x=0;x<=4;x++){
-				for(int z=1;z<=5;z++){
-					for(int yLoc=0;yLoc>=-20;yLoc--){
-						BlockState bs=this.getBlock(level,x,yLoc,z,box);
-						if(bs.isAir()||bs.is(Blocks.SHORT_GRASS)||bs.is(Blocks.TALL_GRASS)||bs.is(Blocks.OAK_LEAVES)||bs.is(Blocks.SPRUCE_LEAVES)||bs.is(Blocks.WATER)){
-							this.placeBlock(level,cobble,x,yLoc,z,box);
-						}else break;
-					}
-				}
-			}
+			createBase(level,box,0,1,4,5,cobble);
 			// Základy pod předsazené schody
 			for(int yLoc=0;yLoc>=-20;yLoc--){
 				BlockState bs=this.getBlock(level,2,yLoc,6,box);
@@ -144,30 +145,21 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,4,2,1,4,4,1,cobble);
 			this.fillWithBlocks(level,box,0,2,5,0,4,5,cobble);
 			this.fillWithBlocks(level,box,4,2,5,4,4,5,cobble);
-			this.fillWithBlocks(level,box,0,2,2,0,4,4,oakPlanks);
-			this.fillWithBlocks(level,box,4,2,2,4,4,4,oakPlanks);
-			this.fillWithBlocks(level,box,1,2,1,3,4,1,oakPlanks);
-			this.fillWithBlocks(level,box,1,2,5,3,4,5,oakPlanks);
+			this.fillWithBlocks(level,box,0,2,2,0,4,4,planks);
+			this.fillWithBlocks(level,box,4,2,2,4,4,4,planks);
+			this.fillWithBlocks(level,box,1,2,1,3,4,1,planks);
+			this.fillWithBlocks(level,box,1,2,5,3,4,5,planks);
 			this.placeBlock(level,wallTorch.setValue(WallTorchBlock.FACING,Direction.SOUTH),2,4,4,box);
 			this.fillWithBlocks(level,box,2,2,5,2,3,5,air);
 			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true),2,3,1,box);
 			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),0,3,3,box);
 			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),4,3,3,box);
-			this.fillWithBlocks(level,box,0,5,1,4,5,5,oakLog);
-			this.fillWithBlocks(level,box,1,5,2,3,5,4,oakPlanks);
+			this.fillWithBlocks(level,box,0,5,1,4,5,5,log);
+			this.fillWithBlocks(level,box,1,5,2,3,5,4,planks);
 		}
 		private void generateLargeHouse(WorldGenLevel level,BoundingBox box){
 			// Podpora základů dolů pod dům
-			for(int x=0;x<=6;x++){
-				for(int z=1;z<=6;z++){
-					for(int yLoc=0;yLoc>=-20;yLoc--){
-						BlockState bs=this.getBlock(level,x,yLoc,z,box);
-						if(bs.isAir()||bs.is(Blocks.SHORT_GRASS)||bs.is(Blocks.TALL_GRASS)||bs.is(Blocks.OAK_LEAVES)||bs.is(Blocks.SPRUCE_LEAVES)){
-							this.placeBlock(level,cobble,x,yLoc,z,box);
-						}else break;
-					}
-				}
-			}
+			createBase(level,box,0,1,4,6,cobble);
 			// Základy pod schody velkého domu
 			for(int yLoc=0;yLoc>=-20;yLoc--){
 				BlockState bs=this.getBlock(level,3,yLoc,7,box);
@@ -181,46 +173,50 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,6,2,1,6,7,1,cobble);
 			this.fillWithBlocks(level,box,0,2,6,0,7,6,cobble);
 			this.fillWithBlocks(level,box,6,2,6,6,7,6,cobble);
-			this.fillWithBlocks(level,box,0,2,2,0,4,5,oakPlanks);
-			this.fillWithBlocks(level,box,6,2,2,6,4,5,oakPlanks);
-			this.fillWithBlocks(level,box,1,2,1,5,4,1,oakPlanks);
-			this.fillWithBlocks(level,box,1,2,6,5,4,6,oakPlanks);
+			this.fillWithBlocks(level,box,0,2,2,0,4,5,planks);
+			this.fillWithBlocks(level,box,6,2,2,6,4,5,planks);
+			this.fillWithBlocks(level,box,1,2,1,5,4,1,planks);
+			this.fillWithBlocks(level,box,1,2,6,5,4,6,planks);
 			this.fillWithBlocks(level,box,3,2,6,3,3,6,air);
 			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true),3,3,1,box);
 			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),0,3,3,box);
 			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),6,3,3,box);
 			this.placeBlock(level,wallTorch.setValue(WallTorchBlock.FACING,Direction.SOUTH),3,4,4,box);
-			this.fillWithBlocks(level,box,0,5,1,6,5,6,oakLog);
-			this.fillWithBlocks(level,box,1,5,2,5,5,5,oakPlanks);
-			this.fillWithBlocks(level,box,0,6,2,0,7,5,oakPlanks);
-			this.fillWithBlocks(level,box,6,6,2,6,7,5,oakPlanks);
-			this.fillWithBlocks(level,box,1,6,1,5,7,1,oakPlanks);
-			this.fillWithBlocks(level,box,1,6,6,5,7,6,oakPlanks);
+			this.fillWithBlocks(level,box,0,5,1,6,5,6,log);
+			this.fillWithBlocks(level,box,1,5,2,5,5,5,planks);
+			this.fillWithBlocks(level,box,0,6,2,0,7,5,planks);
+			this.fillWithBlocks(level,box,6,6,2,6,7,5,planks);
+			this.fillWithBlocks(level,box,1,6,1,5,7,1,planks);
+			this.fillWithBlocks(level,box,1,6,6,5,7,6,planks);
 			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true),3,7,1,box);
 			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true),3,7,6,box);
 			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),0,7,3,box);
 			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),6,7,3,box);
-			this.fillWithBlocks(level,box,0,8,1,6,8,6,oakLog);
-			this.fillWithBlocks(level,box,1,8,2,5,8,5,oakPlanks);
+			this.fillWithBlocks(level,box,0,8,1,6,8,6,log);
+			this.fillWithBlocks(level,box,1,8,2,5,8,5,planks);
 		}
 		private void generateFarm(WorldGenLevel level,BoundingBox box){
 			// Podpora základů dolů pod políčko (vyplňujeme hlínou, ne šutrem, ať to vypadá přirozeně!)
-			for(int x=0;x<=6;x++){
-				for(int z=0;z<=8;z++){
-					for(int yLoc=0;yLoc>=-20;yLoc--){
-						BlockState bs=this.getBlock(level,x,yLoc,z,box);
-						if(bs.isAir()||bs.is(Blocks.SHORT_GRASS)||bs.is(Blocks.TALL_GRASS)||bs.is(Blocks.OAK_LEAVES)||bs.is(Blocks.SPRUCE_LEAVES)){
-							this.placeBlock(level,Blocks.DIRT.defaultBlockState(),x,yLoc,z,box);
-						}else break;
-					}
-				}
-			}
+			createBase(level,box,0,0,6,8,dirt);
 			this.fillWithBlocks(level,box,0,1,0,6,3,8,air);
-			this.fillWithBlocks(level,box,0,1,0,6,1,8,oakLog);
+			this.fillWithBlocks(level,box,0,1,0,6,1,8,log);
 			this.fillWithBlocks(level,box,1,1,1,5,1,7,farmland);
 			this.fillWithBlocks(level,box,3,1,1,3,1,7,water);
-			this.fillWithBlocks(level,box,1,2,1,2,2,7,wheat);
-			this.fillWithBlocks(level,box,4,2,1,5,2,7,wheat);
+			this.fillWithBlocks(level,box,1,2,1,2,2,7,wheat.setValue(CropBlock.AGE,7));
+			this.fillWithBlocks(level,box,4,2,1,5,2,7,wheat.setValue(CropBlock.AGE,7));
+		}
+		private void generateLargeFarm(WorldGenLevel level,BoundingBox box){
+			createBase(level,box,0,0,6,8,dirt);
+			this.fillWithBlocks(level,box,0,1,0,12,3,8,air);
+			this.fillWithBlocks(level,box,0,1,0,12,1,8,log);
+			this.fillWithBlocks(level,box,1,1,1,5,1,7,farmland);
+			this.fillWithBlocks(level,box,7,1,1,11,1,7,farmland);
+			this.fillWithBlocks(level,box,3,1,1,3,1,7,water);
+			this.fillWithBlocks(level,box,9,1,1,9,1,7,water);
+			this.fillWithBlocks(level,box,1,2,1,2,2,7,wheat.setValue(CropBlock.AGE,7));
+			this.fillWithBlocks(level,box,4,2,1,5,2,7,wheat.setValue(CropBlock.AGE,7));
+			this.fillWithBlocks(level,box,7,2,1,8,2,7,wheat.setValue(CropBlock.AGE,7));
+			this.fillWithBlocks(level,box,10,2,1,11,2,7,wheat.setValue(CropBlock.AGE,7));
 		}
 		@Override
 		public void postProcess(@NotNull WorldGenLevel level,@NotNull StructureManager structureManager,@NotNull ChunkGenerator generator,@NotNull RandomSource random,@NotNull BoundingBox box,@NotNull ChunkPos chunkPos,@NotNull BlockPos startPos){
@@ -230,6 +226,7 @@ public class OldVillagePieces{
 				case 2 -> generateSmallHouse(level,box);
 				case 3 -> generateLargeHouse(level,box);
 				case 4 -> generateFarm(level,box);
+				case 5 -> generateLargeFarm(level,box);
 				default -> {
 				}
 			}
