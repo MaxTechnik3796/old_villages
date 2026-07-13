@@ -134,53 +134,43 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,0,5,1,4,5,5,oakLog);
 			this.fillWithBlocks(level,box,1,5,2,3,5,4,oakPlanks);
 		}
-		// TYP 3: VELKÝ DVOU-PATROVÝ DŮM
 		private void generateLargeHouse(WorldGenLevel level,BoundingBox box){
-			// Základová deska (Šířka 0..6, Délka 1..6)
 			this.fillWithBlocks(level,box,0,1,1,6,1,6,cobble);
-			// Schody předsazené před dveřmi na ose X=3, Z=7
 			this.placeBlock(level,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH),3,1,7,box);
-			// Masivní rohové kamenné sloupy až do druhého patra (výška Y=2..7)
 			this.fillWithBlocks(level,box,0,2,1,0,7,1,cobble);
 			this.fillWithBlocks(level,box,6,2,1,6,7,1,cobble);
 			this.fillWithBlocks(level,box,0,2,6,0,7,6,cobble);
 			this.fillWithBlocks(level,box,6,2,6,6,7,6,cobble);
-			// --- PRVNÍ PATRO (Y = 2..4) ---
 			this.fillWithBlocks(level,box,0,2,2,0,4,5,oakPlanks);
 			this.fillWithBlocks(level,box,6,2,2,6,4,5,oakPlanks);
 			this.fillWithBlocks(level,box,1,2,1,5,4,1,oakPlanks);
 			this.fillWithBlocks(level,box,1,2,6,5,4,6,oakPlanks);
-			this.fillWithBlocks(level,box,3,2,6,3,3,6,air); // Vchodové dveře
-			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true),3,3,1,box); // Zadní okno
-			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),0,3,3,box); // Boční okno L
-			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),6,3,3,box); // Boční okno P
-			this.placeBlock(level,wallTorch.setValue(WallTorchBlock.FACING,Direction.SOUTH),3,4,4,box); // Pochodeň uvnitř
-			// --- STROP 1. PATRA / PODLAHA 2. PATRA (Y = 5) ---
+			this.fillWithBlocks(level,box,3,2,6,3,3,6,air);
+			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true),3,3,1,box);
+			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),0,3,3,box);
+			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),6,3,3,box);
+			this.placeBlock(level,wallTorch.setValue(WallTorchBlock.FACING,Direction.SOUTH),3,4,4,box);
 			this.fillWithBlocks(level,box,0,5,1,6,5,6,oakLog);
 			this.fillWithBlocks(level,box,1,5,2,5,5,5,oakPlanks);
-			// --- DRUHÉ PATRO (Y = 6..7) ---
 			this.fillWithBlocks(level,box,0,6,2,0,7,5,oakPlanks);
 			this.fillWithBlocks(level,box,6,6,2,6,7,5,oakPlanks);
 			this.fillWithBlocks(level,box,1,6,1,5,7,1,oakPlanks);
 			this.fillWithBlocks(level,box,1,6,6,5,7,6,oakPlanks);
-			// Okna druhého patra do všech čtyř stran
 			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true),3,7,1,box);
 			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true),3,7,6,box);
 			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),0,7,3,box);
 			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),6,7,3,box);
-			// --- STŘECHA (Y = 8) ---
 			this.fillWithBlocks(level,box,0,8,1,6,8,6,oakLog);
 			this.fillWithBlocks(level,box,1,8,2,5,8,5,oakPlanks);
 		}
-		// TYP 4: POLÍČKO S VODOU A PŠENICÍ
+		// OPRAVENO: Normalizované souřadnice (Z začíná na 0 a končí na 8 -> skutečná délka 9)
 		private void generateFarm(WorldGenLevel level,BoundingBox box){
-			this.fillWithBlocks(level,box,0,1,-3,6,3,5,air);
-			this.fillWithBlocks(level,box,0,1,-3,6,1,5,oakLog);
-			this.fillWithBlocks(level,box,1,1,-2,5,1,4,farmland);
-			this.fillWithBlocks(level,box,3,1,-2,3,1,4,water);
-			// Nasázení pšenice o blok výše (Y=2) přímo na zoranou půdu
-			this.fillWithBlocks(level,box,1,2,-2,2,2,4,wheat);
-			this.fillWithBlocks(level,box,4,2,-2,5,2,4,wheat);
+			this.fillWithBlocks(level,box,0,1,0,6,3,8,air);
+			this.fillWithBlocks(level,box,0,1,0,6,1,8,oakLog);
+			this.fillWithBlocks(level,box,1,1,1,5,1,7,farmland);
+			this.fillWithBlocks(level,box,3,1,1,3,1,7,water);
+			this.fillWithBlocks(level,box,1,2,1,2,2,7,wheat);
+			this.fillWithBlocks(level,box,4,2,1,5,2,7,wheat);
 		}
 		@Override
 		public void postProcess(@NotNull WorldGenLevel level,@NotNull StructureManager structureManager,@NotNull ChunkGenerator generator,@NotNull RandomSource random,@NotNull BoundingBox box,@NotNull ChunkPos chunkPos,@NotNull BlockPos startPos){

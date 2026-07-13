@@ -107,46 +107,14 @@ public class OldVillageStructure extends Structure{
 		}
 	}
 	// ====================================================================
-	// DYNAMICKÉ ROZMISŤOVÁNÍ S VARIABILNÍ VELIKOSTÍ STAVEB
+	// OPRAVENÉ DYNAMICKÉ ROZMISŤOVÁNÍ
 	// ====================================================================
 	private static void placeHousesAlongPath(StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,BoundingBox pathBox,Direction pathDir,RandomSource random){
 		int y=pathBox.minY();
-		// Osa SEVER / JIH (Domy stavíme vlevo na Západ a vpravo na Východ)
+		// Osa SEVER / JIH (Domy stavíme na Východ / Západ)
 		if(pathDir==Direction.NORTH||pathDir==Direction.SOUTH){
 			int z=pathBox.minZ()+1;
-			while(z<=pathBox.maxZ()-6){
-				int houseRand=random.nextInt(100);
-				int type;
-				int sizeX;
-				int sizeZ;
-				if(houseRand<45){
-					type=2;
-					sizeX=6;
-					sizeZ=6; // 45% šance: Malý dům
-				}else if(houseRand<75){
-					type=3;
-					sizeX=7;
-					sizeZ=8; // 30% šance: Velký dům
-				}else{
-					type=4;
-					sizeX=6;
-					sizeZ=8; // 25% šance: Políčko
-				}
-				if(z+sizeZ>pathBox.maxZ()) break;
-				if(random.nextFloat()<0.45f){ // Vlevo (Otočený na Východ k cestě)
-					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,y,z,pathBox.minX()-1,y+8,z+sizeZ-1,Direction.EAST,type);
-				}
-				if(random.nextFloat()<0.45f){ // Vpravo (Otočený na Západ k cestě)
-					buildAbsoluteHouse(builder,placedBoxes,pathBox.maxX()+1,y,z,pathBox.maxX()+sizeX,y+8,z+sizeZ-1,Direction.WEST,type);
-				}
-				// Posuneme se přesně podle délky vygenerované stavby + mezera
-				z+=sizeZ+random.nextInt(3)+4;
-			}
-		}
-		// Osa VÝCHOD / ZÁPAD (Domy stavíme vlevo na Sever a vpravo na Jih)
-		else{
-			int x=pathBox.minX()+1;
-			while(x<=pathBox.maxX()-6){
+			while(z<pathBox.maxZ()){ // Opraveno: Dynamická kontrola konce silnice
 				int houseRand=random.nextInt(100);
 				int type;
 				int sizeX;
@@ -157,18 +125,49 @@ public class OldVillageStructure extends Structure{
 					sizeZ=6; // Malý dům
 				}else if(houseRand<75){
 					type=3;
-					sizeX=8;
-					sizeZ=7; // Velký dům (prohozené osy X/Z kvůli směru silnice)
+					sizeX=7;
+					sizeZ=7; // Velký dům (Čistý čtverec 7x7)
 				}else{
 					type=4;
-					sizeX=8;
-					sizeZ=6; // Políčko (prohozené osy)
+					sizeX=9;
+					sizeZ=7; // Políčko (Z-hloubka 9 se otočí na světovou osu X!)
+				}
+				if(z+sizeZ>pathBox.maxZ()) break;
+				if(random.nextFloat()<0.45f){
+					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,y,z,pathBox.minX()-1,y+8,z+sizeZ-1,Direction.EAST,type);
+				}
+				if(random.nextFloat()<0.45f){
+					buildAbsoluteHouse(builder,placedBoxes,pathBox.maxX()+1,y,z,pathBox.maxX()+sizeX,y+8,z+sizeZ-1,Direction.WEST,type);
+				}
+				z+=sizeZ+random.nextInt(3)+4;
+			}
+		}
+		// Osa VÝCHOD / ZÁPAD (Domy stavíme na Sever / Jih)
+		else{
+			int x=pathBox.minX()+1;
+			while(x<pathBox.maxX()){
+				int houseRand=random.nextInt(100);
+				int type;
+				int sizeX;
+				int sizeZ;
+				if(houseRand<45){
+					type=2;
+					sizeX=6;
+					sizeZ=6; // Malý dům
+				}else if(houseRand<75){
+					type=3;
+					sizeX=7;
+					sizeZ=7; // Velký dům (Čistý čtverec 7x7)
+				}else{
+					type=4;
+					sizeX=7;
+					sizeZ=9; // Políčko (Světové osy odpovídají lokálním X=7, Z=9)
 				}
 				if(x+sizeX>pathBox.maxX()) break;
-				if(random.nextFloat()<0.45f){ // Strana Sever (Otočený na Jih)
+				if(random.nextFloat()<0.45f){
 					buildAbsoluteHouse(builder,placedBoxes,x,y,pathBox.minZ()-sizeZ,x+sizeX-1,y+8,pathBox.minZ()-1,Direction.SOUTH,type);
 				}
-				if(random.nextFloat()<0.45f){ // Strana Jih (Otočený na Sever)
+				if(random.nextFloat()<0.45f){
 					buildAbsoluteHouse(builder,placedBoxes,x,y,pathBox.maxZ()+1,x+sizeX-1,y+8,pathBox.maxZ()+sizeZ,Direction.NORTH,type);
 				}
 				x+=sizeX+random.nextInt(3)+4;
