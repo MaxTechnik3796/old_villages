@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.WallTorchBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
@@ -102,11 +103,14 @@ public class OldVillagePieces{
 			this.placeBlock(level,oakFence,4,4,4,box);
 			this.fillWithBlocks(level,box,1,5,1,4,5,4,cobble);
 		}
+		// OPRAVENO: Cesta se adaptuje na výšku kopce blok po bloku
 		private void generatePath(WorldGenLevel level,BoundingBox box){
 			BoundingBox pieceBox=this.getBoundingBox();
 			for(int x=pieceBox.minX();x<=pieceBox.maxX();x++){
 				for(int z=pieceBox.minZ();z<=pieceBox.maxZ();z++){
-					BlockPos pathPos=new BlockPos(x,pieceBox.minY(),z);
+					// Najdeme aktuální reálný povrch světa na těchto souřadnicích
+					int surfaceY=level.getHeight(Heightmap.Types.WORLD_SURFACE_WG,x,z);
+					BlockPos pathPos=new BlockPos(x,surfaceY-1,z);
 					if(box.isInside(pathPos)){
 						level.setBlock(pathPos,gravel,2);
 						level.setBlock(pathPos.above(),air,2);
@@ -116,6 +120,24 @@ public class OldVillagePieces{
 			}
 		}
 		private void generateSmallHouse(WorldGenLevel level,BoundingBox box){
+			// Podpora základů dolů pod dům (proti létání ve vzduchu ve svahu)
+			for(int x=0;x<=4;x++){
+				for(int z=1;z<=5;z++){
+					for(int yLoc=0;yLoc>=-20;yLoc--){
+						BlockState bs=this.getBlock(level,x,yLoc,z,box);
+						if(bs.isAir()||bs.is(Blocks.SHORT_GRASS)||bs.is(Blocks.TALL_GRASS)||bs.is(Blocks.OAK_LEAVES)||bs.is(Blocks.SPRUCE_LEAVES)||bs.is(Blocks.WATER)){
+							this.placeBlock(level,cobble,x,yLoc,z,box);
+						}else break;
+					}
+				}
+			}
+			// Základy pod předsazené schody
+			for(int yLoc=0;yLoc>=-20;yLoc--){
+				BlockState bs=this.getBlock(level,2,yLoc,6,box);
+				if(bs.isAir()||bs.is(Blocks.SHORT_GRASS)||bs.is(Blocks.TALL_GRASS)){
+					this.placeBlock(level,cobble,2,yLoc,6,box);
+				}else break;
+			}
 			this.fillWithBlocks(level,box,0,1,1,4,1,5,cobble);
 			this.placeBlock(level,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH),2,1,6,box);
 			this.fillWithBlocks(level,box,0,2,1,0,4,1,cobble);
@@ -135,6 +157,24 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,1,5,2,3,5,4,oakPlanks);
 		}
 		private void generateLargeHouse(WorldGenLevel level,BoundingBox box){
+			// Podpora základů dolů pod dům
+			for(int x=0;x<=6;x++){
+				for(int z=1;z<=6;z++){
+					for(int yLoc=0;yLoc>=-20;yLoc--){
+						BlockState bs=this.getBlock(level,x,yLoc,z,box);
+						if(bs.isAir()||bs.is(Blocks.SHORT_GRASS)||bs.is(Blocks.TALL_GRASS)||bs.is(Blocks.OAK_LEAVES)||bs.is(Blocks.SPRUCE_LEAVES)){
+							this.placeBlock(level,cobble,x,yLoc,z,box);
+						}else break;
+					}
+				}
+			}
+			// Základy pod schody velkého domu
+			for(int yLoc=0;yLoc>=-20;yLoc--){
+				BlockState bs=this.getBlock(level,3,yLoc,7,box);
+				if(bs.isAir()||bs.is(Blocks.SHORT_GRASS)||bs.is(Blocks.TALL_GRASS)){
+					this.placeBlock(level,cobble,3,yLoc,7,box);
+				}else break;
+			}
 			this.fillWithBlocks(level,box,0,1,1,6,1,6,cobble);
 			this.placeBlock(level,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH),3,1,7,box);
 			this.fillWithBlocks(level,box,0,2,1,0,7,1,cobble);
@@ -163,8 +203,18 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,0,8,1,6,8,6,oakLog);
 			this.fillWithBlocks(level,box,1,8,2,5,8,5,oakPlanks);
 		}
-		// OPRAVENO: Normalizované souřadnice (Z začíná na 0 a končí na 8 -> skutečná délka 9)
 		private void generateFarm(WorldGenLevel level,BoundingBox box){
+			// Podpora základů dolů pod políčko (vyplňujeme hlínou, ne šutrem, ať to vypadá přirozeně!)
+			for(int x=0;x<=6;x++){
+				for(int z=0;z<=8;z++){
+					for(int yLoc=0;yLoc>=-20;yLoc--){
+						BlockState bs=this.getBlock(level,x,yLoc,z,box);
+						if(bs.isAir()||bs.is(Blocks.SHORT_GRASS)||bs.is(Blocks.TALL_GRASS)||bs.is(Blocks.OAK_LEAVES)||bs.is(Blocks.SPRUCE_LEAVES)){
+							this.placeBlock(level,Blocks.DIRT.defaultBlockState(),x,yLoc,z,box);
+						}else break;
+					}
+				}
+			}
 			this.fillWithBlocks(level,box,0,1,0,6,3,8,air);
 			this.fillWithBlocks(level,box,0,1,0,6,1,8,oakLog);
 			this.fillWithBlocks(level,box,1,1,1,5,1,7,farmland);

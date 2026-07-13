@@ -54,25 +54,26 @@ public class OldVillageStructure extends Structure{
 		int maxZ=wellBox.maxZ();
 		int y=wellBox.minY();
 		List<PathRecord> pathQueue=new ArrayList<>();
-		BoundingBox nStart=new BoundingBox(minX+1,y,minZ-10,minX+3,y,minZ-1);
+		// OPRAVENO: Cesty dostávají vertikální rozsah y-30 až y+30, aby je engine nezahazoval v kopcích
+		BoundingBox nStart=new BoundingBox(minX+1,y-30,minZ-10,minX+3,y+30,minZ-1);
 		if(isAreaClear(placedBoxes,nStart)){
 			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,nStart,Direction.NORTH));
 			placedBoxes.add(nStart);
 			pathQueue.add(new PathRecord(nStart,Direction.NORTH,1));
 		}
-		BoundingBox sStart=new BoundingBox(minX+1,y,maxZ+1,minX+3,y,maxZ+10);
+		BoundingBox sStart=new BoundingBox(minX+1,y-30,maxZ+1,minX+3,y+30,maxZ+10);
 		if(isAreaClear(placedBoxes,sStart)){
 			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,sStart,Direction.SOUTH));
 			placedBoxes.add(sStart);
 			pathQueue.add(new PathRecord(sStart,Direction.SOUTH,1));
 		}
-		BoundingBox wStart=new BoundingBox(minX-10,y,minZ+1,minX-1,y,minZ+3);
+		BoundingBox wStart=new BoundingBox(minX-10,y-30,minZ+1,minX-1,y+30,minZ+3);
 		if(isAreaClear(placedBoxes,wStart)){
 			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,wStart,Direction.WEST));
 			placedBoxes.add(wStart);
 			pathQueue.add(new PathRecord(wStart,Direction.WEST,1));
 		}
-		BoundingBox eStart=new BoundingBox(maxX+1,y,minZ+1,maxX+10,y,minZ+3);
+		BoundingBox eStart=new BoundingBox(maxX+1,y-30,minZ+1,maxX+10,y+30,minZ+3);
 		if(isAreaClear(placedBoxes,eStart)){
 			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,eStart,Direction.EAST));
 			placedBoxes.add(eStart);
@@ -80,7 +81,7 @@ public class OldVillageStructure extends Structure{
 		}
 		while(!pathQueue.isEmpty()){
 			PathRecord currentPath=pathQueue.removeFirst();
-			placeHousesAlongPath(builder,placedBoxes,currentPath.box,currentPath.dir,random);
+			placeHousesAlongPath(context,builder,placedBoxes,currentPath.box,currentPath.dir,random);
 			if(currentPath.depth<3){
 				float roll=random.nextFloat();
 				List<Direction> nextDirections=new ArrayList<>();
@@ -106,15 +107,12 @@ public class OldVillageStructure extends Structure{
 			}
 		}
 	}
-	// ====================================================================
-	// OPRAVENÉ DYNAMICKÉ ROZMISŤOVÁNÍ
-	// ====================================================================
-	private static void placeHousesAlongPath(StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,BoundingBox pathBox,Direction pathDir,RandomSource random){
-		int y=pathBox.minY();
+	// OPRAVENO: Metoda bere context a počítá unikátní výšku 'houseY' pro každou budovu podle terénu silnice
+	private static void placeHousesAlongPath(GenerationContext context,StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,BoundingBox pathBox,Direction pathDir,RandomSource random){
 		// Osa SEVER / JIH (Domy stavíme na Východ / Západ)
 		if(pathDir==Direction.NORTH||pathDir==Direction.SOUTH){
 			int z=pathBox.minZ()+1;
-			while(z<pathBox.maxZ()){ // Opraveno: Dynamická kontrola konce silnice
+			while(z<pathBox.maxZ()){
 				int houseRand=random.nextInt(100);
 				int type;
 				int sizeX;
@@ -122,22 +120,24 @@ public class OldVillageStructure extends Structure{
 				if(houseRand<45){
 					type=2;
 					sizeX=6;
-					sizeZ=6; // Malý dům
+					sizeZ=6;
 				}else if(houseRand<75){
 					type=3;
 					sizeX=7;
-					sizeZ=7; // Velký dům (Čistý čtverec 7x7)
+					sizeZ=7;
 				}else{
 					type=4;
 					sizeX=9;
-					sizeZ=7; // Políčko (Z-hloubka 9 se otočí na světovou osu X!)
+					sizeZ=7;
 				}
 				if(z+sizeZ>pathBox.maxZ()) break;
+				// Dynamické změření výšky povrchu terénu na kraji silnice
+				int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.minX(),z,Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
 				if(random.nextFloat()<0.45f){
-					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,y,z,pathBox.minX()-1,y+8,z+sizeZ-1,Direction.EAST,type);
+					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,houseY,z,pathBox.minX()-1,houseY+8,z+sizeZ-1,Direction.EAST,type);
 				}
 				if(random.nextFloat()<0.45f){
-					buildAbsoluteHouse(builder,placedBoxes,pathBox.maxX()+1,y,z,pathBox.maxX()+sizeX,y+8,z+sizeZ-1,Direction.WEST,type);
+					buildAbsoluteHouse(builder,placedBoxes,pathBox.maxX()+1,houseY,z,pathBox.maxX()+sizeX,houseY+8,z+sizeZ-1,Direction.WEST,type);
 				}
 				z+=sizeZ+random.nextInt(3)+4;
 			}
@@ -153,48 +153,52 @@ public class OldVillageStructure extends Structure{
 				if(houseRand<45){
 					type=2;
 					sizeX=6;
-					sizeZ=6; // Malý dům
+					sizeZ=6;
 				}else if(houseRand<75){
 					type=3;
 					sizeX=7;
-					sizeZ=7; // Velký dům (Čistý čtverec 7x7)
+					sizeZ=7;
 				}else{
 					type=4;
 					sizeX=7;
-					sizeZ=9; // Políčko (Světové osy odpovídají lokálním X=7, Z=9)
+					sizeZ=9;
 				}
 				if(x+sizeX>pathBox.maxX()) break;
+				// Dynamické změření výšky povrchu terénu na kraji silnice
+				int houseY=context.chunkGenerator().getFirstOccupiedHeight(x,pathBox.minZ(),Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
 				if(random.nextFloat()<0.45f){
-					buildAbsoluteHouse(builder,placedBoxes,x,y,pathBox.minZ()-sizeZ,x+sizeX-1,y+8,pathBox.minZ()-1,Direction.SOUTH,type);
+					buildAbsoluteHouse(builder,placedBoxes,x,houseY,pathBox.minZ()-sizeZ,x+sizeX-1,houseY+8,pathBox.minZ()-1,Direction.SOUTH,type);
 				}
 				if(random.nextFloat()<0.45f){
-					buildAbsoluteHouse(builder,placedBoxes,x,y,pathBox.maxZ()+1,x+sizeX-1,y+8,pathBox.maxZ()+sizeZ,Direction.NORTH,type);
+					buildAbsoluteHouse(builder,placedBoxes,x,houseY,pathBox.maxZ()+1,x+sizeX-1,houseY+8,pathBox.maxZ()+sizeZ,Direction.NORTH,type);
 				}
 				x+=sizeX+random.nextInt(3)+4;
 			}
 		}
 	}
+	// OPRAVENO: Dědí plný vertikální rozsah od parent boxu
 	private static BoundingBox createNextPathBox(BoundingBox parent,Direction parentDir,Direction nextDir,int length){
-		int y=parent.minY();
+		int minY=parent.minY();
+		int maxY=parent.maxY();
 		if(parentDir==Direction.NORTH){
-			if(nextDir==Direction.NORTH) return new BoundingBox(parent.minX(),y,parent.minZ()-length,parent.maxX(),y,parent.minZ()-1);
-			if(nextDir==Direction.WEST) return new BoundingBox(parent.minX()-length,y,parent.minZ(),parent.minX()-1,y,parent.minZ()+2);
-			if(nextDir==Direction.EAST) return new BoundingBox(parent.maxX()+1,y,parent.minZ(),parent.maxX()+length,y,parent.minZ()+2);
+			if(nextDir==Direction.NORTH) return new BoundingBox(parent.minX(),minY,parent.minZ()-length,parent.maxX(),maxY,parent.minZ()-1);
+			if(nextDir==Direction.WEST) return new BoundingBox(parent.minX()-length,minY,parent.minZ(),parent.minX()-1,maxY,parent.minZ()+2);
+			if(nextDir==Direction.EAST) return new BoundingBox(parent.maxX()+1,minY,parent.minZ(),parent.maxX()+length,maxY,parent.minZ()+2);
 		}
 		if(parentDir==Direction.SOUTH){
-			if(nextDir==Direction.SOUTH) return new BoundingBox(parent.minX(),y,parent.maxZ()+1,parent.maxX(),y,parent.maxZ()+length);
-			if(nextDir==Direction.WEST) return new BoundingBox(parent.minX()-length,y,parent.maxZ()-2,parent.minX()-1,y,parent.maxZ());
-			if(nextDir==Direction.EAST) return new BoundingBox(parent.maxX()+1,y,parent.maxZ()-2,parent.maxX()+length,y,parent.maxZ());
+			if(nextDir==Direction.SOUTH) return new BoundingBox(parent.minX(),minY,parent.maxZ()+1,parent.maxX(),maxY,parent.maxZ()+length);
+			if(nextDir==Direction.WEST) return new BoundingBox(parent.minX()-length,minY,parent.maxZ()-2,parent.minX()-1,maxY,parent.maxZ());
+			if(nextDir==Direction.EAST) return new BoundingBox(parent.maxX()+1,minY,parent.maxZ()-2,parent.maxX()+length,maxY,parent.maxZ());
 		}
 		if(parentDir==Direction.WEST){
-			if(nextDir==Direction.WEST) return new BoundingBox(parent.minX()-length,y,parent.minZ(),parent.minX()-1,y,parent.maxZ());
-			if(nextDir==Direction.NORTH) return new BoundingBox(parent.minX(),y,parent.minZ()-length,parent.minX()+2,y,parent.minZ()-1);
-			if(nextDir==Direction.SOUTH) return new BoundingBox(parent.minX(),y,parent.maxZ()+1,parent.minX()+2,y,parent.maxZ()+length);
+			if(nextDir==Direction.WEST) return new BoundingBox(parent.minX()-length,minY,parent.minZ(),parent.minX()-1,maxY,parent.maxZ());
+			if(nextDir==Direction.NORTH) return new BoundingBox(parent.minX(),minY,parent.minZ()-length,parent.minX()+2,maxY,parent.minZ()-1);
+			if(nextDir==Direction.SOUTH) return new BoundingBox(parent.minX(),minY,parent.maxZ()+1,parent.minX()+2,maxY,parent.maxZ()+length);
 		}
 		if(parentDir==Direction.EAST){
-			if(nextDir==Direction.EAST) return new BoundingBox(parent.maxX()+1,y,parent.minZ(),parent.maxX()+length,y,parent.maxZ());
-			if(nextDir==Direction.NORTH) return new BoundingBox(parent.maxX()-2,y,parent.minZ()-length,parent.maxX(),y,parent.minZ()-1);
-			if(nextDir==Direction.SOUTH) return new BoundingBox(parent.maxX()-2,y,parent.maxZ()+1,parent.maxX(),y,parent.maxZ()+length);
+			if(nextDir==Direction.EAST) return new BoundingBox(parent.maxX()+1,minY,parent.minZ(),parent.maxX()+length,maxY,parent.maxZ());
+			if(nextDir==Direction.NORTH) return new BoundingBox(parent.maxX()-2,minY,parent.minZ()-length,parent.maxX(),maxY,parent.minZ()-1);
+			if(nextDir==Direction.SOUTH) return new BoundingBox(parent.maxX()-2,minY,parent.maxZ()+1,parent.maxX(),maxY,parent.maxZ()+length);
 		}
 		return parent;
 	}
