@@ -77,6 +77,14 @@ public class OldVillagePieces{
 				}
 			}
 		}
+		private void createBaseStairs(WorldGenLevel level,BoundingBox box,int x,int z){
+			for(int yLoc=0;yLoc>=-20;yLoc--){
+				BlockState bs=this.getBlock(level,x,yLoc,z,box);
+				if(bs.isAir()||bs.is(Blocks.SHORT_GRASS)||bs.is(Blocks.TALL_GRASS)){
+					this.setBlock(level,box,x,yLoc,z,cobble);
+				}else break;
+			}
+		}
 		private void generateWell(WorldGenLevel level,BoundingBox box){
 			for(int x=0;x<=5;x++){
 				for(int z=0;z<=5;z++){
@@ -136,12 +144,7 @@ public class OldVillagePieces{
 		}
 		private void generateSmallHouse(WorldGenLevel level,BoundingBox box){
 			createBase(level,box,0,1,4,5,cobble);
-			for(int yLoc=0;yLoc>=-20;yLoc--){
-				BlockState bs=this.getBlock(level,2,yLoc,6,box);
-				if(bs.isAir()||bs.is(Blocks.SHORT_GRASS)||bs.is(Blocks.TALL_GRASS)){
-					this.setBlock(level,box,2,yLoc,6,cobble);
-				}else break;
-			}
+			createBaseStairs(level,box,2,6);
 			this.fillWithBlocks(level,box,0,1,1,4,1,5,cobble);
 			this.setBlock(level,box,2,1,6,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
 			this.fillWithBlocks(level,box,0,2,1,0,4,1,cobble);
@@ -162,12 +165,8 @@ public class OldVillagePieces{
 		}
 		private void generateLargeHouse(WorldGenLevel level,BoundingBox box){
 			createBase(level,box,0,1,4,6,cobble);
-			for(int yLoc=0;yLoc>=-20;yLoc--){
-				BlockState bs=this.getBlock(level,6,yLoc,11,box);
-				if(bs.isAir()||bs.is(Blocks.SHORT_GRASS)||bs.is(Blocks.TALL_GRASS)){
-					this.setBlock(level,box,6,yLoc,11,cobble);
-				}else break;
-			}
+			createBase(level,box,0,5,8,10,cobble);
+			createBaseStairs(level,box,6,11);
 			this.fillWithBlocks(level,box,0,1,0,6,1,4,cobble);
 			this.fillWithBlocks(level,box,0,1,5,8,1,10,cobble);
 			this.setBlock(level,box,6,1,11,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
@@ -194,7 +193,7 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,6,3,2,6,3,3,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
 			this.fillWithBlocks(level,box,8,3,7,8,3,8,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
 			this.setBlock(level,box,4,3,10,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
-			this.setBlock(level,box,6,4,9,wallTorch.setValue(DoorBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,6,4,9,wallTorch.setValue(WallTorchBlock.FACING,Direction.SOUTH));
 			this.fillWithBlocks(level,box,8,5,7,8,5,8,planks);
 			this.fillWithBlocks(level,box,0,5,7,0,5,8,planks);
 			this.fillWithBlocks(level,box,0,5,9,8,5,9,planks);
