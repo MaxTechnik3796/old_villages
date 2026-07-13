@@ -206,7 +206,7 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,4,2,1,5,2,7,wheat.setValue(CropBlock.AGE,7));
 		}
 		private void generateLargeFarm(WorldGenLevel level,BoundingBox box){
-			createBase(level,box,0,0,6,8,dirt);
+			createBase(level,box,0,0,12,8,dirt);
 			this.fillWithBlocks(level,box,0,1,0,12,3,8,air);
 			this.fillWithBlocks(level,box,0,1,0,12,1,8,log);
 			this.fillWithBlocks(level,box,1,1,1,5,1,7,farmland);

@@ -44,7 +44,7 @@ public class OldVillageStructure extends Structure{
 		List<BoundingBox> placedBoxes=new ArrayList<>();
 		RandomSource random=context.random();
 		Direction wellDirection=Direction.Plane.HORIZONTAL.getRandomDirection(random);
-		// OPRAVENO: Studnu posouváme o 3 bloky dolů, aby její ochoz perfektně lícoval s okolním terénem
+		// Čistá pozice pos.getY() pro studnu bez umělých posunů
 		OldVillagePieces.VillagePiece well=new OldVillagePieces.VillagePiece(0,0,pos.getX(),pos.getY(),pos.getZ(),6,7,6,wellDirection);
 		builder.addPiece(well);
 		BoundingBox wellBox=well.getBoundingBox();
@@ -116,11 +116,11 @@ public class OldVillageStructure extends Structure{
 				int type;
 				int sizeX;
 				int sizeZ;
-				if(houseRand<45){
+				if(houseRand<35){
 					type=2;
 					sizeX=6;
 					sizeZ=6;
-				}else if(houseRand<75){
+				}else if(houseRand<60){
 					type=3;
 					sizeX=7;
 					sizeZ=7;
@@ -133,9 +133,14 @@ public class OldVillageStructure extends Structure{
 					sizeX=9;
 					sizeZ=7;
 				}
-				if(z+sizeZ>pathBox.maxZ()) break;
+				if(z+sizeZ>pathBox.maxZ()){
+					type=2;
+					sizeX=6;
+					sizeZ=6;
+					if(z+sizeZ>pathBox.maxZ()) break;
+				}
 				int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.minX(),z,Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
-				// OPRAVENO: houseY - 2 zajistí, že schody a logy sednou přesně na úroveň gravelu
+				// Čisté houseY bez jakýchkoliv odpočtů
 				if(random.nextFloat()<0.45F){
 					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,houseY,z,pathBox.minX()-1,houseY+8,z+sizeZ-1,Direction.EAST,type);
 				}
@@ -153,11 +158,11 @@ public class OldVillageStructure extends Structure{
 				int type;
 				int sizeX;
 				int sizeZ;
-				if(houseRand<45){
+				if(houseRand<35){
 					type=2;
 					sizeX=6;
 					sizeZ=6;
-				}else if(houseRand<75){
+				}else if(houseRand<60){
 					type=3;
 					sizeX=7;
 					sizeZ=7;
@@ -170,9 +175,14 @@ public class OldVillageStructure extends Structure{
 					sizeX=7;
 					sizeZ=9;
 				}
-				if(x+sizeX>pathBox.maxX()) break;
+				if(x+sizeX>pathBox.maxX()){
+					type=2;
+					sizeX=6;
+					sizeZ=6;
+					if(x+sizeX>pathBox.maxX()) break;
+				}
 				int houseY=context.chunkGenerator().getFirstOccupiedHeight(x,pathBox.minZ(),Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
-				// OPRAVENO: houseY - 2 i pro druhou osu cest
+				// Čisté houseY bez jakýchkoliv odpočtů
 				if(random.nextFloat()<0.45F){
 					buildAbsoluteHouse(builder,placedBoxes,x,houseY,pathBox.minZ()-sizeZ,x+sizeX-1,houseY+8,pathBox.minZ()-1,Direction.SOUTH,type);
 				}
