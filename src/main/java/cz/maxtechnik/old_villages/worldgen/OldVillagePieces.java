@@ -23,6 +23,7 @@ public class OldVillagePieces{
 		BlockState planks=Blocks.OAK_PLANKS.defaultBlockState();
 		BlockState log=Blocks.OAK_LOG.defaultBlockState();
 		BlockState gravel=Blocks.GRAVEL.defaultBlockState();
+		BlockState air=Blocks.AIR.defaultBlockState();
 		private final int pieceType; // 0 = Studna, 1 = Cesta, 2 = Malý dům
 		// Konstruktor pro vytváření kousků za běhu hry
 		public VillagePiece(int pieceType,int genDepth,int x,int y,int z,int sizeX,int sizeY,int sizeZ,Direction orientation){
@@ -72,7 +73,14 @@ public class OldVillagePieces{
 					}
 				}
 			}
-			for(int y=0;y<=2;y++){
+			//bottom
+			for(int x=1;x<=4;++x){
+				for(int z=1;z<=4;++z){
+					this.placeBlock(level,cobble,x,0,z,box);
+				}
+			}
+			//walls
+			for(int y=1;y<=2;y++){
 				for(int i=1;i<=4;++i){
 					this.placeBlock(level,cobble,i,y,1,box);
 					this.placeBlock(level,cobble,i,y,4,box);
@@ -90,6 +98,7 @@ public class OldVillagePieces{
 				this.placeBlock(level,water,2,y,3,box);
 				this.placeBlock(level,water,3,y,3,box);
 			}
+			//fence
 			this.placeBlock(level,oakFence,1,3,1,box);
 			this.placeBlock(level,oakFence,1,3,4,box);
 			this.placeBlock(level,oakFence,4,3,1,box);
@@ -98,6 +107,7 @@ public class OldVillagePieces{
 			this.placeBlock(level,oakFence,1,4,4,box);
 			this.placeBlock(level,oakFence,4,4,1,box);
 			this.placeBlock(level,oakFence,4,4,4,box);
+			//roof
 			for(int x=1;x<=4;++x){
 				for(int z=1;z<=4;++z){
 					this.placeBlock(level,cobble,x,5,z,box);
@@ -119,8 +129,8 @@ public class OldVillagePieces{
 				for(int x=0;x<this.getBoundingBox().getXSpan();x++){
 					for(int z=0;z<this.getBoundingBox().getZSpan();z++){
 						this.placeBlock(level,gravel,x,0,z,box);
-						this.placeBlock(level,Blocks.AIR.defaultBlockState(),x,1,z,box);
-						this.placeBlock(level,Blocks.AIR.defaultBlockState(),x,2,z,box);
+						this.placeBlock(level,air,x,1,z,box);
+						this.placeBlock(level,air,x,2,z,box);
 					}
 				}
 			}
@@ -129,7 +139,7 @@ public class OldVillagePieces{
 			// ================================================================
 			else if(this.pieceType==2){
 				// Čistíme vnitřek jedním řádkem!
-				this.fillWithBlocks(level,box,1,1,1,4,4,4,Blocks.AIR.defaultBlockState());
+				this.fillWithBlocks(level,box,1,1,1,4,4,4,air);
 				// Podlaha
 				this.fillWithBlocks(level,box,0,0,0,5,0,5,cobble);
 				// Stěny
