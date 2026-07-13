@@ -26,11 +26,11 @@ public class OldVillageStructure extends Structure{
 		int blockX = chunkPos.getMinBlockX() + 8;
 		int blockZ = chunkPos.getMinBlockZ() + 8;
 
-		// Zjistíme výšku terénu
+		// Zjistíme výšku terénu pod stromy
 		int height = context.chunkGenerator().getFirstOccupiedHeight(
 				blockX,
 				blockZ,
-				Heightmap.Types.WORLD_SURFACE_WG,
+				Heightmap.Types.OCEAN_FLOOR_WG, // ZMĚNA: WORLD_SURFACE_WG změněno na OCEAN_FLOOR_WG
 				context.heightAccessor(),
 				context.randomState()
 		);
