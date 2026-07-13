@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 public class OldVillageStructure extends Structure{
 	public static final MapCodec<OldVillageStructure> CODEC=RecordCodecBuilder.mapCodec(instance->
 			instance.group(settingsCodec(instance)).apply(instance,OldVillageStructure::new));
@@ -44,7 +45,9 @@ public class OldVillageStructure extends Structure{
 		List<BoundingBox> placedBoxes=new ArrayList<>();
 		RandomSource random=context.random();
 		Direction wellDirection=Direction.Plane.HORIZONTAL.getRandomDirection(random);
-		OldVillagePieces.VillagePiece well=new OldVillagePieces.VillagePiece(0,0,pos.getX(),pos.getY(),pos.getZ(),6,7,6,wellDirection);
+
+		// FIX: Studnu posouváme o 2 bloky dolů, aby její ochoz (y=1) seděl přesně na úrovni cest (surfaceY-1)
+		OldVillagePieces.VillagePiece well=new OldVillagePieces.VillagePiece(0,0,pos.getX(),pos.getY() - 2,pos.getZ(),6,7,6,wellDirection);
 		builder.addPiece(well);
 		BoundingBox wellBox=well.getBoundingBox();
 		placedBoxes.add(wellBox);
@@ -54,7 +57,7 @@ public class OldVillageStructure extends Structure{
 		int maxZ=wellBox.maxZ();
 		int y=wellBox.minY();
 		List<PathRecord> pathQueue=new ArrayList<>();
-		// OPRAVENO: Cesty dostávají vertikální rozsah y-30 až y+30, aby je engine nezahazoval v kopcích
+
 		BoundingBox nStart=new BoundingBox(minX+1,y-30,minZ-10,minX+3,y+30,minZ-1);
 		if(isAreaClear(placedBoxes,nStart)){
 			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,nStart,Direction.NORTH));
@@ -107,37 +110,31 @@ public class OldVillageStructure extends Structure{
 			}
 		}
 	}
-	// OPRAVENO: Metoda bere context a počítá unikátní výšku 'houseY' pro každou budovu podle terénu silnice
+
 	private static void placeHousesAlongPath(GenerationContext context,StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,BoundingBox pathBox,Direction pathDir,RandomSource random){
 		// Osa SEVER / JIH (Domy stavíme na Východ / Západ)
 		if(pathDir==Direction.NORTH||pathDir==Direction.SOUTH){
 			int z=pathBox.minZ()+1;
 			while(z<pathBox.maxZ()){
 				int houseRand=random.nextInt(100);
-				int type;
-				int sizeX;
-				int sizeZ;
+				int type; int sizeX; int sizeZ;
 				if(houseRand<45){
-					type=2;
-					sizeX=6;
-					sizeZ=6;
+					type=2; sizeX=6; sizeZ=6;
 				}else if(houseRand<75){
-					type=3;
-					sizeX=7;
-					sizeZ=7;
+					type=3; sizeX=7; sizeZ=7;
 				}else{
-					type=4;
-					sizeX=9;
-					sizeZ=7;
+					type=4; sizeX=9; sizeZ=7;
 				}
 				if(z+sizeZ>pathBox.maxZ()) break;
-				// Dynamické změření výšky povrchu terénu na kraji silnice
+
 				int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.minX(),z,Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
+
+				// FIX: Dosazujeme houseY - 1, aby stavby zapadly hlouběji do terénu a lícovaly s cestou
 				if(random.nextFloat()<0.45f){
-					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,houseY,z,pathBox.minX()-1,houseY+8,z+sizeZ-1,Direction.EAST,type);
+					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,houseY - 1,z,pathBox.minX()-1,houseY - 1 + 8,z+sizeZ-1,Direction.EAST,type);
 				}
 				if(random.nextFloat()<0.45f){
-					buildAbsoluteHouse(builder,placedBoxes,pathBox.maxX()+1,houseY,z,pathBox.maxX()+sizeX,houseY+8,z+sizeZ-1,Direction.WEST,type);
+					buildAbsoluteHouse(builder,placedBoxes,pathBox.maxX()+1,houseY - 1,z,pathBox.maxX()+sizeX,houseY - 1 + 8,z+sizeZ-1,Direction.WEST,type);
 				}
 				z+=sizeZ+random.nextInt(3)+4;
 			}
@@ -147,36 +144,29 @@ public class OldVillageStructure extends Structure{
 			int x=pathBox.minX()+1;
 			while(x<pathBox.maxX()){
 				int houseRand=random.nextInt(100);
-				int type;
-				int sizeX;
-				int sizeZ;
+				int type; int sizeX; int sizeZ;
 				if(houseRand<45){
-					type=2;
-					sizeX=6;
-					sizeZ=6;
+					type=2; sizeX=6; sizeZ=6;
 				}else if(houseRand<75){
-					type=3;
-					sizeX=7;
-					sizeZ=7;
+					type=3; sizeX=7; sizeZ=7;
 				}else{
-					type=4;
-					sizeX=7;
-					sizeZ=9;
+					type=4; sizeX=7; sizeZ=9;
 				}
 				if(x+sizeX>pathBox.maxX()) break;
-				// Dynamické změření výšky povrchu terénu na kraji silnice
+
 				int houseY=context.chunkGenerator().getFirstOccupiedHeight(x,pathBox.minZ(),Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
+
+				// FIX: Dosazujeme houseY - 1 i pro druhou osu generování cesty
 				if(random.nextFloat()<0.45f){
-					buildAbsoluteHouse(builder,placedBoxes,x,houseY,pathBox.minZ()-sizeZ,x+sizeX-1,houseY+8,pathBox.minZ()-1,Direction.SOUTH,type);
+					buildAbsoluteHouse(builder,placedBoxes,x,houseY - 1,pathBox.minZ()-sizeZ,x+sizeX-1,houseY - 1 + 8,pathBox.minZ()-1,Direction.SOUTH,type);
 				}
 				if(random.nextFloat()<0.45f){
-					buildAbsoluteHouse(builder,placedBoxes,x,houseY,pathBox.maxZ()+1,x+sizeX-1,houseY+8,pathBox.maxZ()+sizeZ,Direction.NORTH,type);
+					buildAbsoluteHouse(builder,placedBoxes,x,houseY - 1,pathBox.maxZ()+1,x+sizeX-1,houseY - 1 + 8,pathBox.maxZ()+sizeZ,Direction.NORTH,type);
 				}
 				x+=sizeX+random.nextInt(3)+4;
 			}
 		}
 	}
-	// OPRAVENO: Dědí plný vertikální rozsah od parent boxu
 	private static BoundingBox createNextPathBox(BoundingBox parent,Direction parentDir,Direction nextDir,int length){
 		int minY=parent.minY();
 		int maxY=parent.maxY();
