@@ -124,8 +124,8 @@ public class OldVillageStructure extends Structure{
 					sizeZ=6; // Malý dům
 				}else if(houseRand<60){
 					type=3;
-					sizeX=7;
-					sizeZ=7; // Velký dům
+					sizeX=11;
+					sizeZ=9; // Velký dům
 				}else if(houseRand<80){
 					type=5;
 					sizeX=9;
@@ -167,8 +167,8 @@ public class OldVillageStructure extends Structure{
 					sizeZ=6;
 				}else if(houseRand<60){
 					type=3;
-					sizeX=7;
-					sizeZ=7;
+					sizeX=9;
+					sizeZ=11;
 				}else if(houseRand<80){
 					type=5;
 					sizeX=13;
