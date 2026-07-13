@@ -15,59 +15,65 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import org.jetbrains.annotations.NotNull;
-public class OldVillagePieces{
-	public static class VillagePiece extends StructurePiece{
+
+public class OldVillagePieces {
+
+	public static class VillagePiece extends StructurePiece {
 		private final int pieceType; // 0 = Studna, 1 = Malý dům, 2 = Velký dům...
+
 		// Konstruktor pro vytváření nové hry za běhu
-		// NOVÝ FUNKČNÍ KONSTRUKTOR PRO 1.21.1
-		public VillagePiece(int pieceType,int genDepth,int x,int y,int z,Direction orientation){
+		public VillagePiece(int pieceType, int genDepth, int x, int y, int z, Direction orientation) {
 			// Voláme super s typem, hloubkou generování a boxem vytvořeným pomocí orientBox
-			super(OldVillagesMod.OLD_VILLAGE_PIECE.get(),genDepth,BoundingBox.orientBox(x,y,z,0,0,0,6,12,6,orientation));
-			this.pieceType=pieceType;
+			super(OldVillagesMod.OLD_VILLAGE_PIECE.get(), genDepth, BoundingBox.orientBox(x, y, z, 0, 0, 0, 6, 12, 6, orientation));
+			this.pieceType = pieceType;
 			this.setOrientation(orientation);
 		}
-		// Konstruktor pro načítání ze souboru světa (NBT) - Minecraft vyžaduje pro ukládání!
-		public VillagePiece(StructurePieceSerializationContext context,CompoundTag tag){
-			super(OldVillagesMod.OLD_VILLAGE_PIECE.get(),tag);
-			this.pieceType=tag.getInt("PieceType");
+
+		// Konstruktor pro načítání ze souboru světa (NBT) - Anotace potlačí varování o nepoužitém 'context'
+		@SuppressWarnings("unused")
+		public VillagePiece(StructurePieceSerializationContext context, CompoundTag tag) {
+			super(OldVillagesMod.OLD_VILLAGE_PIECE.get(), tag);
+			this.pieceType = tag.getInt("PieceType");
 		}
+
 		@Override
-		protected void addAdditionalSaveData(@NotNull StructurePieceSerializationContext context,@NotNull CompoundTag tag){
-			tag.putInt("PieceType",this.pieceType);
+		protected void addAdditionalSaveData(@NotNull StructurePieceSerializationContext context, @NotNull CompoundTag tag) {
+			tag.putInt("PieceType", this.pieceType);
 		}
+
 		// ====================================================================
 		// SAMOTNÉ PROCEDURÁLNÍ STAVĚNÍ BLOKŮ
 		// ====================================================================
 		@Override
 		public void postProcess(@NotNull WorldGenLevel level, @NotNull StructureManager structureManager, @NotNull ChunkGenerator generator, @NotNull RandomSource random, @NotNull BoundingBox box, @NotNull ChunkPos chunkPos, @NotNull BlockPos startPos) {
 			// Ukázka: Stavba klasické STARÉ STUDNY (Well) z verze 1.7.10 čistě z kódu
-			if(this.pieceType == 0){
+			if (this.pieceType == 0) {
 				BlockState cobble = Blocks.COBBLESTONE.defaultBlockState();
 				BlockState oakFence = Blocks.OAK_FENCE.defaultBlockState();
 				BlockState water = Blocks.WATER.defaultBlockState();
 
 				// 1. Vykreslíme základní cobblestone okraj studny (velikost 6x6)
-				for(int x = 1; x <= 4; ++x){
-					for(int z = 1; z <= 4; ++z){
+				for (int x = 1; x <= 4; ++x) {
+					for (int z = 1; z <= 4; ++z) {
 						// Podlaha pod vodou
 						this.placeBlock(level, cobble, x, 0, z, box);
 
-						// FIX PROTI LÉTÁNÍ (Ruční náhrada za fillColumnDownwards):
-						// Budeme klesat od Y=-1 dolů až o 30 bloků a stavět cobblestone pilíře, dokud nenarazíme na pevnou zem
+						// FIX PROTI LÉTÁNÍ: Klesáme dolů pod studnu a stavíme základy
 						for (int y = -1; y >= -30; y--) {
-							BlockState underBlock = this.getBlockAtCurrentPosition(level, x, y, z, box);
+							// FIX: Změněno getBlockAtCurrentPosition na moderní getBlock!
+							BlockState underBlock = this.getBlock(level, x, y, z, box);
 
-							// Pokud je pod studnou vzduch, tekutina nebo tráva, nahradíme ji cobblestonem
+							// Pokud je pod studnou prázdno nebo tráva, položíme cobblestone pilíř
 							if (underBlock.isAir() || underBlock.is(Blocks.WATER) || underBlock.is(Blocks.LAVA) || underBlock.is(Blocks.SHORT_GRASS) || underBlock.is(Blocks.TALL_GRASS)) {
 								this.placeBlock(level, cobble, x, y, z, box);
 							} else {
-								// Jakmile narazíme na pevný blok (hlína, stone atd.), pilíř je bezpečně ukotven a ukončíme cyklus
+								// Jakmile narazíme na pevný blok (stone, hlína), pilíř je ukotven
 								break;
 							}
 						}
 
 						// Naplnění vnitřku vodou
-						if(x > 1 && x < 4 && z > 1 && z < 4){
+						if (x > 1 && x < 4 && z > 1 && z < 4) {
 							this.placeBlock(level, water, x, 1, z, box);
 							this.placeBlock(level, water, x, 2, z, box);
 						}
@@ -75,7 +81,7 @@ public class OldVillagePieces{
 				}
 
 				// Stěny studny vyčnívající nad zem
-				for(int i = 1; i <= 4; ++i){
+				for (int i = 1; i <= 4; ++i) {
 					this.placeBlock(level, cobble, i, 3, 1, box);
 					this.placeBlock(level, cobble, i, 3, 4, box);
 					this.placeBlock(level, cobble, 1, 3, i, box);
@@ -93,8 +99,8 @@ public class OldVillagePieces{
 				this.placeBlock(level, oakFence, 4, 5, 4, box);
 
 				// 3. Cobblestone střecha
-				for(int x = 1; x <= 4; ++x){
-					for(int z = 1; z <= 4; ++z){
+				for (int x = 1; x <= 4; ++x) {
+					for (int z = 1; z <= 4; ++z) {
 						this.placeBlock(level, cobble, x, 6, z, box);
 					}
 				}
