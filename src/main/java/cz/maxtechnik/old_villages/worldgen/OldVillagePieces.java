@@ -74,11 +74,7 @@ public class OldVillagePieces{
 				}
 			}
 			//bottom
-			for(int x=1;x<=4;++x){
-				for(int z=1;z<=4;++z){
-					this.placeBlock(level,cobble,x,0,z,box);
-				}
-			}
+			this.fillWithBlocks(level,box,1,0,1,4,0,4,cobble);
 			//walls
 			for(int y=1;y<=2;y++){
 				for(int i=1;i<=4;++i){
@@ -88,16 +84,13 @@ public class OldVillagePieces{
 					this.placeBlock(level,cobble,4,y,i,box);
 				}
 			}
+			//upper walls
 			this.placeBlock(level,cobble,2,1,2,box);
 			this.placeBlock(level,cobble,3,1,2,box);
 			this.placeBlock(level,cobble,2,1,3,box);
 			this.placeBlock(level,cobble,3,1,3,box);
-			for(int y=1;y<=2;y++){
-				this.placeBlock(level,water,2,y,2,box);
-				this.placeBlock(level,water,3,y,2,box);
-				this.placeBlock(level,water,2,y,3,box);
-				this.placeBlock(level,water,3,y,3,box);
-			}
+			//water
+			this.fillWithBlocks(level,box,2,1,2,3,2,3,water);
 			//fence
 			this.placeBlock(level,oakFence,1,3,1,box);
 			this.placeBlock(level,oakFence,1,3,4,box);
@@ -108,11 +101,7 @@ public class OldVillagePieces{
 			this.placeBlock(level,oakFence,4,4,1,box);
 			this.placeBlock(level,oakFence,4,4,4,box);
 			//roof
-			for(int x=1;x<=4;++x){
-				for(int z=1;z<=4;++z){
-					this.placeBlock(level,cobble,x,5,z,box);
-				}
-			}
+			this.fillWithBlocks(level,box,1,5,1,4,5,4,cobble);
 		}
 		@Override
 		public void postProcess(@NotNull WorldGenLevel level,@NotNull StructureManager structureManager,@NotNull ChunkGenerator generator,@NotNull RandomSource random,@NotNull BoundingBox box,@NotNull ChunkPos chunkPos,@NotNull BlockPos startPos){
