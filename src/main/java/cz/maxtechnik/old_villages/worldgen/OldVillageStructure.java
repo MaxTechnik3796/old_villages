@@ -44,7 +44,7 @@ public class OldVillageStructure extends Structure{
 		List<BoundingBox> placedBoxes=new ArrayList<>();
 		RandomSource random=context.random();
 		Direction wellDirection=Direction.Plane.HORIZONTAL.getRandomDirection(random);
-		// Čistá pozice pos.getY() pro studnu bez umělých posunů
+		// Čistá pozice studny bez jakýchkoliv posunů dolů
 		OldVillagePieces.VillagePiece well=new OldVillagePieces.VillagePiece(0,0,pos.getX(),pos.getY(),pos.getZ(),6,7,6,wellDirection);
 		builder.addPiece(well);
 		BoundingBox wellBox=well.getBoundingBox();
@@ -55,25 +55,26 @@ public class OldVillageStructure extends Structure{
 		int maxZ=wellBox.maxZ();
 		int y=wellBox.minY();
 		List<PathRecord> pathQueue=new ArrayList<>();
-		BoundingBox nStart=new BoundingBox(minX+1,y-30,minZ-10,minX+3,y+30,minZ-1);
+		// OPRAVENO: Úvodní 4 cesty od studny jsou prodlouženy na délku 25 bloků, aby měly velké stavby prostor hned na začátku
+		BoundingBox nStart=new BoundingBox(minX+1,y-30,minZ-25,minX+3,y+30,minZ-1);
 		if(isAreaClear(placedBoxes,nStart)){
 			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,nStart,Direction.NORTH));
 			placedBoxes.add(nStart);
 			pathQueue.add(new PathRecord(nStart,Direction.NORTH,1));
 		}
-		BoundingBox sStart=new BoundingBox(minX+1,y-30,maxZ+1,minX+3,y+30,maxZ+10);
+		BoundingBox sStart=new BoundingBox(minX+1,y-30,maxZ+1,minX+3,y+30,maxZ+25);
 		if(isAreaClear(placedBoxes,sStart)){
 			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,sStart,Direction.SOUTH));
 			placedBoxes.add(sStart);
 			pathQueue.add(new PathRecord(sStart,Direction.SOUTH,1));
 		}
-		BoundingBox wStart=new BoundingBox(minX-10,y-30,minZ+1,minX-1,y+30,minZ+3);
+		BoundingBox wStart=new BoundingBox(minX-25,y-30,minZ+1,minX-1,y+30,minZ+3);
 		if(isAreaClear(placedBoxes,wStart)){
 			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,wStart,Direction.WEST));
 			placedBoxes.add(wStart);
 			pathQueue.add(new PathRecord(wStart,Direction.WEST,1));
 		}
-		BoundingBox eStart=new BoundingBox(maxX+1,y-30,minZ+1,maxX+10,y+30,minZ+3);
+		BoundingBox eStart=new BoundingBox(maxX+1,y-30,minZ+1,maxX+25,y+30,minZ+3);
 		if(isAreaClear(placedBoxes,eStart)){
 			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,eStart,Direction.EAST));
 			placedBoxes.add(eStart);
@@ -96,7 +97,8 @@ public class OldVillageStructure extends Structure{
 					nextDirections.add(currentPath.dir.getClockWise());
 				}
 				for(Direction nextDir: nextDirections){
-					int nextLength=random.nextInt(6)+8;
+					// OPRAVENO: Prodloužení křižovatek na 20 až 35 bloků, aby velké farmy (délka 13) bez problému prošly kolizemi
+					int nextLength=random.nextInt(16)+20;
 					BoundingBox nextPathBox=createNextPathBox(currentPath.box,currentPath.dir,nextDir,nextLength);
 					if(isAreaClear(placedBoxes,nextPathBox)){
 						builder.addPiece(new OldVillagePieces.VillagePiece(1,currentPath.depth+1,nextPathBox,nextDir));
@@ -119,20 +121,21 @@ public class OldVillageStructure extends Structure{
 				if(houseRand<35){
 					type=2;
 					sizeX=6;
-					sizeZ=6;
+					sizeZ=6; // Malý dům
 				}else if(houseRand<60){
 					type=3;
 					sizeX=7;
-					sizeZ=7;
+					sizeZ=7; // Velký dům
 				}else if(houseRand<80){
 					type=5;
 					sizeX=9;
-					sizeZ=13;
+					sizeZ=13; // Velká farma (Velikost 13!)
 				}else{
 					type=4;
 					sizeX=9;
-					sizeZ=7;
+					sizeZ=7;  // Malá farma
 				}
+				// Pojistka přeměny na malý dům, pokud dochází místo na konci silnice
 				if(z+sizeZ>pathBox.maxZ()){
 					type=2;
 					sizeX=6;
@@ -140,7 +143,7 @@ public class OldVillageStructure extends Structure{
 					if(z+sizeZ>pathBox.maxZ()) break;
 				}
 				int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.minX(),z,Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
-				// Čisté houseY bez jakýchkoliv odpočtů
+				// Čistá výška houseY bez ofsetů
 				if(random.nextFloat()<0.45F){
 					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,houseY,z,pathBox.minX()-1,houseY+8,z+sizeZ-1,Direction.EAST,type);
 				}
@@ -169,7 +172,7 @@ public class OldVillageStructure extends Structure{
 				}else if(houseRand<80){
 					type=5;
 					sizeX=13;
-					sizeZ=9;
+					sizeZ=9; // Velká farma (Otočené osy)
 				}else{
 					type=4;
 					sizeX=7;
@@ -182,7 +185,7 @@ public class OldVillageStructure extends Structure{
 					if(x+sizeX>pathBox.maxX()) break;
 				}
 				int houseY=context.chunkGenerator().getFirstOccupiedHeight(x,pathBox.minZ(),Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
-				// Čisté houseY bez jakýchkoliv odpočtů
+				// Čistá výška houseY bez ofsetů
 				if(random.nextFloat()<0.45F){
 					buildAbsoluteHouse(builder,placedBoxes,x,houseY,pathBox.minZ()-sizeZ,x+sizeX-1,houseY+8,pathBox.minZ()-1,Direction.SOUTH,type);
 				}
