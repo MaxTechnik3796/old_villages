@@ -32,7 +32,7 @@ public class OldVillagesMod{
 			STRUCTURE_TYPES.register("old_village",()->()->OldVillageStructure.CODEC);
 	// Registrujeme typ kousku (všechny domky mohou sdílet jeden typ, pokud je správně načteme z NBT)
 	public static final DeferredHolder<StructurePieceType,StructurePieceType> OLD_VILLAGE_PIECE=
-			PIECE_TYPES.register("ov_piece",()->OldVillagePieces.VillagePiece::new);
+			PIECE_TYPES.register("ov_piece",()->(context,tag)->new OldVillagePieces.VillagePiece(tag));
 	public OldVillagesMod(IEventBus modEventBus,ModContainer modContainer){
 		STRUCTURE_TYPES.register(modEventBus);
 		PIECE_TYPES.register(modEventBus);
