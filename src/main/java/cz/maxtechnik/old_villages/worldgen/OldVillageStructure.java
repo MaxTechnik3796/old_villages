@@ -40,13 +40,9 @@ public class OldVillageStructure extends Structure{
 		BlockPos startPos=new BlockPos(blockX,height,blockZ);
 		return Optional.of(new GenerationStub(startPos,(builder)->generatePieces(builder,context,startPos)));
 	}
-	// ====================================================================
-	// ADVANCED PROCEDURÁLNÍ GENERÁTOR NÁHODNÉHO RŮSTU ULIC A DOMŮ
-	// ====================================================================
 	private void generatePieces(StructurePiecesBuilder builder,GenerationContext context,BlockPos pos){
 		List<BoundingBox> placedBoxes=new ArrayList<>();
 		RandomSource random=context.random();
-		// 1. Založíme hlavní studnu (rozměr 6x6)
 		Direction wellDirection=Direction.Plane.HORIZONTAL.getRandomDirection(random);
 		OldVillagePieces.VillagePiece well=new OldVillagePieces.VillagePiece(0,0,pos.getX(),pos.getY(),pos.getZ(),6,7,6,wellDirection);
 		builder.addPiece(well);
@@ -57,9 +53,7 @@ public class OldVillageStructure extends Structure{
 		int minZ=wellBox.minZ();
 		int maxZ=wellBox.maxZ();
 		int y=wellBox.minY();
-		// Vytvoříme si frontu (Queue) pro růst ulic vesnice
 		List<PathRecord> pathQueue=new ArrayList<>();
-		// 2. Vystřelíme 4 počáteční ROVNÉ úseky od studny (garantuje čistou křižovatku ve středu)
 		BoundingBox nStart=new BoundingBox(minX+1,y,minZ-10,minX+3,y,minZ-1);
 		if(isAreaClear(placedBoxes,nStart)){
 			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,nStart,Direction.NORTH));
@@ -84,39 +78,28 @@ public class OldVillageStructure extends Structure{
 			placedBoxes.add(eStart);
 			pathQueue.add(new PathRecord(eStart,Direction.EAST,1));
 		}
-		// 3. SMYČKA PRO GENERATOR RŮSTU (Zpracováváme cesty z fronty)
 		while(!pathQueue.isEmpty()){
 			PathRecord currentPath=pathQueue.removeFirst();
-			// A) Najdeme a postavíme náhodné domy podél této aktuální cesty!
 			placeHousesAlongPath(builder,placedBoxes,currentPath.box,currentPath.dir,random);
-			// B) Pokud cesta ještě nedosáhla maximální hloubky větvení (limit velikosti vesnice), zkusíme ji prodloužit/ohnout
 			if(currentPath.depth<3){
 				float roll=random.nextFloat();
 				List<Direction> nextDirections=new ArrayList<>();
-				// Kostka šancí, co se stane na konci aktuální ulice:
 				if(roll<0.40f){
-					// 40% šance: Cesta pokračuje rovně
 					nextDirections.add(currentPath.dir);
 				}else if(roll<0.60f){
-					// 20% šance: Cesta zahne doleva
 					nextDirections.add(currentPath.dir.getCounterClockWise());
 				}else if(roll<0.80f){
-					// 20% šance: Cesta zahne doprava
 					nextDirections.add(currentPath.dir.getClockWise());
 				}else if(roll<0.95f){
-					// 15% šance: T-Křižovatka! Rozvětví se doleva i doprava naráz!
 					nextDirections.add(currentPath.dir.getCounterClockWise());
 					nextDirections.add(currentPath.dir.getClockWise());
-				} // Zbylých 5% je slepá ulice (Dead End) - větev zde skončí
-				// Vygenerujeme vybrané odbočky
+				}
 				for(Direction nextDir: nextDirections){
-					int nextLength=random.nextInt(6)+8; // Náhodná délka dalšího úseku (8 až 13 bloků)
+					int nextLength=random.nextInt(6)+8;
 					BoundingBox nextPathBox=createNextPathBox(currentPath.box,currentPath.dir,nextDir,nextLength);
-					// Zkontrolujeme, zda nová zatáčka/větev nevráží do něčeho existujícího
 					if(isAreaClear(placedBoxes,nextPathBox)){
 						builder.addPiece(new OldVillagePieces.VillagePiece(1,currentPath.depth+1,nextPathBox,nextDir));
 						placedBoxes.add(nextPathBox);
-						// Hodíme novou větev do fronty, aby z ní v dalším kole vyrostly další domy a cesty!
 						pathQueue.add(new PathRecord(nextPathBox,nextDir,currentPath.depth+1));
 					}
 				}
@@ -124,41 +107,74 @@ public class OldVillageStructure extends Structure{
 		}
 	}
 	// ====================================================================
-	// NÁHODNÉ ROZMÍSŤOVÁNÍ DOMŮ PODÉL CEST
+	// DYNAMICKÉ ROZMISŤOVÁNÍ S VARIABILNÍ VELIKOSTÍ STAVEB
 	// ====================================================================
 	private static void placeHousesAlongPath(StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,BoundingBox pathBox,Direction pathDir,RandomSource random){
 		int y=pathBox.minY();
-		// Pokud cesta běží na ose Sever/Jih, dáváme domy na Západ (-X) a Východ (+X)
+		// Osa SEVER / JIH (Domy stavíme vlevo na Západ a vpravo na Východ)
 		if(pathDir==Direction.NORTH||pathDir==Direction.SOUTH){
 			int z=pathBox.minZ()+1;
-			while(z<=pathBox.maxZ()-5){
-				// Náhodná šance, zda dům vlevo vůbec vznikne (např. 45% šance)
-				if(random.nextFloat()<0.45f){
-					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-6,y,z,pathBox.minX()-1,y+5,z+5,Direction.EAST);
+			while(z<=pathBox.maxZ()-6){
+				int houseRand=random.nextInt(100);
+				int type;
+				int sizeX;
+				int sizeZ;
+				if(houseRand<45){
+					type=2;
+					sizeX=6;
+					sizeZ=6; // 45% šance: Malý dům
+				}else if(houseRand<75){
+					type=3;
+					sizeX=7;
+					sizeZ=8; // 30% šance: Velký dům
+				}else{
+					type=4;
+					sizeX=6;
+					sizeZ=8; // 25% šance: Políčko
 				}
-				// Náhodná šance na dům vpravo
-				if(random.nextFloat()<0.45f){
-					buildAbsoluteHouse(builder,placedBoxes,pathBox.maxX()+1,y,z,pathBox.maxX()+6,y+5,z+5,Direction.WEST);
+				if(z+sizeZ>pathBox.maxZ()) break;
+				if(random.nextFloat()<0.45f){ // Vlevo (Otočený na Východ k cestě)
+					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,y,z,pathBox.minX()-1,y+8,z+sizeZ-1,Direction.EAST,type);
 				}
-				// Klíč k náhodným mezerám: Posuneme se o šířku domu + zcela náhodný odstup (6 až 9 bloků)
-				z+=random.nextInt(4)+6;
+				if(random.nextFloat()<0.45f){ // Vpravo (Otočený na Západ k cestě)
+					buildAbsoluteHouse(builder,placedBoxes,pathBox.maxX()+1,y,z,pathBox.maxX()+sizeX,y+8,z+sizeZ-1,Direction.WEST,type);
+				}
+				// Posuneme se přesně podle délky vygenerované stavby + mezera
+				z+=sizeZ+random.nextInt(3)+4;
 			}
 		}
-		// Pokud cesta běží na ose Východ/Západ, dáváme domy na Sever (-Z) a Jih (+Z)
+		// Osa VÝCHOD / ZÁPAD (Domy stavíme vlevo na Sever a vpravo na Jih)
 		else{
 			int x=pathBox.minX()+1;
-			while(x<=pathBox.maxX()-5){
-				if(random.nextFloat()<0.45f){ // Strana Sever
-					buildAbsoluteHouse(builder,placedBoxes,x,y,pathBox.minZ()-6,x+5,y+5,pathBox.minZ()-1,Direction.SOUTH);
+			while(x<=pathBox.maxX()-6){
+				int houseRand=random.nextInt(100);
+				int type;
+				int sizeX;
+				int sizeZ;
+				if(houseRand<45){
+					type=2;
+					sizeX=6;
+					sizeZ=6; // Malý dům
+				}else if(houseRand<75){
+					type=3;
+					sizeX=8;
+					sizeZ=7; // Velký dům (prohozené osy X/Z kvůli směru silnice)
+				}else{
+					type=4;
+					sizeX=8;
+					sizeZ=6; // Políčko (prohozené osy)
 				}
-				if(random.nextFloat()<0.45f){ // Strana Jih
-					buildAbsoluteHouse(builder,placedBoxes,x,y,pathBox.maxZ()+1,x+5,y+5,pathBox.maxZ()+6,Direction.NORTH);
+				if(x+sizeX>pathBox.maxX()) break;
+				if(random.nextFloat()<0.45f){ // Strana Sever (Otočený na Jih)
+					buildAbsoluteHouse(builder,placedBoxes,x,y,pathBox.minZ()-sizeZ,x+sizeX-1,y+8,pathBox.minZ()-1,Direction.SOUTH,type);
 				}
-				x+=random.nextInt(4)+6;
+				if(random.nextFloat()<0.45f){ // Strana Jih (Otočený na Sever)
+					buildAbsoluteHouse(builder,placedBoxes,x,y,pathBox.maxZ()+1,x+sizeX-1,y+8,pathBox.maxZ()+sizeZ,Direction.NORTH,type);
+				}
+				x+=sizeX+random.nextInt(3)+4;
 			}
 		}
 	}
-	// MATEMATICKÝ MATRICER: Přepočítá, kde přesně končí aktuální cesta a začíná nová odbočka
 	private static BoundingBox createNextPathBox(BoundingBox parent,Direction parentDir,Direction nextDir,int length){
 		int y=parent.minY();
 		if(parentDir==Direction.NORTH){
@@ -183,10 +199,10 @@ public class OldVillageStructure extends Structure{
 		}
 		return parent;
 	}
-	private static void buildAbsoluteHouse(StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,int minX,int minY,int minZ,int maxX,int maxY,int maxZ,Direction facing){
+	private static void buildAbsoluteHouse(StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,int minX,int minY,int minZ,int maxX,int maxY,int maxZ,Direction facing,int pieceType){
 		BoundingBox houseBox=new BoundingBox(minX,minY,minZ,maxX,maxY,maxZ);
 		if(isAreaClear(placedBoxes,houseBox)){
-			builder.addPiece(new OldVillagePieces.VillagePiece(2,1,houseBox,facing));
+			builder.addPiece(new OldVillagePieces.VillagePiece(pieceType,1,houseBox,facing));
 			placedBoxes.add(houseBox);
 		}
 	}
@@ -202,7 +218,6 @@ public class OldVillageStructure extends Structure{
 	public @NotNull StructureType<?> type(){
 		return OldVillagesMod.OLD_VILLAGE.get();
 	}
-	// Pomocná datová struktura pro ukládání rozpracovaných větví do fronty
 	private record PathRecord(BoundingBox box,Direction dir,int depth){
 	}
 }

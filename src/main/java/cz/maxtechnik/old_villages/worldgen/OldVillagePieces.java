@@ -30,7 +30,9 @@ public class OldVillagePieces{
 		BlockState cobbleStairs=Blocks.COBBLESTONE_STAIRS.defaultBlockState();
 		BlockState wallTorch=Blocks.WALL_TORCH.defaultBlockState();
 		BlockState glassPane=Blocks.GLASS_PANE.defaultBlockState();
-		private final int pieceType; // 0 = Studna, 1 = Cesta, 2 = Malý dům klasický
+		BlockState farmland=Blocks.FARMLAND.defaultBlockState();
+		BlockState wheat=Blocks.WHEAT.defaultBlockState();
+		private final int pieceType; // 0 = Studna, 1 = Cesta, 2 = Malý dům, 3 = Velký dům, 4 = Políčko
 		public VillagePiece(int pieceType,int genDepth,int x,int y,int z,int sizeX,int sizeY,int sizeZ,Direction orientation){
 			super(OldVillagesMod.OLD_VILLAGE_PIECE.get(),genDepth,BoundingBox.orientBox(x,y,z,0,0,0,sizeX,sizeY,sizeZ,orientation));
 			this.pieceType=pieceType;
@@ -114,31 +116,78 @@ public class OldVillagePieces{
 			}
 		}
 		private void generateSmallHouse(WorldGenLevel level,BoundingBox box){
-			//base
 			this.fillWithBlocks(level,box,0,1,1,4,1,5,cobble);
-			//stairs
 			this.placeBlock(level,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH),2,1,6,box);
-			//pillars
 			this.fillWithBlocks(level,box,0,2,1,0,4,1,cobble);
 			this.fillWithBlocks(level,box,4,2,1,4,4,1,cobble);
 			this.fillWithBlocks(level,box,0,2,5,0,4,5,cobble);
 			this.fillWithBlocks(level,box,4,2,5,4,4,5,cobble);
-			//walls
 			this.fillWithBlocks(level,box,0,2,2,0,4,4,oakPlanks);
 			this.fillWithBlocks(level,box,4,2,2,4,4,4,oakPlanks);
 			this.fillWithBlocks(level,box,1,2,1,3,4,1,oakPlanks);
 			this.fillWithBlocks(level,box,1,2,5,3,4,5,oakPlanks);
-			//light
 			this.placeBlock(level,wallTorch.setValue(WallTorchBlock.FACING,Direction.SOUTH),2,4,4,box);
-			//door
 			this.fillWithBlocks(level,box,2,2,5,2,3,5,air);
-			//windows
 			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true),2,3,1,box);
 			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),0,3,3,box);
 			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),4,3,3,box);
-			//roof
 			this.fillWithBlocks(level,box,0,5,1,4,5,5,oakLog);
 			this.fillWithBlocks(level,box,1,5,2,3,5,4,oakPlanks);
+		}
+		// TYP 3: VELKÝ DVOU-PATROVÝ DŮM
+		private void generateLargeHouse(WorldGenLevel level,BoundingBox box){
+			// Základová deska (Šířka 0..6, Délka 1..6)
+			this.fillWithBlocks(level,box,0,1,1,6,1,6,cobble);
+			// Schody předsazené před dveřmi na ose X=3, Z=7
+			this.placeBlock(level,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH),3,1,7,box);
+			// Masivní rohové kamenné sloupy až do druhého patra (výška Y=2..7)
+			this.fillWithBlocks(level,box,0,2,1,0,7,1,cobble);
+			this.fillWithBlocks(level,box,6,2,1,6,7,1,cobble);
+			this.fillWithBlocks(level,box,0,2,6,0,7,6,cobble);
+			this.fillWithBlocks(level,box,6,2,6,6,7,6,cobble);
+			// --- PRVNÍ PATRO (Y = 2..4) ---
+			this.fillWithBlocks(level,box,0,2,2,0,4,5,oakPlanks);
+			this.fillWithBlocks(level,box,6,2,2,6,4,5,oakPlanks);
+			this.fillWithBlocks(level,box,1,2,1,5,4,1,oakPlanks);
+			this.fillWithBlocks(level,box,1,2,6,5,4,6,oakPlanks);
+			this.fillWithBlocks(level,box,3,2,6,3,3,6,air); // Vchodové dveře
+			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true),3,3,1,box); // Zadní okno
+			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),0,3,3,box); // Boční okno L
+			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),6,3,3,box); // Boční okno P
+			this.placeBlock(level,wallTorch.setValue(WallTorchBlock.FACING,Direction.SOUTH),3,4,4,box); // Pochodeň uvnitř
+			// --- STROP 1. PATRA / PODLAHA 2. PATRA (Y = 5) ---
+			this.fillWithBlocks(level,box,0,5,1,6,5,6,oakLog);
+			this.fillWithBlocks(level,box,1,5,2,5,5,5,oakPlanks);
+			// --- DRUHÉ PATRO (Y = 6..7) ---
+			this.fillWithBlocks(level,box,0,6,2,0,7,5,oakPlanks);
+			this.fillWithBlocks(level,box,6,6,2,6,7,5,oakPlanks);
+			this.fillWithBlocks(level,box,1,6,1,5,7,1,oakPlanks);
+			this.fillWithBlocks(level,box,1,6,6,5,7,6,oakPlanks);
+			// Okna druhého patra do všech čtyř stran
+			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true),3,7,1,box);
+			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true),3,7,6,box);
+			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),0,7,3,box);
+			this.placeBlock(level,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true),6,7,3,box);
+			// --- STŘECHA (Y = 8) ---
+			this.fillWithBlocks(level,box,0,8,1,6,8,6,oakLog);
+			this.fillWithBlocks(level,box,1,8,2,5,8,5,oakPlanks);
+		}
+		// TYP 4: POLÍČKO S VODOU A PŠENICÍ
+		private void generateFarm(WorldGenLevel level,BoundingBox box){
+			// Vyčistíme vzduch nad polem, aby nám tam nezavazel strom nebo tráva
+			this.fillWithBlocks(level,box,0,1,1,5,3,7,air);
+			// Obvodový dřevěný rám z logů položených na zemi (Y=1)
+			this.fillWithBlocks(level,box,0,1,1,5,1,1,oakLog);
+			this.fillWithBlocks(level,box,0,1,7,5,1,7,oakLog);
+			this.fillWithBlocks(level,box,0,1,2,0,1,6,oakLog);
+			this.fillWithBlocks(level,box,5,1,2,5,1,6,oakLog);
+			// Vnitřní uspořádání: X=1 a 2 je hlína, X=3 je tekoucí voda, X=4 je hlína
+			this.fillWithBlocks(level,box,1,1,2,2,1,6,farmland);
+			this.fillWithBlocks(level,box,3,1,2,3,1,6,water);
+			this.fillWithBlocks(level,box,4,1,2,4,1,6,farmland);
+			// Nasázení pšenice o blok výše (Y=2) přímo na zoranou půdu
+			this.fillWithBlocks(level,box,1,2,2,2,2,6,wheat);
+			this.fillWithBlocks(level,box,4,2,2,4,2,6,wheat);
 		}
 		@Override
 		public void postProcess(@NotNull WorldGenLevel level,@NotNull StructureManager structureManager,@NotNull ChunkGenerator generator,@NotNull RandomSource random,@NotNull BoundingBox box,@NotNull ChunkPos chunkPos,@NotNull BlockPos startPos){
@@ -146,6 +195,8 @@ public class OldVillagePieces{
 				case 0 -> generateWell(level,box);
 				case 1 -> generatePath(level,box);
 				case 2 -> generateSmallHouse(level,box);
+				case 3 -> generateLargeHouse(level,box);
+				case 4 -> generateFarm(level,box);
 				default -> {
 				}
 			}
