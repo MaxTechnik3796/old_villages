@@ -23,17 +23,25 @@ public class OldVillageStructure extends Structure{
 	@Override
 	protected @NotNull Optional<GenerationStub> findGenerationPoint(GenerationContext context){
 		ChunkPos chunkPos=context.chunkPos();
-		// Zjistíme výšku terénu uprostřed chunku (procedurální startovací bod)
-		int height=context.chunkGenerator().getFirstOccupiedHeight(
-				chunkPos.getMinBlockX()+8,
-				chunkPos.getMinBlockZ()+8,
+		int blockX = chunkPos.getMinBlockX() + 8;
+		int blockZ = chunkPos.getMinBlockZ() + 8;
+
+		// Zjistíme výšku terénu
+		int height = context.chunkGenerator().getFirstOccupiedHeight(
+				blockX,
+				blockZ,
 				Heightmap.Types.WORLD_SURFACE_WG,
 				context.heightAccessor(),
 				context.randomState()
 		);
-		BlockPos startPos=new BlockPos(chunkPos.getMinBlockX()+8,height,chunkPos.getMinBlockZ()+8);
-		// Odstartujeme skládání kousků vesnice
-		return Optional.of(new GenerationStub(startPos,(builder)->generatePieces(builder,context,startPos)));
+
+		// FIX PRO SUPERFLAT: Pokud výšková mapa vrátí nesmysl nebo nulu, vynutíme minimální bezpečnou výšku terénu
+		if (height <= context.heightAccessor().getMinBuildHeight()) {
+			height = context.chunkGenerator().getFirstFreeHeight(blockX, blockZ, Heightmap.Types.WORLD_SURFACE, context.heightAccessor(), context.randomState());
+		}
+
+		BlockPos startPos = new BlockPos(blockX, height, blockZ);
+		return Optional.of(new GenerationStub(startPos, (builder) -> generatePieces(builder, context, startPos)));
 	}
 	private void generatePieces(StructurePiecesBuilder builder,GenerationContext context,BlockPos pos){
 		Direction randomDirection=Direction.Plane.HORIZONTAL.getRandomDirection(context.random());

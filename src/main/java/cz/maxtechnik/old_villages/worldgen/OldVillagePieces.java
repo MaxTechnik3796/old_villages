@@ -46,12 +46,14 @@ public class OldVillagePieces{
 				BlockState oakFence=Blocks.OAK_FENCE.defaultBlockState();
 				BlockState water=Blocks.WATER.defaultBlockState();
 				// 1. Vykreslíme základní cobblestone okraj studny (velikost 6x6)
-				// Používáme relativní souřadnice (X, Y, Z) od 0 do maximální velikosti kousku
-				// Třída StructurePiece zařídí, že placeBlock automaticky otočí dům podle světových stran!
 				for(int x=1;x<=4;++x){
 					for(int z=1;z<=4;++z){
 						// Podlaha pod vodou
 						this.placeBlock(level,cobble,x,0,z,box);
+
+						// FIX PROTI LÉTÁNÍ: Automaticky vytáhneme cobblestone pilíře dolů do země pod studnou!
+						this.fillColumnDownwards(level, cobble, x, -1, z, box);
+
 						// Naplnění vnitřku vodou
 						if(x>1&&x<4&&z>1&&z<4){
 							this.placeBlock(level,water,x,1,z,box);
