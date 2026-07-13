@@ -61,25 +61,25 @@ public class OldVillageStructure extends Structure{
 		List<PathRecord> pathQueue=new ArrayList<>();
 		// 2. Vystřelíme 4 počáteční ROVNÉ úseky od studny (garantuje čistou křižovatku ve středu)
 		BoundingBox nStart=new BoundingBox(minX+1,y,minZ-10,minX+3,y,minZ-1);
-		if(intersectsAny(placedBoxes,nStart)){
+		if(isAreaClear(placedBoxes,nStart)){
 			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,nStart,Direction.NORTH));
 			placedBoxes.add(nStart);
 			pathQueue.add(new PathRecord(nStart,Direction.NORTH,1));
 		}
 		BoundingBox sStart=new BoundingBox(minX+1,y,maxZ+1,minX+3,y,maxZ+10);
-		if(intersectsAny(placedBoxes,sStart)){
+		if(isAreaClear(placedBoxes,sStart)){
 			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,sStart,Direction.SOUTH));
 			placedBoxes.add(sStart);
 			pathQueue.add(new PathRecord(sStart,Direction.SOUTH,1));
 		}
 		BoundingBox wStart=new BoundingBox(minX-10,y,minZ+1,minX-1,y,minZ+3);
-		if(intersectsAny(placedBoxes,wStart)){
+		if(isAreaClear(placedBoxes,wStart)){
 			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,wStart,Direction.WEST));
 			placedBoxes.add(wStart);
 			pathQueue.add(new PathRecord(wStart,Direction.WEST,1));
 		}
 		BoundingBox eStart=new BoundingBox(maxX+1,y,minZ+1,maxX+10,y,minZ+3);
-		if(intersectsAny(placedBoxes,eStart)){
+		if(isAreaClear(placedBoxes,eStart)){
 			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,eStart,Direction.EAST));
 			placedBoxes.add(eStart);
 			pathQueue.add(new PathRecord(eStart,Direction.EAST,1));
@@ -113,7 +113,7 @@ public class OldVillageStructure extends Structure{
 					int nextLength=random.nextInt(6)+8; // Náhodná délka dalšího úseku (8 až 13 bloků)
 					BoundingBox nextPathBox=createNextPathBox(currentPath.box,currentPath.dir,nextDir,nextLength);
 					// Zkontrolujeme, zda nová zatáčka/větev nevráží do něčeho existujícího
-					if(intersectsAny(placedBoxes,nextPathBox)){
+					if(isAreaClear(placedBoxes,nextPathBox)){
 						builder.addPiece(new OldVillagePieces.VillagePiece(1,currentPath.depth+1,nextPathBox,nextDir));
 						placedBoxes.add(nextPathBox);
 						// Hodíme novou větev do fronty, aby z ní v dalším kole vyrostly další domy a cesty!
@@ -185,12 +185,12 @@ public class OldVillageStructure extends Structure{
 	}
 	private static void buildAbsoluteHouse(StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,int minX,int minY,int minZ,int maxX,int maxY,int maxZ,Direction facing){
 		BoundingBox houseBox=new BoundingBox(minX,minY,minZ,maxX,maxY,maxZ);
-		if(intersectsAny(placedBoxes,houseBox)){
+		if(isAreaClear(placedBoxes,houseBox)){
 			builder.addPiece(new OldVillagePieces.VillagePiece(2,1,houseBox,facing));
 			placedBoxes.add(houseBox);
 		}
 	}
-	private static boolean intersectsAny(List<BoundingBox> boxes,BoundingBox targetBox){
+	private static boolean isAreaClear(List<BoundingBox> boxes,BoundingBox targetBox){
 		for(BoundingBox box: boxes){
 			if(box.intersects(targetBox)){
 				return false;

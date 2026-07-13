@@ -118,14 +118,20 @@ public class OldVillagePieces{
 				generateWell(level,box);
 			}
 			// ================================================================
-			// TYP 1: ŠTĚRKOVÁ CESTA (Opraveno na native getBoundingBox())
+			// TYP 1: ŠTĚRKOVÁ CESTA (OPRAVENO: Používáme absolutní souřadnice)
 			// ================================================================
 			else if(this.pieceType==1){
-				for(int x=0;x<this.getBoundingBox().getXSpan();x++){
-					for(int z=0;z<this.getBoundingBox().getZSpan();z++){
-						this.placeBlock(level,gravel,x,0,z,box);
-						this.placeBlock(level,air,x,1,z,box);
-						this.placeBlock(level,air,x,2,z,box);
+				BoundingBox pieceBox = this.getBoundingBox();
+				for(int x = pieceBox.minX(); x <= pieceBox.maxX(); x++){
+					for(int z = pieceBox.minZ(); z <= pieceBox.maxZ(); z++){
+						BlockPos pathPos = new BlockPos(x, pieceBox.minY(), z);
+
+						// Vždy kontrolujeme, zda stavíme uvnitř aktuálně generovaného fláku světa (box)
+						if(box.isInside(pathPos)){
+							level.setBlock(pathPos, gravel, 2);
+							level.setBlock(pathPos.above(), air, 2);
+							level.setBlock(pathPos.above(2), air, 2);
+						}
 					}
 				}
 			}
