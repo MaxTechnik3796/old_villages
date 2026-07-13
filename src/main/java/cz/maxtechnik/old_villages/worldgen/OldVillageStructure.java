@@ -13,6 +13,8 @@ import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class OldVillageStructure extends Structure {
@@ -44,9 +46,19 @@ public class OldVillageStructure extends Structure {
 		return Optional.of(new GenerationStub(startPos, (builder) -> generatePieces(builder, context, startPos)));
 	}
 
+	// ====================================================================
+	// PROCEDURÁLNÍ LOGIKA SKLÁDÁNÍ VESNICE S VLASTNÍM RECONCILEREM KOLIZÍ
+	// ====================================================================
 	private void generatePieces(StructurePiecesBuilder builder, GenerationContext context, BlockPos pos) {
+		// FIX: Vytvoříme si vlastní spolehlivý seznam pro sledování postavených BoundingBoxů
+		List<BoundingBox> placedBoxes = new ArrayList<>();
+
 		Direction mainDirection = Direction.Plane.HORIZONTAL.getRandomDirection(context.random());
-		builder.addPiece(new OldVillagePieces.VillagePiece(0, 0, pos.getX(), pos.getY(), pos.getZ(), 6, 7, 6, mainDirection));
+
+		// Vytvoříme studnu a zapíšeme její box do našeho listu
+		OldVillagePieces.VillagePiece well = new OldVillagePieces.VillagePiece(0, 0, pos.getX(), pos.getY(), pos.getZ(), 6, 7, 6, mainDirection);
+		builder.addPiece(well);
+		placedBoxes.add(well.getBoundingBox());
 
 		Direction[] directions = {Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
 
@@ -64,20 +76,21 @@ public class OldVillageStructure extends Structure {
 
 			BoundingBox checkPathBox = BoundingBox.orientBox(startX, pos.getY(), startZ, 0, 0, 0, pathWidth, 1, pathLength, dir);
 
-			// FIX: Změněno nextIntersecting na funkční findIntersecting
-			if (builder.findIntersecting(checkPathBox) == null) {
-				builder.addPiece(new OldVillagePieces.VillagePiece(1, 1, startX, pos.getY(), startZ, pathWidth, 1, pathLength, dir));
+			// KONTROLA KOLIZE CESTY: Proti našemu bezpečnému lokálnímu registru
+			if (intersectsAny(placedBoxes,checkPathBox)) {
+				OldVillagePieces.VillagePiece path = new OldVillagePieces.VillagePiece(1, 1, startX, pos.getY(), startZ, pathWidth, 1, pathLength, dir);
+				builder.addPiece(path);
+				placedBoxes.add(path.getBoundingBox()); // Přidáme cestu do kolizí
 
 				for (int offsetZ = 2; offsetZ < pathLength - 6; offsetZ += 7) {
-					// FIX: Odstraněn parametr depth, který házel warning
-					tryPlaceHouse(builder, startX, pos.getY(), startZ, offsetZ, -6, dir.getCounterClockWise(), dir);
-					tryPlaceHouse(builder, startX, pos.getY(), startZ, offsetZ, pathWidth + 1, dir.getClockWise(), dir);
+					tryPlaceHouse(builder, placedBoxes, startX, pos.getY(), startZ, offsetZ, -6, dir.getCounterClockWise(), dir);
+					tryPlaceHouse(builder, placedBoxes, startX, pos.getY(), startZ, offsetZ, pathWidth + 1, dir.getClockWise(), dir);
 				}
 			}
 		}
 	}
 
-	private static void tryPlaceHouse(StructurePiecesBuilder builder, int pathX, int pathY, int pathZ, int offsetZ, int offsetX, Direction houseFacing, Direction pathDir) {
+	private static void tryPlaceHouse(StructurePiecesBuilder builder, List<BoundingBox> placedBoxes, int pathX, int pathY, int pathZ, int offsetZ, int offsetX, Direction houseFacing, Direction pathDir) {
 		int houseX = pathX + (pathDir.getStepX() * offsetZ) + (pathDir.getClockWise().getStepX() * offsetX);
 		int houseZ = pathZ + (pathDir.getStepZ() * offsetZ) + (pathDir.getClockWise().getStepZ() * offsetX);
 
@@ -87,16 +100,22 @@ public class OldVillageStructure extends Structure {
 
 		BoundingBox houseBox = BoundingBox.orientBox(houseX, pathY, houseZ, 0, 0, 0, sizeX, sizeY, sizeZ, houseFacing);
 
-		// FIX: Změněno nextIntersecting na funkční findIntersecting
-		if (builder.findIntersecting(houseBox) == null) {
-			builder.addPiece(new OldVillagePieces.VillagePiece(
-					2,
-					1, // genDepth vložen natvrdo sem, ruší warning v IDE
-					houseX, pathY, houseZ,
-					sizeX, sizeY, sizeZ,
-					houseFacing
-			));
+		// KONTROLA KOLIZE DOMU: Pokud je místo čisté, dům postavíme a zapíšeme
+		if (intersectsAny(placedBoxes,houseBox)) {
+			OldVillagePieces.VillagePiece house = new OldVillagePieces.VillagePiece(2, 1, houseX, pathY, houseZ, sizeX, sizeY, sizeZ, houseFacing);
+			builder.addPiece(house);
+			placedBoxes.add(house.getBoundingBox());
 		}
+	}
+
+	// Pomocná real-time vyhledávací metoda kolizí
+	private static boolean intersectsAny(List<BoundingBox> boxes, BoundingBox targetBox) {
+		for (BoundingBox box : boxes) {
+			if (box.intersects(targetBox)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override

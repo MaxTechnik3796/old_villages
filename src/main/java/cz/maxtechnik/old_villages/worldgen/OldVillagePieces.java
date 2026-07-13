@@ -126,8 +126,8 @@ public class OldVillagePieces {
 			// TYP 1: ŠTĚRKOVÁ CESTA (Opraveno na native getBoundingBox())
 			// ================================================================
 			else if (this.pieceType == 1) {
-				for (int x = 0; x < this.getBoundingBox().getXSize(); x++) {
-					for (int z = 0; z < this.getBoundingBox().getZSize(); z++) {
+				for (int x = 0; x < this.getBoundingBox().getXSpan(); x++) {
+					for (int z = 0; z < this.getBoundingBox().getZSpan(); z++) {
 						this.placeBlock(level, gravel, x, 0, z, box);
 						this.placeBlock(level, Blocks.AIR.defaultBlockState(), x, 1, z, box);
 						this.placeBlock(level, Blocks.AIR.defaultBlockState(), x, 2, z, box);
