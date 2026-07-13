@@ -31,6 +31,12 @@ public class OldVillagePieces{
 			this.pieceType=pieceType;
 			this.setOrientation(orientation);
 		}
+		// NOVÝ KONSTRUKTOR: Přijímá přímo hotový, napočítaný absolutní BoundingBox
+		public VillagePiece(int pieceType,int genDepth,BoundingBox box,Direction orientation){
+			super(OldVillagesMod.OLD_VILLAGE_PIECE.get(),genDepth,box);
+			this.pieceType=pieceType;
+			this.setOrientation(orientation);
+		}
 		// Konstruktor pro načítání ze souboru světa (NBT)
 		@SuppressWarnings("unused")
 		public VillagePiece(StructurePieceSerializationContext context,CompoundTag tag){
@@ -127,23 +133,18 @@ public class OldVillagePieces{
 			// TYP 2: MALÝ DŮMEK (Voláme naši novou super metodu fillWithBlocks!)
 			// ================================================================
 			else if(this.pieceType==2){
-				// Čistíme vnitřek jedním řádkem!
 				this.fillWithBlocks(level,box,1,1,1,4,4,4,air);
-				// Podlaha
 				this.fillWithBlocks(level,box,0,0,0,5,0,5,cobble);
-				// Stěny
 				this.fillWithBlocks(level,box,0,1,0,5,3,0,planks);
 				this.fillWithBlocks(level,box,0,1,5,5,3,5,planks);
 				this.fillWithBlocks(level,box,0,1,1,0,3,4,planks);
 				this.fillWithBlocks(level,box,5,1,1,5,3,4,planks);
-				// Rohové sloupy
 				for(int y=1;y<=3;y++){
 					this.placeBlock(level,log,0,y,0,box);
 					this.placeBlock(level,log,5,y,0,box);
 					this.placeBlock(level,log,0,y,5,box);
 					this.placeBlock(level,log,5,y,5,box);
 				}
-				// Plochá střecha
 				this.fillWithBlocks(level,box,0,4,0,5,4,5,cobble);
 				this.placeBlock(level,Blocks.GLASS_PANE.defaultBlockState(),2,2,0,box);
 				this.placeBlock(level,Blocks.AIR.defaultBlockState(),2,1,5,box);

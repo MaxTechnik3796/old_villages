@@ -16,110 +16,119 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-public class OldVillageStructure extends Structure {
-	public static final MapCodec<OldVillageStructure> CODEC = RecordCodecBuilder.mapCodec(instance ->
-			instance.group(settingsCodec(instance)).apply(instance, OldVillageStructure::new));
-
-	public OldVillageStructure(StructureSettings settings) {
+public class OldVillageStructure extends Structure{
+	public static final MapCodec<OldVillageStructure> CODEC=RecordCodecBuilder.mapCodec(instance->
+			instance.group(settingsCodec(instance)).apply(instance,OldVillageStructure::new));
+	public OldVillageStructure(StructureSettings settings){
 		super(settings);
 	}
-
 	@Override
-	protected @NotNull Optional<GenerationStub> findGenerationPoint(GenerationContext context) {
-		ChunkPos chunkPos = context.chunkPos();
-		int blockX = chunkPos.getMinBlockX() + 8;
-		int blockZ = chunkPos.getMinBlockZ() + 8;
-
-		int height = context.chunkGenerator().getFirstOccupiedHeight(
-				blockX, blockZ,
+	protected @NotNull Optional<GenerationStub> findGenerationPoint(GenerationContext context){
+		ChunkPos chunkPos=context.chunkPos();
+		int blockX=chunkPos.getMinBlockX()+8;
+		int blockZ=chunkPos.getMinBlockZ()+8;
+		int height=context.chunkGenerator().getFirstOccupiedHeight(
+				blockX,blockZ,
 				Heightmap.Types.OCEAN_FLOOR_WG,
 				context.heightAccessor(),
 				context.randomState()
 		);
-
-		if (height <= context.heightAccessor().getMinBuildHeight()) {
-			height = context.chunkGenerator().getFirstFreeHeight(blockX, blockZ, Heightmap.Types.WORLD_SURFACE, context.heightAccessor(), context.randomState());
+		if(height<=context.heightAccessor().getMinBuildHeight()){
+			height=context.chunkGenerator().getFirstFreeHeight(blockX,blockZ,Heightmap.Types.WORLD_SURFACE,context.heightAccessor(),context.randomState());
 		}
-
-		BlockPos startPos = new BlockPos(blockX, height, blockZ);
-		return Optional.of(new GenerationStub(startPos, (builder) -> generatePieces(builder, context, startPos)));
+		BlockPos startPos=new BlockPos(blockX,height,blockZ);
+		return Optional.of(new GenerationStub(startPos,(builder)->generatePieces(builder,context,startPos)));
 	}
-
-	// ====================================================================
-	// PROCEDURÁLNÍ LOGIKA SKLÁDÁNÍ VESNICE S VLASTNÍM RECONCILEREM KOLIZÍ
-	// ====================================================================
-	private void generatePieces(StructurePiecesBuilder builder, GenerationContext context, BlockPos pos) {
-		// FIX: Vytvoříme si vlastní spolehlivý seznam pro sledování postavených BoundingBoxů
-		List<BoundingBox> placedBoxes = new ArrayList<>();
-
-		Direction mainDirection = Direction.Plane.HORIZONTAL.getRandomDirection(context.random());
-
-		// Vytvoříme studnu a zapíšeme její box do našeho listu
-		OldVillagePieces.VillagePiece well = new OldVillagePieces.VillagePiece(0, 0, pos.getX(), pos.getY(), pos.getZ(), 6, 7, 6, mainDirection);
+	private void generatePieces(StructurePiecesBuilder builder,GenerationContext context,BlockPos pos){
+		List<BoundingBox> placedBoxes=new ArrayList<>();
+		// 1. Vygenerujeme základní studnu (rozměr 6x6)
+		Direction mainDirection=Direction.Plane.HORIZONTAL.getRandomDirection(context.random());
+		OldVillagePieces.VillagePiece well=new OldVillagePieces.VillagePiece(0,0,pos.getX(),pos.getY(),pos.getZ(),6,7,6,mainDirection);
 		builder.addPiece(well);
-		placedBoxes.add(well.getBoundingBox());
-
-		Direction[] directions = {Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
-
-		for (Direction dir : directions) {
-			int startX = pos.getX();
-			int startZ = pos.getZ();
-
-			if (dir == Direction.NORTH) startZ -= 1;
-			else if (dir == Direction.SOUTH) startZ += 6;
-			else if (dir == Direction.WEST) startX -= 1;
-			else if (dir == Direction.EAST) startX += 6;
-
-			int pathLength = 16;
-			int pathWidth = 3;
-
-			BoundingBox checkPathBox = BoundingBox.orientBox(startX, pos.getY(), startZ, 0, 0, 0, pathWidth, 1, pathLength, dir);
-
-			// KONTROLA KOLIZE CESTY: Proti našemu bezpečnému lokálnímu registru
-			if (intersectsAny(placedBoxes,checkPathBox)) {
-				OldVillagePieces.VillagePiece path = new OldVillagePieces.VillagePiece(1, 1, startX, pos.getY(), startZ, pathWidth, 1, pathLength, dir);
-				builder.addPiece(path);
-				placedBoxes.add(path.getBoundingBox()); // Přidáme cestu do kolizí
-
-				for (int offsetZ = 2; offsetZ < pathLength - 6; offsetZ += 7) {
-					tryPlaceHouse(builder, placedBoxes, startX, pos.getY(), startZ, offsetZ, -6, dir.getCounterClockWise(), dir);
-					tryPlaceHouse(builder, placedBoxes, startX, pos.getY(), startZ, offsetZ, pathWidth + 1, dir.getClockWise(), dir);
-				}
+		BoundingBox wellBox=well.getBoundingBox();
+		placedBoxes.add(wellBox);
+		// Získáme absolutní globální souřadnice hran studny
+		int minX=wellBox.minX();
+		int maxX=wellBox.maxX();
+		int minZ=wellBox.minZ();
+		int maxZ=wellBox.maxZ();
+		int y=wellBox.minY();
+		int pathLength=16;
+		// ====================================================================
+		// GENERÁTOR CEST S ABSOLUTNÍM VYCENTROVÁNÍM NA HRANY STUDNY
+		// ====================================================================
+		// SEVERNÍ CESTA (Vychází ze středu severní hrany, běží do -Z)
+		BoundingBox northPath=new BoundingBox(minX+1,y,minZ-pathLength,minX+3,y,minZ-1);
+		if(intersectsAny(placedBoxes,northPath)){
+			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,northPath,Direction.NORTH));
+			placedBoxes.add(northPath);
+			// Stavba domů podél cesty
+			for(int offset=2;offset<pathLength-6;offset+=7){
+				int houseZ=(minZ-1)-offset;
+				// Vlevo (Západ)
+				buildAbsoluteHouse(builder,placedBoxes,minX-5,y,houseZ-5,minX,y+5,houseZ,Direction.EAST);
+				// Vpravo (Východ)
+				buildAbsoluteHouse(builder,placedBoxes,minX+4,y,houseZ-5,minX+9,y+5,houseZ,Direction.WEST);
+			}
+		}
+		// JIŽNÍ CESTA (Vychází ze středu jižní hrany, běží do +Z)
+		BoundingBox southPath=new BoundingBox(minX+1,y,maxZ+1,minX+3,y,maxZ+pathLength);
+		if(intersectsAny(placedBoxes,southPath)){
+			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,southPath,Direction.SOUTH));
+			placedBoxes.add(southPath);
+			for(int offset=2;offset<pathLength-6;offset+=7){
+				int houseZ=(maxZ+1)+offset;
+				// Vlevo (Východ z pohledu jihu)
+				buildAbsoluteHouse(builder,placedBoxes,minX+4,y,houseZ,minX+9,y+5,houseZ+5,Direction.WEST);
+				// Vpravo (Západ z pohledu jihu)
+				buildAbsoluteHouse(builder,placedBoxes,minX-5,y,houseZ,minX,y+5,houseZ+5,Direction.EAST);
+			}
+		}
+		// ZÁPADNÍ CESTA (Vychází ze středu západní hrany, běží do -X)
+		BoundingBox westPath=new BoundingBox(minX-pathLength,y,minZ+1,minX-1,y,minZ+3);
+		if(intersectsAny(placedBoxes,westPath)){
+			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,westPath,Direction.WEST));
+			placedBoxes.add(westPath);
+			for(int offset=2;offset<pathLength-6;offset+=7){
+				int houseX=(minX-1)-offset;
+				// Vlevo (Sever z pohledu západu)
+				buildAbsoluteHouse(builder,placedBoxes,houseX-5,y,minZ-5,houseX,y+5,minZ,Direction.SOUTH);
+				// Vpravo (Jih z pohledu západu)
+				buildAbsoluteHouse(builder,placedBoxes,houseX-5,y,minZ+4,houseX,y+5,minZ+9,Direction.NORTH);
+			}
+		}
+		// VÝCHODNÍ CESTA (Vychází ze středu východní hrany, běží do +X)
+		BoundingBox eastPath=new BoundingBox(maxX+1,y,minZ+1,maxX+pathLength,y,minZ+3);
+		if(intersectsAny(placedBoxes,eastPath)){
+			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,eastPath,Direction.EAST));
+			placedBoxes.add(eastPath);
+			for(int offset=2;offset<pathLength-6;offset+=7){
+				int houseX=(maxX+1)+offset;
+				// Vlevo (Sever z pohledu východu)
+				buildAbsoluteHouse(builder,placedBoxes,houseX,y,minZ-5,houseX+5,y+5,minZ,Direction.SOUTH);
+				// Vpravo (Jih z pohledu východu)
+				buildAbsoluteHouse(builder,placedBoxes,houseX,y,minZ+4,houseX+5,y+5,minZ+9,Direction.NORTH);
 			}
 		}
 	}
-
-	private static void tryPlaceHouse(StructurePiecesBuilder builder, List<BoundingBox> placedBoxes, int pathX, int pathY, int pathZ, int offsetZ, int offsetX, Direction houseFacing, Direction pathDir) {
-		int houseX = pathX + (pathDir.getStepX() * offsetZ) + (pathDir.getClockWise().getStepX() * offsetX);
-		int houseZ = pathZ + (pathDir.getStepZ() * offsetZ) + (pathDir.getClockWise().getStepZ() * offsetX);
-
-		int sizeX = 6;
-		int sizeY = 6;
-		int sizeZ = 6;
-
-		BoundingBox houseBox = BoundingBox.orientBox(houseX, pathY, houseZ, 0, 0, 0, sizeX, sizeY, sizeZ, houseFacing);
-
-		// KONTROLA KOLIZE DOMU: Pokud je místo čisté, dům postavíme a zapíšeme
-		if (intersectsAny(placedBoxes,houseBox)) {
-			OldVillagePieces.VillagePiece house = new OldVillagePieces.VillagePiece(2, 1, houseX, pathY, houseZ, sizeX, sizeY, sizeZ, houseFacing);
-			builder.addPiece(house);
-			placedBoxes.add(house.getBoundingBox());
+	// Pomocná metoda pro bezpečné založení domu v absolutním prostoru
+	private static void buildAbsoluteHouse(StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,int minX,int minY,int minZ,int maxX,int maxY,int maxZ,Direction facing){
+		BoundingBox houseBox=new BoundingBox(minX,minY,minZ,maxX,maxY,maxZ);
+		if(intersectsAny(placedBoxes,houseBox)){
+			builder.addPiece(new OldVillagePieces.VillagePiece(2,1,houseBox,facing));
+			placedBoxes.add(houseBox);
 		}
 	}
-
-	// Pomocná real-time vyhledávací metoda kolizí
-	private static boolean intersectsAny(List<BoundingBox> boxes, BoundingBox targetBox) {
-		for (BoundingBox box : boxes) {
-			if (box.intersects(targetBox)) {
+	private static boolean intersectsAny(List<BoundingBox> boxes,BoundingBox targetBox){
+		for(BoundingBox box: boxes){
+			if(box.intersects(targetBox)){
 				return false;
 			}
 		}
 		return true;
 	}
-
 	@Override
-	public @NotNull StructureType<?> type() {
+	public @NotNull StructureType<?> type(){
 		return OldVillagesMod.OLD_VILLAGE.get();
 	}
 }
