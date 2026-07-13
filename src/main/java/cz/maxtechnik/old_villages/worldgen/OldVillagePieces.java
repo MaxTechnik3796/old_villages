@@ -39,53 +39,67 @@ public class OldVillagePieces{
 		// SAMOTNÉ PROCEDURÁLNÍ STAVĚNÍ BLOKŮ
 		// ====================================================================
 		@Override
-		public void postProcess(@NotNull WorldGenLevel level,@NotNull StructureManager structureManager,@NotNull ChunkGenerator generator,@NotNull RandomSource random,@NotNull BoundingBox box,@NotNull ChunkPos chunkPos,@NotNull BlockPos startPos){
+		public void postProcess(@NotNull WorldGenLevel level, @NotNull StructureManager structureManager, @NotNull ChunkGenerator generator, @NotNull RandomSource random, @NotNull BoundingBox box, @NotNull ChunkPos chunkPos, @NotNull BlockPos startPos) {
 			// Ukázka: Stavba klasické STARÉ STUDNY (Well) z verze 1.7.10 čistě z kódu
-			if(this.pieceType==0){
-				BlockState cobble=Blocks.COBBLESTONE.defaultBlockState();
-				BlockState oakFence=Blocks.OAK_FENCE.defaultBlockState();
-				BlockState water=Blocks.WATER.defaultBlockState();
-				// 1. Vykreslíme základní cobblestone okraj studny (velikost 6x6)
-				for(int x=1;x<=4;++x){
-					for(int z=1;z<=4;++z){
-						// Podlaha pod vodou
-						this.placeBlock(level,cobble,x,0,z,box);
+			if(this.pieceType == 0){
+				BlockState cobble = Blocks.COBBLESTONE.defaultBlockState();
+				BlockState oakFence = Blocks.OAK_FENCE.defaultBlockState();
+				BlockState water = Blocks.WATER.defaultBlockState();
 
-						// FIX PROTI LÉTÁNÍ: Automaticky vytáhneme cobblestone pilíře dolů do země pod studnou!
-						this.fillColumnDownwards(level, cobble, x, -1, z, box);
+				// 1. Vykreslíme základní cobblestone okraj studny (velikost 6x6)
+				for(int x = 1; x <= 4; ++x){
+					for(int z = 1; z <= 4; ++z){
+						// Podlaha pod vodou
+						this.placeBlock(level, cobble, x, 0, z, box);
+
+						// FIX PROTI LÉTÁNÍ (Ruční náhrada za fillColumnDownwards):
+						// Budeme klesat od Y=-1 dolů až o 30 bloků a stavět cobblestone pilíře, dokud nenarazíme na pevnou zem
+						for (int y = -1; y >= -30; y--) {
+							BlockState underBlock = this.getBlockAtCurrentPosition(level, x, y, z, box);
+
+							// Pokud je pod studnou vzduch, tekutina nebo tráva, nahradíme ji cobblestonem
+							if (underBlock.isAir() || underBlock.is(Blocks.WATER) || underBlock.is(Blocks.LAVA) || underBlock.is(Blocks.SHORT_GRASS) || underBlock.is(Blocks.TALL_GRASS)) {
+								this.placeBlock(level, cobble, x, y, z, box);
+							} else {
+								// Jakmile narazíme na pevný blok (hlína, stone atd.), pilíř je bezpečně ukotven a ukončíme cyklus
+								break;
+							}
+						}
 
 						// Naplnění vnitřku vodou
-						if(x>1&&x<4&&z>1&&z<4){
-							this.placeBlock(level,water,x,1,z,box);
-							this.placeBlock(level,water,x,2,z,box);
+						if(x > 1 && x < 4 && z > 1 && z < 4){
+							this.placeBlock(level, water, x, 1, z, box);
+							this.placeBlock(level, water, x, 2, z, box);
 						}
 					}
 				}
+
 				// Stěny studny vyčnívající nad zem
-				for(int i=1;i<=4;++i){
-					this.placeBlock(level,cobble,i,3,1,box);
-					this.placeBlock(level,cobble,i,3,4,box);
-					this.placeBlock(level,cobble,1,3,i,box);
-					this.placeBlock(level,cobble,4,3,i,box);
+				for(int i = 1; i <= 4; ++i){
+					this.placeBlock(level, cobble, i, 3, 1, box);
+					this.placeBlock(level, cobble, i, 3, 4, box);
+					this.placeBlock(level, cobble, 1, 3, i, box);
+					this.placeBlock(level, cobble, 4, 3, i, box);
 				}
+
 				// 2. Rohové ploty držící střechu
-				this.placeBlock(level,oakFence,1,4,1,box);
-				this.placeBlock(level,oakFence,1,4,4,box);
-				this.placeBlock(level,oakFence,4,4,1,box);
-				this.placeBlock(level,oakFence,4,4,4,box);
-				this.placeBlock(level,oakFence,1,5,1,box);
-				this.placeBlock(level,oakFence,1,5,4,box);
-				this.placeBlock(level,oakFence,4,5,1,box);
-				this.placeBlock(level,oakFence,4,5,4,box);
+				this.placeBlock(level, oakFence, 1, 4, 1, box);
+				this.placeBlock(level, oakFence, 1, 4, 4, box);
+				this.placeBlock(level, oakFence, 4, 4, 1, box);
+				this.placeBlock(level, oakFence, 4, 4, 4, box);
+				this.placeBlock(level, oakFence, 1, 5, 1, box);
+				this.placeBlock(level, oakFence, 1, 5, 4, box);
+				this.placeBlock(level, oakFence, 4, 5, 1, box);
+				this.placeBlock(level, oakFence, 4, 5, 4, box);
+
 				// 3. Cobblestone střecha
-				for(int x=1;x<=4;++x){
-					for(int z=1;z<=4;++z){
-						this.placeBlock(level,cobble,x,6,z,box);
+				for(int x = 1; x <= 4; ++x){
+					for(int z = 1; z <= 4; ++z){
+						this.placeBlock(level, cobble, x, 6, z, box);
 					}
 				}
 			}
-			// Sem pak jednoduše přidáš další `else if (this.pieceType == 1)` pro Malý dům,
-			// kam překopíruješ ty smyčky se souřadnicemi z tvé staré StructureVillagePieces třídy!
+			// Sem pak v budoucnu jednoduše přidáš další `else if (this.pieceType == 1)` pro Malý dům...
 		}
 	}
 }
