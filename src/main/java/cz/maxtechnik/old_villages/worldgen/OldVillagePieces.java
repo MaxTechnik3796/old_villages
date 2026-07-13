@@ -174,20 +174,13 @@ public class OldVillagePieces{
 		}
 		// TYP 4: POLÍČKO S VODOU A PŠENICÍ
 		private void generateFarm(WorldGenLevel level,BoundingBox box){
-			// Vyčistíme vzduch nad polem, aby nám tam nezavazel strom nebo tráva
-			this.fillWithBlocks(level,box,0,1,1,5,3,7,air);
-			// Obvodový dřevěný rám z logů položených na zemi (Y=1)
-			this.fillWithBlocks(level,box,0,1,1,5,1,1,oakLog);
-			this.fillWithBlocks(level,box,0,1,7,5,1,7,oakLog);
-			this.fillWithBlocks(level,box,0,1,2,0,1,6,oakLog);
-			this.fillWithBlocks(level,box,5,1,2,5,1,6,oakLog);
-			// Vnitřní uspořádání: X=1 a 2 je hlína, X=3 je tekoucí voda, X=4 je hlína
-			this.fillWithBlocks(level,box,1,1,2,2,1,6,farmland);
-			this.fillWithBlocks(level,box,3,1,2,3,1,6,water);
-			this.fillWithBlocks(level,box,4,1,2,4,1,6,farmland);
+			this.fillWithBlocks(level,box,0,1,-3,6,3,5,air);
+			this.fillWithBlocks(level,box,0,1,-3,6,1,5,oakLog);
+			this.fillWithBlocks(level,box,1,1,-2,5,1,4,farmland);
+			this.fillWithBlocks(level,box,3,1,-2,3,1,4,water);
 			// Nasázení pšenice o blok výše (Y=2) přímo na zoranou půdu
-			this.fillWithBlocks(level,box,1,2,2,2,2,6,wheat);
-			this.fillWithBlocks(level,box,4,2,2,4,2,6,wheat);
+			this.fillWithBlocks(level,box,1,2,-2,2,2,4,wheat);
+			this.fillWithBlocks(level,box,4,2,-2,5,2,4,wheat);
 		}
 		@Override
 		public void postProcess(@NotNull WorldGenLevel level,@NotNull StructureManager structureManager,@NotNull ChunkGenerator generator,@NotNull RandomSource random,@NotNull BoundingBox box,@NotNull ChunkPos chunkPos,@NotNull BlockPos startPos){
