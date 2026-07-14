@@ -27,12 +27,15 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import org.jetbrains.annotations.NotNull;
 public class OldVillagePieces{
 	public static class VillagePiece extends StructurePiece{
+		//Changeable:
 		BlockState planks=Blocks.OAK_PLANKS.defaultBlockState();
 		BlockState stairs=Blocks.OAK_STAIRS.defaultBlockState();
 		BlockState log=Blocks.OAK_LOG.defaultBlockState();
 		BlockState door=Blocks.OAK_DOOR.defaultBlockState();
 		BlockState fence=Blocks.OAK_FENCE.defaultBlockState();
 		BlockState pressurePlate=Blocks.OAK_PRESSURE_PLATE.defaultBlockState();
+		BlockState gravel=Blocks.GRAVEL.defaultBlockState();
+		//Static:
 		BlockState water=Blocks.WATER.defaultBlockState();
 		BlockState lava=Blocks.LAVA.defaultBlockState();
 		BlockState farmland=Blocks.FARMLAND.defaultBlockState().setValue(FarmBlock.MOISTURE,7);
@@ -44,12 +47,12 @@ public class OldVillagePieces{
 		BlockState grindstone=Blocks.GRINDSTONE.defaultBlockState().setValue(GrindstoneBlock.FACE,AttachFace.FLOOR);
 		BlockState smoothStoneDoubleSlab=Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.DOUBLE);
 		BlockState smoothStoneSlab=Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.BOTTOM);
+		BlockState grass=Blocks.SHORT_GRASS.defaultBlockState();
 		BlockState glassPane=Blocks.GLASS_PANE.defaultBlockState();
 		BlockState wallTorch=Blocks.WALL_TORCH.defaultBlockState();
 		BlockState ladder=Blocks.LADDER.defaultBlockState();
 		BlockState cobble=Blocks.COBBLESTONE.defaultBlockState();
 		BlockState cobbleStairs=Blocks.COBBLESTONE_STAIRS.defaultBlockState();
-		BlockState gravel=Blocks.GRAVEL.defaultBlockState();
 		BlockState air=Blocks.AIR.defaultBlockState();
 		// AKTUALIZOVÁNO: 0=Studna, 1=Cesta, 2=Malý dům A, 3=Malý dům B, 4=Velký dům, 5=Malá farma, 6=Velká farma, 7=Kovárna
 		private final int pieceType;
@@ -344,17 +347,66 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,0,6,0,9,6,6,smoothStoneSlab);
 			this.fillWithBlocks(level,box,1,6,1,8,6,5,air);
 		}
+		// TYP 8: HOSPODA / HOSPŮDKA (Základní rozvržení 13x13)
+		private void generateTavern(WorldGenLevel level,BoundingBox box){
+			createBase(level,box,0,0,12,12,cobble); // Masivní kamenné základy
+			this.fillWithBlocks(level,box,0,1,0,12,6,12,air); // Vyčištění prostoru
+			// Podlaha a hrubá kamenná podezdívka prvního patra
+			this.fillWithBlocks(level,box,0,1,0,12,1,12,cobble);
+			this.fillWithBlocks(level,box,0,2,0,12,3,12,planks);
+			// Rohové sloupy pro dekoraci (Klády)
+			this.fillWithBlocks(level,box,0,2,0,0,5,0,log);
+			this.fillWithBlocks(level,box,12,2,0,12,5,0,log);
+			this.fillWithBlocks(level,box,0,2,12,0,5,12,log);
+			this.fillWithBlocks(level,box,12,2,12,12,5,12,log);
+			// Plochý strop / střecha z dubových klád
+			this.fillWithBlocks(level,box,0,5,0,12,5,12,log);
+			// Vchodový schod na ose (X=6, Z=13 je předsunutý schod před dveřmi)
+			this.setBlock(level,box,6,1,13,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			createBaseStairs(level,box,6,13);
+		}
+		// TYP 9: KOSTEL (Podlouhlá vysoká šablona 9x14)
+		private void generateChurch(WorldGenLevel level,BoundingBox box){
+			createBase(level,box,0,0,8,13,cobble);
+			this.fillWithBlocks(level,box,0,1,0,8,12,13,air); // Vyčištění prostoru (kostel je vysoký!)
+			// Kompletní stavba z cobblestonu (klasický vanilla styl)
+			this.fillWithBlocks(level,box,0,1,0,8,1,13,cobble); // Podlaha
+			this.fillWithBlocks(level,box,0,2,0,8,6,13,cobble); // Vysoké stěny hlavní lodi
+			this.fillWithBlocks(level,box,2,2,1,6,5,12,air);   // Vnitřní prostor lodi
+			// Přední věž kostela (X=3..5, Z=11..13) vytáhnutá do výšky Y=10
+			this.fillWithBlocks(level,box,3,6,11,5,10,13,cobble);
+			// Schod před hlavní vchod do věže (X=4, Z=14)
+			this.setBlock(level,box,4,1,14,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			createBaseStairs(level,box,4,14);
+		}
+		// TYP 10: MALÁ CHATKA (Miniaturní domeček 4x4)
+		private void generateShack(WorldGenLevel level,BoundingBox box){
+			createBase(level,box,0,0,3,3,cobble);
+			this.fillWithBlocks(level,box,0,1,0,3,4,3,air);
+			// Jednoduchá dřevěná konstrukce
+			this.fillWithBlocks(level,box,0,1,0,3,1,3,planks); // Podlaha
+			this.fillWithBlocks(level,box,0,2,0,3,3,3,planks); // Stěny
+			this.fillWithBlocks(level,box,1,2,1,2,3,2,air);   // Vnitřek 2x2
+			// Plochá střecha z dubových logů
+			this.fillWithBlocks(level,box,0,4,0,3,4,3,log);
+			// Vchodový schod (X=2, Z=4)
+			this.setBlock(level,box,2,1,4,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			createBaseStairs(level,box,2,4);
+		}
 		@Override
 		public void postProcess(@NotNull WorldGenLevel level,@NotNull StructureManager structureManager,@NotNull ChunkGenerator generator,@NotNull RandomSource random,@NotNull BoundingBox box,@NotNull ChunkPos chunkPos,@NotNull BlockPos startPos){
 			switch(this.pieceType){
 				case 0 -> generateWell(level,box);
 				case 1 -> generatePath(level,box);
 				case 2 -> generateSmallHouse(level,box,false);
-				case 3 -> generateSmallHouse(level,box,true); // AKTUALIZOVÁNO: Druhý podtyp malého domu
-				case 4 -> generateLargeHouse(level,box); // Posunuto na 4
-				case 5 -> generateFarm(level,box);       // Posunuto na 5
-				case 6 -> generateLargeFarm(level,box);  // Posunuto na 6
-				case 7 -> generateBlacksmith(level,box,random); // Posunuto na 7
+				case 3 -> generateSmallHouse(level,box,true);
+				case 4 -> generateLargeHouse(level,box);
+				case 5 -> generateFarm(level,box);
+				case 6 -> generateLargeFarm(level,box);
+				case 7 -> generateBlacksmith(level,box,random);
+				case 8 -> generateTavern(level,box);     // NOVÉ: Hospoda
+				case 9 -> generateChurch(level,box);     // NOVÉ: Kostel
+				case 10 -> generateShack(level,box);    // NOVÉ: Malá chatka
 				default -> {
 				}
 			}
