@@ -107,61 +107,117 @@ public class OldVillageStructure extends Structure{
 		}
 	}
 	private static void placeHousesAlongPath(GenerationContext context,StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,BoundingBox pathBox,Direction pathDir,RandomSource random){
-		// Osa SEVER / JIH (Domy stavíme na Východ / Západ)
+		// ====================================================================
+		// Osa SEVER / JIH (Silnice běží vertikálně, domy stavíme Vlevo/Vpravo)
+		// ====================================================================
 		if(pathDir==Direction.NORTH||pathDir==Direction.SOUTH){
-			int z=pathBox.minZ()+1;
-			while(z<pathBox.maxZ()){
+			// --- 1. CYKLUS: LEVÁ STRANA (Domy koukají na VÝCHOD) ---
+			int leftZ=pathBox.minZ()+1;
+			while(leftZ<pathBox.maxZ()){
 				int houseRand=random.nextInt(100);
 				int type;
 				int sizeX;
 				int sizeZ;
-				// Úprava šancí: Malý dům A (20%), Malý dům B (20%), Velký dům (15%), Kovárna (15%), Velká farma (15%), Malá farma (15%)
 				if(houseRand<20){
 					type=2;
 					sizeX=5;
-					sizeZ=5; // Malý dům Typ A
+					sizeZ=5;
+				} // Malý dům A
+				else if(houseRand<40){
+					type=3;
+					sizeX=5;
+					sizeZ=5;
+				} // Malý dům B (s plotem)
+				else if(houseRand<55){
+					type=4;
+					sizeX=11;
+					sizeZ=9;
+				} // Velký dům
+				else if(houseRand<70){
+					type=7;
+					sizeX=7;
+					sizeZ=10;
+				} // Kovárna
+				else if(houseRand<85){
+					type=6;
+					sizeX=9;
+					sizeZ=13;
+				} // Velká farma
+				else{
+					type=5;
+					sizeX=9;
+					sizeZ=7;
+				}  // Malá farma
+				// Pojistka konce ulice (opraveno na 5x5)
+				if(leftZ+sizeZ>pathBox.maxZ()){
+					type=2;
+					sizeX=5;
+					sizeZ=5;
+					if(leftZ+sizeZ>pathBox.maxZ()) break;
+				}
+				// Šance na spawn na levé straně (60% pro hustší zástavbu)
+				if(random.nextFloat()<0.60F){
+					int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.minX(),leftZ,Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
+					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,houseY,leftZ,pathBox.minX()-1,houseY+8,leftZ+sizeZ-1,Direction.EAST,type);
+					leftZ+=sizeZ+random.nextInt(2)+2; // Těsnější mezery (2 až 3 bloky)
+				}else{
+					leftZ+=random.nextInt(3)+3; // Malá proluka, pokud dům nevyroste
+				}
+			}
+			// --- 2. CYKLUS: PRAVÁ STRANA (Domy koukají na ZÁPAD) ---
+			int rightZ=pathBox.minZ()+1;
+			while(rightZ<pathBox.maxZ()){
+				int houseRand=random.nextInt(100);
+				int type;
+				int sizeX;
+				int sizeZ;
+				if(houseRand<20){
+					type=2;
+					sizeX=5;
+					sizeZ=5;
 				}else if(houseRand<40){
 					type=3;
 					sizeX=5;
-					sizeZ=5; // Malý dům Typ B
+					sizeZ=5;
 				}else if(houseRand<55){
 					type=4;
 					sizeX=11;
-					sizeZ=9; // Velký dům (posunuto na 4)
+					sizeZ=9;
 				}else if(houseRand<70){
 					type=7;
 					sizeX=7;
-					sizeZ=10; // Kovárna (posunuto na 7)
+					sizeZ=10;
 				}else if(houseRand<85){
 					type=6;
 					sizeX=9;
-					sizeZ=13; // Velká farma (posunuto na 6)
+					sizeZ=13;
 				}else{
 					type=5;
 					sizeX=9;
-					sizeZ=7;  // Malá farma (posunuto na 5)
+					sizeZ=7;
 				}
-				// Pojistka přeměny na malý dům, pokud dochází místo
-				if(z+sizeZ>pathBox.maxZ()){
+				if(rightZ+sizeZ>pathBox.maxZ()){
 					type=2;
-					sizeX=6;
-					sizeZ=6;
-					if(z+sizeZ>pathBox.maxZ()) break;
+					sizeX=5;
+					sizeZ=5;
+					if(rightZ+sizeZ>pathBox.maxZ()) break;
 				}
-				int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.minX(),z,Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
-				if(random.nextFloat()<0.45F){
-					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,houseY,z,pathBox.minX()-1,houseY+8,z+sizeZ-1,Direction.EAST,type);
+				if(random.nextFloat()<0.60F){
+					int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.maxX(),rightZ,Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
+					buildAbsoluteHouse(builder,placedBoxes,pathBox.maxX()+1,houseY,rightZ,pathBox.maxX()+sizeX,houseY+8,rightZ+sizeZ-1,Direction.WEST,type);
+					rightZ+=sizeZ+random.nextInt(2)+2;
+				}else{
+					rightZ+=random.nextInt(3)+3;
 				}
-				if(random.nextFloat()<0.45F){
-					buildAbsoluteHouse(builder,placedBoxes,pathBox.maxX()+1,houseY,z,pathBox.maxX()+sizeX,houseY+8,z+sizeZ-1,Direction.WEST,type);
-				}
-				z+=sizeZ+random.nextInt(3)+4;
 			}
 		}
-		// Osa VÝCHOD / ZÁPAD (Domy stavíme na Sever / Jih)
+		// ====================================================================
+		// Osa VÝCHOD / ZÁPAD (Silnice běží horizontálně, domy stavíme Sever/Jih)
+		// ====================================================================
 		else{
-			int x=pathBox.minX()+1;
-			while(x<pathBox.maxX()){
+			// --- 1. CYKLUS: STRANA SEVER (Domy koukají na JIH) ---
+			int leftX=pathBox.minX()+1;
+			while(leftX<pathBox.maxX()){
 				int houseRand=random.nextInt(100);
 				int type;
 				int sizeX;
@@ -169,42 +225,87 @@ public class OldVillageStructure extends Structure{
 				if(houseRand<20){
 					type=2;
 					sizeX=5;
-					sizeZ=5; // Malý dům Typ A
+					sizeZ=5;
 				}else if(houseRand<40){
 					type=3;
 					sizeX=5;
-					sizeZ=5; // Malý dům Typ B
+					sizeZ=5;
 				}else if(houseRand<55){
 					type=4;
 					sizeX=9;
-					sizeZ=11; // Velký dům (posunuto na 4)
+					sizeZ=11;
 				}else if(houseRand<70){
 					type=7;
 					sizeX=10;
-					sizeZ=7; // Kovárna (posunuto na 7)
+					sizeZ=7;
 				}else if(houseRand<85){
 					type=6;
 					sizeX=13;
-					sizeZ=9; // Velká farma (posunuto na 6)
+					sizeZ=9;
 				}else{
 					type=5;
 					sizeX=7;
-					sizeZ=9;  // Malá farma (posunuto na 5)
+					sizeZ=9;
 				}
-				if(x+sizeX>pathBox.maxX()){
+				if(leftX+sizeX>pathBox.maxX()){
 					type=2;
-					sizeX=6;
-					sizeZ=6;
-					if(x+sizeX>pathBox.maxX()) break;
+					sizeX=5;
+					sizeZ=5;
+					if(leftX+sizeX>pathBox.maxX()) break;
 				}
-				int houseY=context.chunkGenerator().getFirstOccupiedHeight(x,pathBox.minZ(),Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
-				if(random.nextFloat()<0.45F){
-					buildAbsoluteHouse(builder,placedBoxes,x,houseY,pathBox.minZ()-sizeZ,x+sizeX-1,houseY+8,pathBox.minZ()-1,Direction.SOUTH,type);
+				if(random.nextFloat()<0.60F){
+					int houseY=context.chunkGenerator().getFirstOccupiedHeight(leftX,pathBox.minZ(),Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
+					buildAbsoluteHouse(builder,placedBoxes,leftX,houseY,pathBox.minZ()-sizeZ,leftX+sizeX-1,houseY+8,pathBox.minZ()-1,Direction.SOUTH,type);
+					leftX+=sizeX+random.nextInt(2)+2;
+				}else{
+					leftX+=random.nextInt(3)+3;
 				}
-				if(random.nextFloat()<0.45F){
-					buildAbsoluteHouse(builder,placedBoxes,x,houseY,pathBox.maxZ()+1,x+sizeX-1,houseY+8,pathBox.maxZ()+sizeZ,Direction.NORTH,type);
+			}
+			// --- 2. CYKLUS: STRANA JIH (Domy koukají na SEVER) ---
+			int rightX=pathBox.minX()+1;
+			while(rightX<pathBox.maxX()){
+				int houseRand=random.nextInt(100);
+				int type;
+				int sizeX;
+				int sizeZ;
+				if(houseRand<20){
+					type=2;
+					sizeX=5;
+					sizeZ=5;
+				}else if(houseRand<40){
+					type=3;
+					sizeX=5;
+					sizeZ=5;
+				}else if(houseRand<55){
+					type=4;
+					sizeX=9;
+					sizeZ=11;
+				}else if(houseRand<70){
+					type=7;
+					sizeX=10;
+					sizeZ=7;
+				}else if(houseRand<85){
+					type=6;
+					sizeX=13;
+					sizeZ=9;
+				}else{
+					type=5;
+					sizeX=7;
+					sizeZ=9;
 				}
-				x+=sizeX+random.nextInt(3)+4;
+				if(rightX+sizeX>pathBox.maxX()){
+					type=2;
+					sizeX=5;
+					sizeZ=5;
+					if(rightX+sizeX>pathBox.maxX()) break;
+				}
+				if(random.nextFloat()<0.60F){
+					int houseY=context.chunkGenerator().getFirstOccupiedHeight(rightX,pathBox.maxZ(),Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
+					buildAbsoluteHouse(builder,placedBoxes,rightX,houseY,pathBox.maxZ()+1,rightX+sizeX-1,houseY+8,pathBox.maxZ()+sizeZ,Direction.NORTH,type);
+					rightX+=sizeX+random.nextInt(2)+2;
+				}else{
+					rightX+=random.nextInt(3)+3;
+				}
 			}
 		}
 	}

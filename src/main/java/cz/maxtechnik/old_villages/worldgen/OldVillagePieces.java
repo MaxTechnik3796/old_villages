@@ -113,9 +113,10 @@ public class OldVillagePieces{
 			}
 		}
 		private void generateWell(WorldGenLevel level,BoundingBox box){
+			this.fillWithBlocks(level,box,0,1,0,5,4,5,air);
 			for(int x=0;x<=5;x++){
 				for(int z=0;z<=5;z++){
-					this.placeBlock(level,cobble,x,1,z,box);
+					this.placeBlock(level,cobble,x,0,z,box);
 					for(int y=-1;y>=-40;y--){
 						BlockState underBlock=this.getBlock(level,x,y,z,box);
 						if(underBlock.isAir()||underBlock.is(Blocks.WATER)||underBlock.is(Blocks.LAVA)
@@ -130,8 +131,8 @@ public class OldVillagePieces{
 					}
 				}
 			}
-			this.fillWithBlocks(level,box,1,-1,1,4,-1,4,cobble);
-			for(int y=0;y<=2;y++){
+			this.fillWithBlocks(level,box,1,-2,1,4,-2,4,cobble);
+			for(int y=-1;y<=1;y++){
 				for(int i=1;i<=4;++i){
 					this.setBlock(level,box,i,y,1,cobble);
 					this.setBlock(level,box,i,y,4,cobble);
@@ -139,20 +140,20 @@ public class OldVillagePieces{
 					this.setBlock(level,box,4,y,i,cobble);
 				}
 			}
-			this.setBlock(level,box,2,1,2,cobble);
-			this.setBlock(level,box,3,1,2,cobble);
-			this.setBlock(level,box,2,1,3,cobble);
-			this.setBlock(level,box,3,1,3,cobble);
-			this.fillWithBlocks(level,box,2,0,2,3,1,3,water);
+			this.setBlock(level,box,2,0,2,cobble);
+			this.setBlock(level,box,3,0,2,cobble);
+			this.setBlock(level,box,2,0,3,cobble);
+			this.setBlock(level,box,3,0,3,cobble);
+			this.fillWithBlocks(level,box,2,-1,2,3,0,3,water);
+			this.setBlock(level,box,1,2,1,fence);
+			this.setBlock(level,box,1,2,4,fence);
+			this.setBlock(level,box,4,2,1,fence);
+			this.setBlock(level,box,4,2,4,fence);
 			this.setBlock(level,box,1,3,1,fence);
 			this.setBlock(level,box,1,3,4,fence);
 			this.setBlock(level,box,4,3,1,fence);
 			this.setBlock(level,box,4,3,4,fence);
-			this.setBlock(level,box,1,4,1,fence);
-			this.setBlock(level,box,1,4,4,fence);
-			this.setBlock(level,box,4,4,1,fence);
-			this.setBlock(level,box,4,4,4,fence);
-			this.fillWithBlocks(level,box,1,5,1,4,5,4,cobble);
+			this.fillWithBlocks(level,box,1,4,1,4,4,4,cobble);
 		}
 		private void generatePath(WorldGenLevel level,BoundingBox box){
 			BoundingBox pieceBox=this.getBoundingBox();
@@ -169,6 +170,7 @@ public class OldVillagePieces{
 			}
 		}
 		private void generateSmallHouse(WorldGenLevel level,BoundingBox box,boolean fenceRoof){
+			this.fillWithBlocks(level,box,0,1,0,4,5,4,air);
 			createBase(level,box,0,0,4,4,cobble);
 			createBaseStairs(level,box,2,5);
 			this.fillWithBlocks(level,box,0,1,0,4,1,4,cobble);
@@ -189,6 +191,7 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,0,5,0,4,5,4,log);
 			this.fillWithBlocks(level,box,1,5,1,3,5,3,planks);
 			if(fenceRoof){
+				this.fillWithBlocks(level,box,0,6,0,4,7,4,air);
 				this.fillWithBlocks(level,box,1,2,1,1,5,1,ladder.setValue(LadderBlock.FACING,Direction.NORTH));
 				this.fillWithBlocks(level,box,1,6,0,3,6,0,fence.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
 				this.fillWithBlocks(level,box,1,6,4,3,6,4,fence.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
@@ -201,7 +204,8 @@ public class OldVillagePieces{
 			}
 		}
 		private void generateLargeHouse(WorldGenLevel level,BoundingBox box){
-			createBase(level,box,0,1,4,6,cobble);
+			this.fillWithBlocks(level,box,0,1,0,9,7,11,air);
+			createBase(level,box,0,0,6,5,cobble);
 			createBase(level,box,0,5,8,10,cobble);
 			createBaseStairs(level,box,6,11);
 			this.fillWithBlocks(level,box,0,1,0,6,1,4,cobble);
