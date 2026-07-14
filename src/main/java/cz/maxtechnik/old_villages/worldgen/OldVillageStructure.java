@@ -151,7 +151,7 @@ public class OldVillageStructure extends Structure{
 				else if(houseRand<88){
 					type=7;
 					sizeX=10;
-					sizeZ=8;
+					sizeZ=7;
 				}  // Kovárna (10%)
 				else if(houseRand<94){
 					type=8;
@@ -211,8 +211,8 @@ public class OldVillageStructure extends Structure{
 					sizeZ=13;
 				}else if(houseRand<88){
 					type=7;
-					sizeX=10;
-					sizeZ=8;
+					sizeX=7;
+					sizeZ=10;
 				}else if(houseRand<94){
 					type=8;
 					sizeX=13;
