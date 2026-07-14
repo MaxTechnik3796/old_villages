@@ -3,46 +3,50 @@ package cz.maxtechnik.old_villages.worldgen;
 import cz.maxtechnik.old_villages.OldVillagesMod;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
-import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
+import net.minecraft.world.level.storage.loot.LootTable;
 import org.jetbrains.annotations.NotNull;
 public class OldVillagePieces{
 	public static class VillagePiece extends StructurePiece{
-		BlockState cobble=Blocks.COBBLESTONE.defaultBlockState();
-		BlockState oakFence=Blocks.OAK_FENCE.defaultBlockState();
-		BlockState water=Blocks.WATER.defaultBlockState();
 		BlockState planks=Blocks.OAK_PLANKS.defaultBlockState();
 		BlockState stairs=Blocks.OAK_STAIRS.defaultBlockState();
 		BlockState log=Blocks.OAK_LOG.defaultBlockState();
-		BlockState gravel=Blocks.GRAVEL.defaultBlockState();
-		BlockState air=Blocks.AIR.defaultBlockState();
-		BlockState cobbleStairs=Blocks.COBBLESTONE_STAIRS.defaultBlockState();
-		BlockState wallTorch=Blocks.WALL_TORCH.defaultBlockState();
-		BlockState glassPane=Blocks.GLASS_PANE.defaultBlockState();
-		BlockState farmland=Blocks.FARMLAND.defaultBlockState();
+		BlockState door=Blocks.OAK_DOOR.defaultBlockState();
+		BlockState fence=Blocks.OAK_FENCE.defaultBlockState();
+		BlockState pressurePlate=Blocks.OAK_PRESSURE_PLATE.defaultBlockState();
+		BlockState water=Blocks.WATER.defaultBlockState();
+		BlockState lava=Blocks.LAVA.defaultBlockState();
+		BlockState farmland=Blocks.FARMLAND.defaultBlockState().setValue(FarmBlock.MOISTURE,7);
 		BlockState wheat=Blocks.WHEAT.defaultBlockState();
 		BlockState dirt=Blocks.DIRT.defaultBlockState();
-		BlockState door=Blocks.OAK_DOOR.defaultBlockState();
-		// Bloky potřebné pro kovárnu
-		BlockState lava=Blocks.LAVA.defaultBlockState();
+		BlockState bed=Blocks.RED_BED.defaultBlockState();
 		BlockState furnace=Blocks.FURNACE.defaultBlockState();
 		BlockState ironBars=Blocks.IRON_BARS.defaultBlockState();
-		BlockState anvil=Blocks.ANVIL.defaultBlockState();
-		BlockState grindstone=Blocks.GRINDSTONE.defaultBlockState();
-		BlockState soothStoneDoubleSlab=Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.DOUBLE);
-		BlockState soothStoneSlab=Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.BOTTOM);
+		BlockState grindstone=Blocks.GRINDSTONE.defaultBlockState().setValue(GrindstoneBlock.FACE,AttachFace.FLOOR);
+		BlockState smoothStoneDoubleSlab=Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.DOUBLE);
+		BlockState smoothStoneSlab=Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.BOTTOM);
+		BlockState glassPane=Blocks.GLASS_PANE.defaultBlockState();
+		BlockState wallTorch=Blocks.WALL_TORCH.defaultBlockState();
+		BlockState cobble=Blocks.COBBLESTONE.defaultBlockState();
+		BlockState cobbleStairs=Blocks.COBBLESTONE_STAIRS.defaultBlockState();
+		BlockState gravel=Blocks.GRAVEL.defaultBlockState();
+		BlockState air=Blocks.AIR.defaultBlockState();
 		private final int pieceType; // 0=Studna, 1=Cesta, 2=Malý dům, 3=Velký dům, 4=Malá farma, 5=Velká farma, 6=Kovárna
 		public VillagePiece(int pieceType,int genDepth,int x,int y,int z,int sizeX,int sizeY,int sizeZ,Direction orientation){
 			super(OldVillagesMod.OLD_VILLAGE_PIECE.get(),genDepth,BoundingBox.orientBox(x,y,z,0,0,0,sizeX,sizeY,sizeZ,orientation));
@@ -61,6 +65,15 @@ public class OldVillagePieces{
 		@Override
 		protected void addAdditionalSaveData(@NotNull StructurePieceSerializationContext context,@NotNull CompoundTag tag){
 			tag.putInt("PieceType",this.pieceType);
+		}
+		protected void placeChest(WorldGenLevel level,BoundingBox box,RandomSource random,int x,int y,int z,Direction facing,ResourceKey<LootTable> lootTable){
+			BlockPos worldPos=this.getWorldPos(x,y,z);
+			if(box.isInside(worldPos)){
+				BlockState chestState=Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING,facing);
+				level.setBlock(worldPos,chestState,2);
+				if(level.getBlockEntity(worldPos) instanceof ChestBlockEntity chest)
+					chest.setLootTable(lootTable,random.nextLong());
+			}
 		}
 		protected void fillWithBlocks(WorldGenLevel level,BoundingBox box,int minX,int minY,int minZ,int maxX,int maxY,int maxZ,BlockState blockState){
 			for(int x=minX;x<=maxX;x++){
@@ -126,14 +139,14 @@ public class OldVillagePieces{
 			this.setBlock(level,box,2,1,3,cobble);
 			this.setBlock(level,box,3,1,3,cobble);
 			this.fillWithBlocks(level,box,2,0,2,3,1,3,water);
-			this.setBlock(level,box,1,3,1,oakFence);
-			this.setBlock(level,box,1,3,4,oakFence);
-			this.setBlock(level,box,4,3,1,oakFence);
-			this.setBlock(level,box,4,3,4,oakFence);
-			this.setBlock(level,box,1,4,1,oakFence);
-			this.setBlock(level,box,1,4,4,oakFence);
-			this.setBlock(level,box,4,4,1,oakFence);
-			this.setBlock(level,box,4,4,4,oakFence);
+			this.setBlock(level,box,1,3,1,fence);
+			this.setBlock(level,box,1,3,4,fence);
+			this.setBlock(level,box,4,3,1,fence);
+			this.setBlock(level,box,4,3,4,fence);
+			this.setBlock(level,box,1,4,1,fence);
+			this.setBlock(level,box,1,4,4,fence);
+			this.setBlock(level,box,4,4,1,fence);
+			this.setBlock(level,box,4,4,4,fence);
 			this.fillWithBlocks(level,box,1,5,1,4,5,4,cobble);
 		}
 		private void generatePath(WorldGenLevel level,BoundingBox box){
@@ -240,6 +253,10 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,0,5,10,8,5,10,stairs.setValue(StairBlock.FACING,Direction.SOUTH));
 			this.fillWithBlocks(level,box,0,6,9,8,6,9,stairs.setValue(StairBlock.FACING,Direction.SOUTH));
 			this.fillWithBlocks(level,box,0,7,8,8,7,8,stairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,2,2,1,bed.setValue(BedBlock.PART,BedPart.HEAD).setValue(BedBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,4,2,1,bed.setValue(BedBlock.PART,BedPart.HEAD).setValue(BedBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,2,2,2,bed.setValue(BedBlock.PART,BedPart.FOOT).setValue(BedBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,4,2,2,bed.setValue(BedBlock.PART,BedPart.FOOT).setValue(BedBlock.FACING,Direction.SOUTH));
 		}
 		private void generateFarm(WorldGenLevel level,BoundingBox box){
 			createBase(level,box,0,0,6,8,dirt);
@@ -263,43 +280,49 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,7,2,1,8,2,7,wheat.setValue(CropBlock.AGE,7));
 			this.fillWithBlocks(level,box,10,2,1,11,2,7,wheat.setValue(CropBlock.AGE,7));
 		}
-		// TYP 6: KOVÁRNA (Zcela nová procedurální kovárna z verze 1.7.10)
-		private void generateBlacksmith(WorldGenLevel level,BoundingBox box){
-			// Základová plošina (Rozměr X: 0 až 9, Z: 0 až 7 -> Celková velikost 10x8)
-			createBase(level,box,0,0,9,7,cobble);
-			this.fillWithBlocks(level,box,0,1,0,9,5,7,air); // Vyčištění prostoru vzduchem nad plošinou
-			this.fillWithBlocks(level,box,0,1,0,9,1,7,cobble); // Podlaha
-			// Schod před vchodem (X=4, Z=8 je předsunutý schod)
-			this.setBlock(level,box,4,1,8,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
-			createBaseStairs(level,box,4,8);
-			// 1. Obvodové kamenné stěny uzavřené kovářské dílny (X=0..5, Z=0..6)
-			this.fillWithBlocks(level,box,0,2,0,5,4,0,cobble); // Zadní stěna
-			this.fillWithBlocks(level,box,0,2,1,0,4,6,cobble); // Levá stěna
-			this.fillWithBlocks(level,box,5,2,1,5,4,5,cobble); // Pravá dělící stěna
-			this.fillWithBlocks(level,box,1,2,6,5,4,6,cobble); // Přední stěna s dveřmi
-			// Vchod do uzavřené místnosti
-			this.fillWithBlocks(level,box,4,2,6,4,3,6,air); // Dveřní otvor
-			// Okno v dílně se skleněnou tabulkou
-			this.setBlock(level,box,0,3,3,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
-			// 2. Otevřená venkovní veranda / Výheň (X=6..9, Z=1..6)
-			// Sloupy ze dřeva podpírající kamennou střechu
-			this.setBlock(level,box,9,2,1,oakFence);
-			this.setBlock(level,box,9,3,1,oakFence);
-			this.setBlock(level,box,9,2,6,oakFence);
-			this.setBlock(level,box,9,3,6,oakFence);
-			// Ohnivzdorná obruba výhně z kamene
-			this.fillWithBlocks(level,box,7,2,1,8,2,2,cobble);
-			this.setBlock(level,box,7,2,2,lava); // Láva uvnitř výhně
-			// Ochranná kovová mříž zabraňující uhoření (Iron Bars)
-			this.setBlock(level,box,7,3,2,ironBars.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
-			this.setBlock(level,box,8,3,2,ironBars.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
-			// Kovářské pece (Furnaces) otočené směrem na jih k silnici
-			this.setBlock(level,box,6,2,1,furnace.setValue(FurnaceBlock.FACING,Direction.SOUTH));
-			this.setBlock(level,box,6,2,2,furnace.setValue(FurnaceBlock.FACING,Direction.SOUTH));
-			// Kovářská kovadlina uprostřed verandy (X=8, Z=4)
-			this.setBlock(level,box,8,2,4,anvil.setValue(AnvilBlock.FACING,Direction.EAST));
-			// 3. Masivní kamenná střecha (Cobblestone) nad celou kovárnou
-			this.fillWithBlocks(level,box,0,5,0,9,5,7,cobble);
+		private void generateBlacksmith(WorldGenLevel level,BoundingBox box,RandomSource random){
+			createBase(level,box,0,0,9,6,cobble);
+			createBaseStairs(level,box,6,7);
+			createBaseStairs(level,box,7,7);
+			createBaseStairs(level,box,8,7);
+			this.fillWithBlocks(level,box,0,1,0,9,5,6,air);
+			this.fillWithBlocks(level,box,0,1,0,9,1,6,cobble);
+			this.fillWithBlocks(level,box,6,1,7,8,1,7,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.fillWithBlocks(level,box,9,2,6,9,4,6,fence);
+			this.fillWithBlocks(level,box,5,2,6,5,4,6,fence);
+			this.setBlock(level,box,8,2,5,smoothStoneDoubleSlab);
+			this.setBlock(level,box,8,2,4,grindstone.setValue(StairBlock.FACING,Direction.WEST));
+			this.fillWithBlocks(level,box,0,5,0,9,5,6,cobble);
+			this.fillWithBlocks(level,box,0,2,6,0,5,6,log);
+			this.fillWithBlocks(level,box,0,2,0,0,5,0,log);
+			this.fillWithBlocks(level,box,3,2,6,3,5,6,log);
+			this.placeChest(level,box,random,5,2,1,Direction.WEST,ResourceKey.create(Registries.LOOT_TABLE,ResourceLocation.fromNamespaceAndPath(OldVillagesMod.MODID,"chests/village_blacksmith")));
+			this.fillWithBlocks(level,box,6,2,0,9,4,0,cobble);
+			this.fillWithBlocks(level,box,6,2,1,9,2,2,cobble);
+			this.fillWithBlocks(level,box,6,4,1,9,4,2,cobble);
+			this.setBlock(level,box,9,3,1,ironBars.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+			this.setBlock(level,box,9,3,2,ironBars.setValue(CrossCollisionBlock.SOUTH,true));
+			this.fillWithBlocks(level,box,7,2,1,8,2,1,lava);
+			this.fillWithBlocks(level,box,6,3,1,6,3,2,cobble);
+			this.setBlock(level,box,6,2,3,cobble);
+			this.fillWithBlocks(level,box,6,3,3,6,4,3,furnace);
+			this.fillWithBlocks(level,box,1,2,0,5,4,0,planks);
+			this.fillWithBlocks(level,box,0,2,1,0,4,5,planks);
+			this.fillWithBlocks(level,box,1,2,6,2,4,6,planks);
+			this.setBlock(level,box,1,2,1,planks);
+			this.setBlock(level,box,2,2,1,stairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,1,2,2,stairs.setValue(StairBlock.FACING,Direction.WEST));
+			this.setBlock(level,box,2,2,2,fence);
+			this.setBlock(level,box,2,3,2,pressurePlate);
+			this.fillWithBlocks(level,box,4,2,3,5,4,3,planks);
+			this.fillWithBlocks(level,box,3,2,4,3,4,5,planks);
+			this.fillWithBlocks(level,box,3,2,5,3,3,5,air);
+			this.setBlock(level,box,2,3,0,glassPane.setValue(CrossCollisionBlock.WEST,true).setValue(CrossCollisionBlock.EAST,true));
+			this.setBlock(level,box,4,3,0,glassPane.setValue(CrossCollisionBlock.WEST,true).setValue(CrossCollisionBlock.EAST,true));
+			this.setBlock(level,box,0,3,2,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+			this.setBlock(level,box,0,3,4,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+			this.fillWithBlocks(level,box,0,6,0,9,6,6,smoothStoneSlab);
+			this.fillWithBlocks(level,box,1,6,1,8,6,5,air);
 		}
 		@Override
 		public void postProcess(@NotNull WorldGenLevel level,@NotNull StructureManager structureManager,@NotNull ChunkGenerator generator,@NotNull RandomSource random,@NotNull BoundingBox box,@NotNull ChunkPos chunkPos,@NotNull BlockPos startPos){
@@ -310,7 +333,7 @@ public class OldVillagePieces{
 				case 3 -> generateLargeHouse(level,box);
 				case 4 -> generateFarm(level,box);
 				case 5 -> generateLargeFarm(level,box);
-				case 6 -> generateBlacksmith(level,box); // Spuštění stavby kovárny
+				case 6 -> generateBlacksmith(level,box,random); // Spuštění stavby kovárny
 				default -> {
 				}
 			}

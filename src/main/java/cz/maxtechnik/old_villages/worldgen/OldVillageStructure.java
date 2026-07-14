@@ -128,8 +128,8 @@ public class OldVillageStructure extends Structure{
 					sizeZ=9;
 				}else if(houseRand<65){
 					type=6;
-					sizeX=10;
-					sizeZ=7; // Kovárna (Velikost 10x8)
+					sizeX=7;
+					sizeZ=10; // Kovárna (Velikost 10x8)
 				}else if(houseRand<85){
 					type=5;
 					sizeX=9;
@@ -174,8 +174,8 @@ public class OldVillageStructure extends Structure{
 					sizeZ=11;
 				}else if(houseRand<65){
 					type=6;
-					sizeX=7;
-					sizeZ=10; // Kovárna (Velikost prohozená na 8x10)
+					sizeX=10;
+					sizeZ=7; // Kovárna (Velikost prohozená na 8x10)
 				}else if(houseRand<85){
 					type=5;
 					sizeX=13;
