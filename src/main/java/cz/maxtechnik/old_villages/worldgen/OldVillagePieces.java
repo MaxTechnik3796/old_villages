@@ -11,6 +11,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -34,7 +35,15 @@ public class OldVillagePieces{
 		BlockState wheat=Blocks.WHEAT.defaultBlockState();
 		BlockState dirt=Blocks.DIRT.defaultBlockState();
 		BlockState door=Blocks.OAK_DOOR.defaultBlockState();
-		private final int pieceType;
+		// Bloky potřebné pro kovárnu
+		BlockState lava=Blocks.LAVA.defaultBlockState();
+		BlockState furnace=Blocks.FURNACE.defaultBlockState();
+		BlockState ironBars=Blocks.IRON_BARS.defaultBlockState();
+		BlockState anvil=Blocks.ANVIL.defaultBlockState();
+		BlockState grindstone=Blocks.GRINDSTONE.defaultBlockState();
+		BlockState soothStoneDoubleSlab=Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.DOUBLE);
+		BlockState soothStoneSlab=Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.BOTTOM);
+		private final int pieceType; // 0=Studna, 1=Cesta, 2=Malý dům, 3=Velký dům, 4=Malá farma, 5=Velká farma, 6=Kovárna
 		public VillagePiece(int pieceType,int genDepth,int x,int y,int z,int sizeX,int sizeY,int sizeZ,Direction orientation){
 			super(OldVillagesMod.OLD_VILLAGE_PIECE.get(),genDepth,BoundingBox.orientBox(x,y,z,0,0,0,sizeX,sizeY,sizeZ,orientation));
 			this.pieceType=pieceType;
@@ -131,7 +140,6 @@ public class OldVillagePieces{
 			BoundingBox pieceBox=this.getBoundingBox();
 			for(int x=pieceBox.minX();x<=pieceBox.maxX();x++){
 				for(int z=pieceBox.minZ();z<=pieceBox.maxZ();z++){
-					// Najdeme aktuální reálný povrch světa na těchto souřadnicích
 					int surfaceY=level.getHeight(Heightmap.Types.WORLD_SURFACE_WG,x,z);
 					BlockPos pathPos=new BlockPos(x,surfaceY-1,z);
 					if(box.isInside(pathPos)){
@@ -255,6 +263,44 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,7,2,1,8,2,7,wheat.setValue(CropBlock.AGE,7));
 			this.fillWithBlocks(level,box,10,2,1,11,2,7,wheat.setValue(CropBlock.AGE,7));
 		}
+		// TYP 6: KOVÁRNA (Zcela nová procedurální kovárna z verze 1.7.10)
+		private void generateBlacksmith(WorldGenLevel level,BoundingBox box){
+			// Základová plošina (Rozměr X: 0 až 9, Z: 0 až 7 -> Celková velikost 10x8)
+			createBase(level,box,0,0,9,7,cobble);
+			this.fillWithBlocks(level,box,0,1,0,9,5,7,air); // Vyčištění prostoru vzduchem nad plošinou
+			this.fillWithBlocks(level,box,0,1,0,9,1,7,cobble); // Podlaha
+			// Schod před vchodem (X=4, Z=8 je předsunutý schod)
+			this.setBlock(level,box,4,1,8,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			createBaseStairs(level,box,4,8);
+			// 1. Obvodové kamenné stěny uzavřené kovářské dílny (X=0..5, Z=0..6)
+			this.fillWithBlocks(level,box,0,2,0,5,4,0,cobble); // Zadní stěna
+			this.fillWithBlocks(level,box,0,2,1,0,4,6,cobble); // Levá stěna
+			this.fillWithBlocks(level,box,5,2,1,5,4,5,cobble); // Pravá dělící stěna
+			this.fillWithBlocks(level,box,1,2,6,5,4,6,cobble); // Přední stěna s dveřmi
+			// Vchod do uzavřené místnosti
+			this.fillWithBlocks(level,box,4,2,6,4,3,6,air); // Dveřní otvor
+			// Okno v dílně se skleněnou tabulkou
+			this.setBlock(level,box,0,3,3,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+			// 2. Otevřená venkovní veranda / Výheň (X=6..9, Z=1..6)
+			// Sloupy ze dřeva podpírající kamennou střechu
+			this.setBlock(level,box,9,2,1,oakFence);
+			this.setBlock(level,box,9,3,1,oakFence);
+			this.setBlock(level,box,9,2,6,oakFence);
+			this.setBlock(level,box,9,3,6,oakFence);
+			// Ohnivzdorná obruba výhně z kamene
+			this.fillWithBlocks(level,box,7,2,1,8,2,2,cobble);
+			this.setBlock(level,box,7,2,2,lava); // Láva uvnitř výhně
+			// Ochranná kovová mříž zabraňující uhoření (Iron Bars)
+			this.setBlock(level,box,7,3,2,ironBars.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+			this.setBlock(level,box,8,3,2,ironBars.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
+			// Kovářské pece (Furnaces) otočené směrem na jih k silnici
+			this.setBlock(level,box,6,2,1,furnace.setValue(FurnaceBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,6,2,2,furnace.setValue(FurnaceBlock.FACING,Direction.SOUTH));
+			// Kovářská kovadlina uprostřed verandy (X=8, Z=4)
+			this.setBlock(level,box,8,2,4,anvil.setValue(AnvilBlock.FACING,Direction.EAST));
+			// 3. Masivní kamenná střecha (Cobblestone) nad celou kovárnou
+			this.fillWithBlocks(level,box,0,5,0,9,5,7,cobble);
+		}
 		@Override
 		public void postProcess(@NotNull WorldGenLevel level,@NotNull StructureManager structureManager,@NotNull ChunkGenerator generator,@NotNull RandomSource random,@NotNull BoundingBox box,@NotNull ChunkPos chunkPos,@NotNull BlockPos startPos){
 			switch(this.pieceType){
@@ -264,6 +310,7 @@ public class OldVillagePieces{
 				case 3 -> generateLargeHouse(level,box);
 				case 4 -> generateFarm(level,box);
 				case 5 -> generateLargeFarm(level,box);
+				case 6 -> generateBlacksmith(level,box); // Spuštění stavby kovárny
 				default -> {
 				}
 			}
