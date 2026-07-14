@@ -122,58 +122,57 @@ public class OldVillageStructure extends Structure{
 					type=2;
 					sizeX=5;
 					sizeZ=5;
-				}   // Malý dům A (15%)
+				}   // Malý dům A (5x5)
 				else if(houseRand<30){
 					type=3;
 					sizeX=5;
 					sizeZ=5;
-				}   // Malý dům B (15%)
+				}   // Malý dům B (5x5)
 				else if(houseRand<42){
 					type=10;
 					sizeX=4;
 					sizeZ=4;
-				}  // Malá chatka (12%)
+				}  // Malá chatka (4x4)
 				else if(houseRand<54){
 					type=4;
 					sizeX=11;
 					sizeZ=9;
-				}  // Velký dům (12%)
+				}  // FIX: Velký dům (Lokální Z=12 se mění na světové X!)
 				else if(houseRand<66){
 					type=5;
 					sizeX=9;
 					sizeZ=7;
-				}   // Malá farma (12%)
+				}   // Malá farma
 				else if(houseRand<78){
 					type=6;
 					sizeX=9;
 					sizeZ=13;
-				}  // Velká farma (12%)
+				}  // Velká farma
 				else if(houseRand<88){
 					type=7;
-					sizeX=10;
-					sizeZ=7;
-				}  // Kovárna (10%)
+					sizeX=8;
+					sizeZ=10;
+				}  // FIX: Kovárna (Lokální Z=8 se mění na světové X, X=10 na Z!)
 				else if(houseRand<94){
 					type=8;
 					sizeX=13;
 					sizeZ=13;
-				} // Hospoda (6%)
+				} // Hospoda
 				else{
 					type=9;
 					sizeX=14;
 					sizeZ=9;
-				}  // Kostel (6% - podlouhlý podél Z)
-				// Záchranná pojistka: Pokud se budova nevejde, zkusíme tam nacpat malou chatku (4x4)
+				}  // Kostel
 				if(leftZ+sizeZ>pathBox.maxZ()){
 					type=10;
 					sizeX=4;
 					sizeZ=4;
-					if(leftZ+sizeZ>pathBox.maxZ()) break; // Pokud už ani chatka, konec ulice
+					if(leftZ+sizeZ>pathBox.maxZ()) break;
 				}
-				if(random.nextFloat()<0.65F){ // 65% šance na spawn pro husté organické městečko
+				if(random.nextFloat()<0.65F){
 					int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.minX(),leftZ,Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
 					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,houseY,leftZ,pathBox.minX()-1,houseY+12,leftZ+sizeZ-1,Direction.EAST,type);
-					leftZ+=sizeZ+random.nextInt(2)+2; // Těsné, nepravidelné mezery
+					leftZ+=sizeZ+random.nextInt(2)+2;
 				}else{
 					leftZ+=random.nextInt(3)+2;
 				}
@@ -201,7 +200,8 @@ public class OldVillageStructure extends Structure{
 					type=4;
 					sizeX=11;
 					sizeZ=9;
-				}else if(houseRand<66){
+				}  // FIX: Velký dům rozměry
+				else if(houseRand<66){
 					type=5;
 					sizeX=9;
 					sizeZ=7;
@@ -213,7 +213,8 @@ public class OldVillageStructure extends Structure{
 					type=7;
 					sizeX=7;
 					sizeZ=10;
-				}else if(houseRand<94){
+				}  // FIX: Kovárna rozměry
+				else if(houseRand<94){
 					type=8;
 					sizeX=13;
 					sizeZ=13;
@@ -264,7 +265,8 @@ public class OldVillageStructure extends Structure{
 					type=4;
 					sizeX=9;
 					sizeZ=11;
-				}else if(houseRand<66){
+				}  // FIX: Velký dům (Zde osy odpovídají reálu X=9, Z=12)
+				else if(houseRand<66){
 					type=5;
 					sizeX=7;
 					sizeZ=9;
@@ -274,15 +276,14 @@ public class OldVillageStructure extends Structure{
 					sizeZ=9;
 				}else if(houseRand<88){
 					type=7;
-					sizeX=8;
-					sizeZ=10;
-				}else if(houseRand<94){
+					sizeX=10;
+					sizeZ=7;
+				}  // FIX: Kovárna (Zde osy odpovídají reálu X=10, Z=8)
+				else if(houseRand<94){
 					type=8;
 					sizeX=13;
 					sizeZ=13;
-				}
-				// Prohodíme rozměry kostela pro kolmou osu (šířka 9 se stane osou X)
-				else{
+				}else{
 					type=9;
 					sizeX=9;
 					sizeZ=14;
@@ -324,7 +325,8 @@ public class OldVillageStructure extends Structure{
 					type=4;
 					sizeX=9;
 					sizeZ=11;
-				}else if(houseRand<66){
+				}  // FIX: Velký dům rozměry
+				else if(houseRand<66){
 					type=5;
 					sizeX=7;
 					sizeZ=9;
@@ -334,9 +336,10 @@ public class OldVillageStructure extends Structure{
 					sizeZ=9;
 				}else if(houseRand<88){
 					type=7;
-					sizeX=8;
-					sizeZ=10;
-				}else if(houseRand<94){
+					sizeX=10;
+					sizeZ=7;
+				}  // FIX: Kovárna rozměry
+				else if(houseRand<94){
 					type=8;
 					sizeX=13;
 					sizeZ=13;

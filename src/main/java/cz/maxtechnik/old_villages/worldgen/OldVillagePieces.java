@@ -28,13 +28,15 @@ import org.jetbrains.annotations.NotNull;
 public class OldVillagePieces{
 	public static class VillagePiece extends StructurePiece{
 		//Changeable:
-		BlockState planks=Blocks.OAK_PLANKS.defaultBlockState();
-		BlockState stairs=Blocks.OAK_STAIRS.defaultBlockState();
-		BlockState log=Blocks.OAK_LOG.defaultBlockState();
+		BlockState planks=Blocks.OAK_PLANKS.defaultBlockState();//css
+		BlockState planksStairs=Blocks.OAK_STAIRS.defaultBlockState();//sss
+		BlockState log=Blocks.OAK_LOG.defaultBlockState();//ss
 		BlockState door=Blocks.OAK_DOOR.defaultBlockState();
 		BlockState fence=Blocks.OAK_FENCE.defaultBlockState();
 		BlockState pressurePlate=Blocks.OAK_PRESSURE_PLATE.defaultBlockState();
-		BlockState gravel=Blocks.GRAVEL.defaultBlockState();
+		BlockState gravel=Blocks.GRAVEL.defaultBlockState();//ss
+		BlockState cobble=Blocks.COBBLESTONE.defaultBlockState();//ss
+		BlockState cobbleStairs=Blocks.COBBLESTONE_STAIRS.defaultBlockState();//sss
 		//Static:
 		BlockState water=Blocks.WATER.defaultBlockState();
 		BlockState lava=Blocks.LAVA.defaultBlockState();
@@ -51,8 +53,7 @@ public class OldVillagePieces{
 		BlockState glassPane=Blocks.GLASS_PANE.defaultBlockState();
 		BlockState wallTorch=Blocks.WALL_TORCH.defaultBlockState();
 		BlockState ladder=Blocks.LADDER.defaultBlockState();
-		BlockState cobble=Blocks.COBBLESTONE.defaultBlockState();
-		BlockState cobbleStairs=Blocks.COBBLESTONE_STAIRS.defaultBlockState();
+		BlockState bookshelf=Blocks.BOOKSHELF.defaultBlockState();
 		BlockState air=Blocks.AIR.defaultBlockState();
 		// AKTUALIZOVÁNO: 0=Studna, 1=Cesta, 2=Malý dům A, 3=Malý dům B, 4=Velký dům, 5=Malá farma, 6=Velká farma, 7=Kovárna
 		private final int pieceType;
@@ -76,12 +77,10 @@ public class OldVillagePieces{
 		}
 		protected void placeChest(WorldGenLevel level,BoundingBox box,RandomSource random,int x,int y,int z,Direction facing,ResourceKey<LootTable> lootTable){
 			BlockPos worldPos=this.getWorldPos(x,y,z);
-			if(box.isInside(worldPos)){
-				BlockState chestState=Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING,facing);
-				level.setBlock(worldPos,chestState,2);
-				if(level.getBlockEntity(worldPos) instanceof ChestBlockEntity chest)
-					chest.setLootTable(lootTable,random.nextLong());
-			}
+			BlockState chestState=Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING,facing);
+			this.setBlock(level,box,x,y,z,chestState);
+			if(level.getBlockEntity(worldPos) instanceof ChestBlockEntity chest)
+				chest.setLootTable(lootTable,random.nextLong());
 		}
 		protected void fillWithBlocks(WorldGenLevel level,BoundingBox box,int minX,int minY,int minZ,int maxX,int maxY,int maxZ,BlockState blockState){
 			for(int x=minX;x<=maxX;x++){
@@ -259,23 +258,23 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,4,6,0,4,6,6,planks);
 			this.fillWithBlocks(level,box,3,7,0,3,7,6,planks);
 			this.fillWithBlocks(level,box,2,7,7,4,7,7,planks);
-			this.setBlock(level,box,8,4,4,stairs.setValue(StairBlock.FACING,Direction.NORTH));
-			this.fillWithBlocks(level,box,7,5,5,8,5,5,stairs.setValue(StairBlock.FACING,Direction.NORTH));
-			this.fillWithBlocks(level,box,6,6,6,8,6,6,stairs.setValue(StairBlock.FACING,Direction.NORTH));
-			this.fillWithBlocks(level,box,5,7,7,8,7,7,stairs.setValue(StairBlock.FACING,Direction.NORTH));
-			this.fillWithBlocks(level,box,7,4,0,7,4,3,stairs.setValue(StairBlock.FACING,Direction.WEST));
-			this.fillWithBlocks(level,box,6,5,0,6,5,4,stairs.setValue(StairBlock.FACING,Direction.WEST));
-			this.fillWithBlocks(level,box,5,6,0,5,6,5,stairs.setValue(StairBlock.FACING,Direction.WEST));
-			this.fillWithBlocks(level,box,4,7,0,4,7,6,stairs.setValue(StairBlock.FACING,Direction.WEST));
-			this.setBlock(level,box,0,6,6,stairs.setValue(StairBlock.FACING,Direction.NORTH));
-			this.fillWithBlocks(level,box,0,7,7,1,7,7,stairs.setValue(StairBlock.FACING,Direction.NORTH));
-			this.fillWithBlocks(level,box,0,5,0,0,5,5,stairs.setValue(StairBlock.FACING,Direction.EAST));
-			this.fillWithBlocks(level,box,1,6,0,1,6,5,stairs.setValue(StairBlock.FACING,Direction.EAST));
-			this.fillWithBlocks(level,box,2,7,0,2,7,6,stairs.setValue(StairBlock.FACING,Direction.EAST));
-			this.fillWithBlocks(level,box,0,4,11,8,4,11,stairs.setValue(StairBlock.FACING,Direction.SOUTH));
-			this.fillWithBlocks(level,box,0,5,10,8,5,10,stairs.setValue(StairBlock.FACING,Direction.SOUTH));
-			this.fillWithBlocks(level,box,0,6,9,8,6,9,stairs.setValue(StairBlock.FACING,Direction.SOUTH));
-			this.fillWithBlocks(level,box,0,7,8,8,7,8,stairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,8,4,4,planksStairs.setValue(StairBlock.FACING,Direction.NORTH));
+			this.fillWithBlocks(level,box,7,5,5,8,5,5,planksStairs.setValue(StairBlock.FACING,Direction.NORTH));
+			this.fillWithBlocks(level,box,6,6,6,8,6,6,planksStairs.setValue(StairBlock.FACING,Direction.NORTH));
+			this.fillWithBlocks(level,box,5,7,7,8,7,7,planksStairs.setValue(StairBlock.FACING,Direction.NORTH));
+			this.fillWithBlocks(level,box,7,4,0,7,4,3,planksStairs.setValue(StairBlock.FACING,Direction.WEST));
+			this.fillWithBlocks(level,box,6,5,0,6,5,4,planksStairs.setValue(StairBlock.FACING,Direction.WEST));
+			this.fillWithBlocks(level,box,5,6,0,5,6,5,planksStairs.setValue(StairBlock.FACING,Direction.WEST));
+			this.fillWithBlocks(level,box,4,7,0,4,7,6,planksStairs.setValue(StairBlock.FACING,Direction.WEST));
+			this.setBlock(level,box,0,6,6,planksStairs.setValue(StairBlock.FACING,Direction.NORTH));
+			this.fillWithBlocks(level,box,0,7,7,1,7,7,planksStairs.setValue(StairBlock.FACING,Direction.NORTH));
+			this.fillWithBlocks(level,box,0,5,0,0,5,5,planksStairs.setValue(StairBlock.FACING,Direction.EAST));
+			this.fillWithBlocks(level,box,1,6,0,1,6,5,planksStairs.setValue(StairBlock.FACING,Direction.EAST));
+			this.fillWithBlocks(level,box,2,7,0,2,7,6,planksStairs.setValue(StairBlock.FACING,Direction.EAST));
+			this.fillWithBlocks(level,box,0,4,11,8,4,11,planksStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.fillWithBlocks(level,box,0,5,10,8,5,10,planksStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.fillWithBlocks(level,box,0,6,9,8,6,9,planksStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.fillWithBlocks(level,box,0,7,8,8,7,8,planksStairs.setValue(StairBlock.FACING,Direction.SOUTH));
 			this.setBlock(level,box,2,2,1,bed.setValue(BedBlock.PART,BedPart.HEAD).setValue(BedBlock.FACING,Direction.SOUTH));
 			this.setBlock(level,box,4,2,1,bed.setValue(BedBlock.PART,BedPart.HEAD).setValue(BedBlock.FACING,Direction.SOUTH));
 			this.setBlock(level,box,2,2,2,bed.setValue(BedBlock.PART,BedPart.FOOT).setValue(BedBlock.FACING,Direction.SOUTH));
@@ -319,7 +318,7 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,0,2,6,0,5,6,log);
 			this.fillWithBlocks(level,box,0,2,0,0,5,0,log);
 			this.fillWithBlocks(level,box,3,2,6,3,5,6,log);
-			this.placeChest(level,box,random,5,2,1,Direction.WEST,ResourceKey.create(Registries.LOOT_TABLE,ResourceLocation.fromNamespaceAndPath(OldVillagesMod.MODID,"chests/village_blacksmith")));
+			this.placeChest(level,box,random,5,2,1,Direction.NORTH,ResourceKey.create(Registries.LOOT_TABLE,ResourceLocation.fromNamespaceAndPath(OldVillagesMod.MODID,"chests/village_blacksmith")));
 			this.fillWithBlocks(level,box,6,2,0,9,4,0,cobble);
 			this.fillWithBlocks(level,box,6,2,1,9,2,2,cobble);
 			this.fillWithBlocks(level,box,6,4,1,9,4,2,cobble);
@@ -333,8 +332,8 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,0,2,1,0,4,5,planks);
 			this.fillWithBlocks(level,box,1,2,6,2,4,6,planks);
 			this.setBlock(level,box,1,2,1,planks);
-			this.setBlock(level,box,2,2,1,stairs.setValue(StairBlock.FACING,Direction.SOUTH));
-			this.setBlock(level,box,1,2,2,stairs.setValue(StairBlock.FACING,Direction.WEST));
+			this.setBlock(level,box,2,2,1,planksStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,1,2,2,planksStairs.setValue(StairBlock.FACING,Direction.WEST));
 			this.setBlock(level,box,2,2,2,fence);
 			this.setBlock(level,box,2,3,2,pressurePlate);
 			this.fillWithBlocks(level,box,4,2,3,5,4,3,planks);
