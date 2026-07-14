@@ -44,7 +44,6 @@ public class OldVillageStructure extends Structure{
 		List<BoundingBox> placedBoxes=new ArrayList<>();
 		RandomSource random=context.random();
 		Direction wellDirection=Direction.Plane.HORIZONTAL.getRandomDirection(random);
-		// Čistá pozice studny bez jakýchkoliv posunů dolů
 		OldVillagePieces.VillagePiece well=new OldVillagePieces.VillagePiece(0,0,pos.getX(),pos.getY(),pos.getZ(),6,7,6,wellDirection);
 		builder.addPiece(well);
 		BoundingBox wellBox=well.getBoundingBox();
@@ -55,7 +54,6 @@ public class OldVillageStructure extends Structure{
 		int maxZ=wellBox.maxZ();
 		int y=wellBox.minY();
 		List<PathRecord> pathQueue=new ArrayList<>();
-		// Úvodní 4 cesty od studny jsou prodlouženy na délku 25 bloků
 		BoundingBox nStart=new BoundingBox(minX+1,y-30,minZ-25,minX+3,y+30,minZ-1);
 		if(isAreaClear(placedBoxes,nStart)){
 			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,nStart,Direction.NORTH));
@@ -117,29 +115,33 @@ public class OldVillageStructure extends Structure{
 				int type;
 				int sizeX;
 				int sizeZ;
-				// Úprava šancí: Malý dům 25%, Velký dům 20%, Kovárna 20%, Velká farma 20%, Malá farma 15%
-				if(houseRand<25){
+				// Úprava šancí: Malý dům A (20%), Malý dům B (20%), Velký dům (15%), Kovárna (15%), Velká farma (15%), Malá farma (15%)
+				if(houseRand<20){
 					type=2;
-					sizeX=6;
-					sizeZ=6;
-				}else if(houseRand<45){
+					sizeX=5;
+					sizeZ=5; // Malý dům Typ A
+				}else if(houseRand<40){
 					type=3;
+					sizeX=5;
+					sizeZ=5; // Malý dům Typ B
+				}else if(houseRand<55){
+					type=4;
 					sizeX=11;
-					sizeZ=9;
-				}else if(houseRand<65){
-					type=6;
+					sizeZ=9; // Velký dům (posunuto na 4)
+				}else if(houseRand<70){
+					type=7;
 					sizeX=7;
-					sizeZ=10; // Kovárna (Velikost 10x8)
+					sizeZ=10; // Kovárna (posunuto na 7)
 				}else if(houseRand<85){
+					type=6;
+					sizeX=9;
+					sizeZ=13; // Velká farma (posunuto na 6)
+				}else{
 					type=5;
 					sizeX=9;
-					sizeZ=13;
-				}else{
-					type=4;
-					sizeX=9;
-					sizeZ=7;
+					sizeZ=7;  // Malá farma (posunuto na 5)
 				}
-				// Pojistka přeměny na malý dům, pokud dochází místo na konci silnice
+				// Pojistka přeměny na malý dům, pokud dochází místo
 				if(z+sizeZ>pathBox.maxZ()){
 					type=2;
 					sizeX=6;
@@ -164,26 +166,30 @@ public class OldVillageStructure extends Structure{
 				int type;
 				int sizeX;
 				int sizeZ;
-				if(houseRand<25){
+				if(houseRand<20){
 					type=2;
-					sizeX=6;
-					sizeZ=6;
-				}else if(houseRand<45){
+					sizeX=5;
+					sizeZ=5; // Malý dům Typ A
+				}else if(houseRand<40){
 					type=3;
-					sizeX=9;
-					sizeZ=11;
-				}else if(houseRand<65){
-					type=6;
-					sizeX=10;
-					sizeZ=7; // Kovárna (Velikost prohozená na 8x10)
-				}else if(houseRand<85){
-					type=5;
-					sizeX=13;
-					sizeZ=9;
-				}else{
+					sizeX=5;
+					sizeZ=5; // Malý dům Typ B
+				}else if(houseRand<55){
 					type=4;
+					sizeX=9;
+					sizeZ=11; // Velký dům (posunuto na 4)
+				}else if(houseRand<70){
+					type=7;
+					sizeX=10;
+					sizeZ=7; // Kovárna (posunuto na 7)
+				}else if(houseRand<85){
+					type=6;
+					sizeX=13;
+					sizeZ=9; // Velká farma (posunuto na 6)
+				}else{
+					type=5;
 					sizeX=7;
-					sizeZ=9;
+					sizeZ=9;  // Malá farma (posunuto na 5)
 				}
 				if(x+sizeX>pathBox.maxX()){
 					type=2;

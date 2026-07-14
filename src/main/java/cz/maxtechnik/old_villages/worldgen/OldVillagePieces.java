@@ -14,7 +14,10 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.*;
+import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -43,11 +46,13 @@ public class OldVillagePieces{
 		BlockState smoothStoneSlab=Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.BOTTOM);
 		BlockState glassPane=Blocks.GLASS_PANE.defaultBlockState();
 		BlockState wallTorch=Blocks.WALL_TORCH.defaultBlockState();
+		BlockState ladder=Blocks.LADDER.defaultBlockState();
 		BlockState cobble=Blocks.COBBLESTONE.defaultBlockState();
 		BlockState cobbleStairs=Blocks.COBBLESTONE_STAIRS.defaultBlockState();
 		BlockState gravel=Blocks.GRAVEL.defaultBlockState();
 		BlockState air=Blocks.AIR.defaultBlockState();
-		private final int pieceType; // 0=Studna, 1=Cesta, 2=Malý dům, 3=Velký dům, 4=Malá farma, 5=Velká farma, 6=Kovárna
+		// AKTUALIZOVÁNO: 0=Studna, 1=Cesta, 2=Malý dům A, 3=Malý dům B, 4=Velký dům, 5=Malá farma, 6=Velká farma, 7=Kovárna
+		private final int pieceType;
 		public VillagePiece(int pieceType,int genDepth,int x,int y,int z,int sizeX,int sizeY,int sizeZ,Direction orientation){
 			super(OldVillagesMod.OLD_VILLAGE_PIECE.get(),genDepth,BoundingBox.orientBox(x,y,z,0,0,0,sizeX,sizeY,sizeZ,orientation));
 			this.pieceType=pieceType;
@@ -163,26 +168,37 @@ public class OldVillagePieces{
 				}
 			}
 		}
-		private void generateSmallHouse(WorldGenLevel level,BoundingBox box){
-			createBase(level,box,0,1,4,5,cobble);
-			createBaseStairs(level,box,2,6);
-			this.fillWithBlocks(level,box,0,1,1,4,1,5,cobble);
-			this.setBlock(level,box,2,1,6,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
-			this.fillWithBlocks(level,box,0,2,1,0,4,1,cobble);
-			this.fillWithBlocks(level,box,4,2,1,4,4,1,cobble);
-			this.fillWithBlocks(level,box,0,2,5,0,4,5,cobble);
-			this.fillWithBlocks(level,box,4,2,5,4,4,5,cobble);
-			this.fillWithBlocks(level,box,0,2,2,0,4,4,planks);
-			this.fillWithBlocks(level,box,4,2,2,4,4,4,planks);
-			this.fillWithBlocks(level,box,1,2,1,3,4,1,planks);
-			this.fillWithBlocks(level,box,1,2,5,3,4,5,planks);
-			this.setBlock(level,box,2,4,4,wallTorch.setValue(WallTorchBlock.FACING,Direction.SOUTH));
-			this.fillWithBlocks(level,box,2,2,5,2,3,5,air);
-			this.setBlock(level,box,2,3,1,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
-			this.setBlock(level,box,0,3,3,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
-			this.setBlock(level,box,4,3,3,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
-			this.fillWithBlocks(level,box,0,5,1,4,5,5,log);
-			this.fillWithBlocks(level,box,1,5,2,3,5,4,planks);
+		private void generateSmallHouse(WorldGenLevel level,BoundingBox box,boolean fenceRoof){
+			createBase(level,box,0,0,4,4,cobble);
+			createBaseStairs(level,box,2,5);
+			this.fillWithBlocks(level,box,0,1,0,4,1,4,cobble);
+			this.setBlock(level,box,2,1,5,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.fillWithBlocks(level,box,0,2,0,0,4,0,cobble);
+			this.fillWithBlocks(level,box,4,2,0,4,4,0,cobble);
+			this.fillWithBlocks(level,box,0,2,4,0,4,4,cobble);
+			this.fillWithBlocks(level,box,4,2,4,4,4,4,cobble);
+			this.fillWithBlocks(level,box,0,2,1,0,4,3,planks);
+			this.fillWithBlocks(level,box,4,2,1,4,4,3,planks);
+			this.fillWithBlocks(level,box,1,2,0,3,4,0,planks);
+			this.fillWithBlocks(level,box,1,2,4,3,4,4,planks);
+			this.setBlock(level,box,2,4,3,wallTorch.setValue(WallTorchBlock.FACING,Direction.SOUTH));
+			this.fillWithBlocks(level,box,2,2,4,2,3,4,air);
+			this.setBlock(level,box,2,3,0,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
+			this.setBlock(level,box,0,3,2,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+			this.setBlock(level,box,4,3,2,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+			this.fillWithBlocks(level,box,0,5,0,4,5,4,log);
+			this.fillWithBlocks(level,box,1,5,1,3,5,3,planks);
+			if(fenceRoof){
+				this.fillWithBlocks(level,box,1,2,1,1,5,1,ladder.setValue(LadderBlock.FACING,Direction.NORTH));
+				this.fillWithBlocks(level,box,1,6,0,3,6,0,fence.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
+				this.fillWithBlocks(level,box,1,6,4,3,6,4,fence.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
+				this.fillWithBlocks(level,box,0,6,1,0,6,3,fence.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+				this.fillWithBlocks(level,box,4,6,1,4,6,3,fence.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+				this.setBlock(level,box,0,6,0,fence.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.NORTH,true));
+				this.setBlock(level,box,4,6,0,fence.setValue(CrossCollisionBlock.WEST,true).setValue(CrossCollisionBlock.NORTH,true));
+				this.setBlock(level,box,0,6,4,fence.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.SOUTH,true));
+				this.setBlock(level,box,4,6,4,fence.setValue(CrossCollisionBlock.WEST,true).setValue(CrossCollisionBlock.SOUTH,true));
+			}
 		}
 		private void generateLargeHouse(WorldGenLevel level,BoundingBox box){
 			createBase(level,box,0,1,4,6,cobble);
@@ -329,11 +345,12 @@ public class OldVillagePieces{
 			switch(this.pieceType){
 				case 0 -> generateWell(level,box);
 				case 1 -> generatePath(level,box);
-				case 2 -> generateSmallHouse(level,box);
-				case 3 -> generateLargeHouse(level,box);
-				case 4 -> generateFarm(level,box);
-				case 5 -> generateLargeFarm(level,box);
-				case 6 -> generateBlacksmith(level,box,random); // Spuštění stavby kovárny
+				case 2 -> generateSmallHouse(level,box,false);
+				case 3 -> generateSmallHouse(level,box,true); // AKTUALIZOVÁNO: Druhý podtyp malého domu
+				case 4 -> generateLargeHouse(level,box); // Posunuto na 4
+				case 5 -> generateFarm(level,box);       // Posunuto na 5
+				case 6 -> generateLargeFarm(level,box);  // Posunuto na 6
+				case 7 -> generateBlacksmith(level,box,random); // Posunuto na 7
 				default -> {
 				}
 			}
