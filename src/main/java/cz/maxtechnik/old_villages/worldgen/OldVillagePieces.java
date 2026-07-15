@@ -422,7 +422,11 @@ public class OldVillagePieces{
 		}
 		// TYP 10: MALÁ CHATKA (Miniaturní domeček 4x4)
 		private void generateShack(WorldGenLevel level,BoundingBox box){
-			createBase(level,box,0,0,3,3,cobble);
+
+			this.fillWithBlocks(level,box,0,1,0,3,1,4,cobble);
+			this.setBlock(level,box,2,1,5,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+
+			/*createBase(level,box,0,0,3,3,cobble);
 			this.fillWithBlocks(level,box,0,1,0,3,4,3,air);
 			// Jednoduchá dřevěná konstrukce
 			this.fillWithBlocks(level,box,0,1,0,3,1,3,planks); // Podlaha
@@ -431,8 +435,8 @@ public class OldVillagePieces{
 			// Plochá střecha z dubových logů
 			this.fillWithBlocks(level,box,0,4,0,3,4,3,log);
 			// Vchodový schod (X=2, Z=4)
-			this.setBlock(level,box,2,1,4,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
-			createBaseStairs(level,box,2,4);
+
+			createBaseStairs(level,box,2,4);*/
 		}
 		@Override
 		public void postProcess(@NotNull WorldGenLevel level,@NotNull StructureManager structureManager,@NotNull ChunkGenerator generator,@NotNull RandomSource random,@NotNull BoundingBox box,@NotNull ChunkPos chunkPos,@NotNull BlockPos startPos){

@@ -150,7 +150,7 @@ public class OldVillageStructure extends Structure{
 				}  // Velká farma
 				else if(houseRand<88){
 					type=7;
-					sizeX=8;
+					sizeX=7;
 					sizeZ=10;
 				}  // FIX: Kovárna (Lokální Z=8 se mění na světové X, X=10 na Z!)
 				else if(houseRand<94){
@@ -166,7 +166,7 @@ public class OldVillageStructure extends Structure{
 				if(leftZ+sizeZ>pathBox.maxZ()){
 					type=10;
 					sizeX=4;
-					sizeZ=4;
+					sizeZ=5;
 					if(leftZ+sizeZ>pathBox.maxZ()) break;
 				}
 				if(random.nextFloat()<0.65F){
@@ -225,7 +225,7 @@ public class OldVillageStructure extends Structure{
 				}
 				if(rightZ+sizeZ>pathBox.maxZ()){
 					type=10;
-					sizeX=4;
+					sizeX=5;
 					sizeZ=4;
 					if(rightZ+sizeZ>pathBox.maxZ()) break;
 				}
@@ -291,7 +291,7 @@ public class OldVillageStructure extends Structure{
 				if(leftX+sizeX>pathBox.maxX()){
 					type=10;
 					sizeX=4;
-					sizeZ=4;
+					sizeZ=5;
 					if(leftX+sizeX>pathBox.maxX()) break;
 				}
 				if(random.nextFloat()<0.65F){
@@ -351,7 +351,7 @@ public class OldVillageStructure extends Structure{
 				if(rightX+sizeX>pathBox.maxX()){
 					type=10;
 					sizeX=4;
-					sizeZ=4;
+					sizeZ=5;
 					if(rightX+sizeX>pathBox.maxX()) break;
 				}
 				if(random.nextFloat()<0.65F){
