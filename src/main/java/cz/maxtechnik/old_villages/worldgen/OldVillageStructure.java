@@ -111,7 +111,7 @@ public class OldVillageStructure extends Structure{
 		// Osa SEVER / JIH (Silnice běží vertikálně, domy stavíme Vlevo/Vpravo)
 		// ====================================================================
 		if(pathDir==Direction.NORTH||pathDir==Direction.SOUTH){
-			// --- 1. CYKLUS: LEVÁ STRANA (Domy koukají na VÝCHOD ke gravelu) ---
+			// --- 1. CYKLUS: LEVÁ STRANA ---
 			int leftZ=pathBox.minZ()+1;
 			while(leftZ<pathBox.maxZ()){
 				int houseRand=random.nextInt(100);
@@ -122,51 +122,44 @@ public class OldVillageStructure extends Structure{
 					type=2;
 					sizeX=5;
 					sizeZ=5;
-				}   // Malý dům A (5x5)
-				else if(houseRand<30){
+				}else if(houseRand<30){
 					type=3;
 					sizeX=5;
 					sizeZ=5;
-				}   // Malý dům B (5x5)
-				else if(houseRand<42){
+				}else if(houseRand<42){
 					type=10;
-					sizeX=4;
+					sizeX=5;
 					sizeZ=4;
-				}  // Malá chatka (4x4)
+				}  // FIX: Chatka tělo 4x5 (Hloubka X=4, Šířka podél cesty Z=5)
 				else if(houseRand<54){
 					type=4;
 					sizeX=11;
 					sizeZ=9;
-				}  // FIX: Velký dům (Lokální Z=12 se mění na světové X!)
-				else if(houseRand<66){
+				}else if(houseRand<66){
 					type=5;
 					sizeX=9;
 					sizeZ=7;
-				}   // Malá farma
-				else if(houseRand<78){
+				}else if(houseRand<78){
 					type=6;
 					sizeX=9;
 					sizeZ=13;
-				}  // Velká farma
-				else if(houseRand<88){
+				}else if(houseRand<88){
 					type=7;
 					sizeX=7;
 					sizeZ=10;
-				}  // FIX: Kovárna (Lokální Z=8 se mění na světové X, X=10 na Z!)
-				else if(houseRand<94){
+				}else if(houseRand<94){
 					type=8;
 					sizeX=11;
 					sizeZ=9;
-				} // Hospoda
-				else{
+				}else{
 					type=9;
 					sizeX=14;
 					sizeZ=9;
-				}  // Kostel
+				}
 				if(leftZ+sizeZ>pathBox.maxZ()){
 					type=10;
-					sizeX=4;
-					sizeZ=5;
+					sizeX=5;
+					sizeZ=4; // FIX: Fallback sjednocen na 4x5
 					if(leftZ+sizeZ>pathBox.maxZ()) break;
 				}
 				if(random.nextFloat()<0.65F){
@@ -177,7 +170,7 @@ public class OldVillageStructure extends Structure{
 					leftZ+=random.nextInt(3)+2;
 				}
 			}
-			// --- 2. CYKLUS: PRAVÁ STRANA (Domy koukají na ZÁPAD ke gravelu) ---
+			// --- 2. CYKLUS: PRAVÁ STRANA ---
 			int rightZ=pathBox.minZ()+1;
 			while(rightZ<pathBox.maxZ()){
 				int houseRand=random.nextInt(100);
@@ -194,14 +187,14 @@ public class OldVillageStructure extends Structure{
 					sizeZ=5;
 				}else if(houseRand<42){
 					type=10;
-					sizeX=4;
+					sizeX=5;
 					sizeZ=4;
-				}else if(houseRand<54){
+				}  // FIX: Chatka tělo 4x5
+				else if(houseRand<54){
 					type=4;
 					sizeX=11;
 					sizeZ=9;
-				}  // FIX: Velký dům rozměry
-				else if(houseRand<66){
+				}else if(houseRand<66){
 					type=5;
 					sizeX=9;
 					sizeZ=7;
@@ -213,8 +206,7 @@ public class OldVillageStructure extends Structure{
 					type=7;
 					sizeX=7;
 					sizeZ=10;
-				}  // FIX: Kovárna rozměry
-				else if(houseRand<94){
+				}else if(houseRand<94){
 					type=8;
 					sizeX=11;
 					sizeZ=9;
@@ -226,7 +218,7 @@ public class OldVillageStructure extends Structure{
 				if(rightZ+sizeZ>pathBox.maxZ()){
 					type=10;
 					sizeX=5;
-					sizeZ=4;
+					sizeZ=4; // FIX: Fallback sjednocen na 4x5
 					if(rightZ+sizeZ>pathBox.maxZ()) break;
 				}
 				if(random.nextFloat()<0.65F){
@@ -242,7 +234,7 @@ public class OldVillageStructure extends Structure{
 		// Osa VÝCHOD / ZÁPAD (Silnice běží horizontálně, domy stavíme Sever/Jih)
 		// ====================================================================
 		else{
-			// --- 1. CYKLUS: STRANA SEVER (Domy koukají na JIH) ---
+			// --- 1. CYKLUS: STRANA SEVER ---
 			int leftX=pathBox.minX()+1;
 			while(leftX<pathBox.maxX()){
 				int houseRand=random.nextInt(100);
@@ -260,13 +252,13 @@ public class OldVillageStructure extends Structure{
 				}else if(houseRand<42){
 					type=10;
 					sizeX=4;
-					sizeZ=4;
-				}else if(houseRand<54){
+					sizeZ=5;
+				}  // FIX: Chatka kolmo na osu (Šířka podél cesty X=5, Hloubka Z=4)
+				else if(houseRand<54){
 					type=4;
 					sizeX=9;
 					sizeZ=11;
-				}  // FIX: Velký dům (Zde osy odpovídají reálu X=9, Z=12)
-				else if(houseRand<66){
+				}else if(houseRand<66){
 					type=5;
 					sizeX=7;
 					sizeZ=9;
@@ -278,8 +270,7 @@ public class OldVillageStructure extends Structure{
 					type=7;
 					sizeX=10;
 					sizeZ=7;
-				}  // FIX: Kovárna (Zde osy odpovídají reálu X=10, Z=8)
-				else if(houseRand<94){
+				}else if(houseRand<94){
 					type=8;
 					sizeX=9;
 					sizeZ=11;
@@ -291,7 +282,7 @@ public class OldVillageStructure extends Structure{
 				if(leftX+sizeX>pathBox.maxX()){
 					type=10;
 					sizeX=4;
-					sizeZ=5;
+					sizeZ=5; // FIX: Fallback sjednocen na 5x4
 					if(leftX+sizeX>pathBox.maxX()) break;
 				}
 				if(random.nextFloat()<0.65F){
@@ -302,7 +293,7 @@ public class OldVillageStructure extends Structure{
 					leftX+=random.nextInt(3)+2;
 				}
 			}
-			// --- 2. CYKLUS: STRANA JIH (Domy koukají na SEVER) ---
+			// --- 2. CYKLUS: STRANA JIH ---
 			int rightX=pathBox.minX()+1;
 			while(rightX<pathBox.maxX()){
 				int houseRand=random.nextInt(100);
@@ -319,14 +310,14 @@ public class OldVillageStructure extends Structure{
 					sizeZ=5;
 				}else if(houseRand<42){
 					type=10;
-					sizeX=4;
+					sizeX=5;
 					sizeZ=4;
-				}else if(houseRand<54){
+				}  // FIX: Chatka kolmo na osu 5x4
+				else if(houseRand<54){
 					type=4;
 					sizeX=9;
 					sizeZ=11;
-				}  // FIX: Velký dům rozměry
-				else if(houseRand<66){
+				}else if(houseRand<66){
 					type=5;
 					sizeX=7;
 					sizeZ=9;
@@ -338,8 +329,7 @@ public class OldVillageStructure extends Structure{
 					type=7;
 					sizeX=10;
 					sizeZ=7;
-				}  // FIX: Kovárna rozměry
-				else if(houseRand<94){
+				}else if(houseRand<94){
 					type=8;
 					sizeX=9;
 					sizeZ=11;
@@ -350,8 +340,8 @@ public class OldVillageStructure extends Structure{
 				}
 				if(rightX+sizeX>pathBox.maxX()){
 					type=10;
-					sizeX=4;
-					sizeZ=5;
+					sizeX=5;
+					sizeZ=4; // FIX: Fallback sjednocen na 5x4
 					if(rightX+sizeX>pathBox.maxX()) break;
 				}
 				if(random.nextFloat()<0.65F){
