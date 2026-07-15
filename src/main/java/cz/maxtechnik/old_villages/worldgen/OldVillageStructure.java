@@ -111,83 +111,16 @@ public class OldVillageStructure extends Structure{
 		// Osa SEVER / JIH (Silnice běží vertikálně, domy stavíme Vlevo/Vpravo)
 		// ====================================================================
 		if(pathDir==Direction.NORTH||pathDir==Direction.SOUTH){
-			// --- 1. CYKLUS: LEVÁ STRANA ---
+			// --- 1. CYKLUS: LEVÁ STRANA (Domy koukají na VÝCHOD ke gravelu) ---
 			int leftZ=pathBox.minZ()+1;
 			while(leftZ<pathBox.maxZ()){
 				int houseRand=random.nextInt(100);
 				int type;
 				int sizeX;
 				int sizeZ;
-				if(houseRand<15){
-					type=2;
-					sizeX=5;
-					sizeZ=5;
-				}else if(houseRand<30){
-					type=3;
-					sizeX=5;
-					sizeZ=5;
-				}else if(houseRand<42){
-					type=random.nextBoolean()?10:11;
-					sizeX=5;
-					sizeZ=4;
-				}else if(houseRand<54){
-					type=4;
-					sizeX=11;
-					sizeZ=9;
-				}else if(houseRand<64){
-					type=5;
-					sizeX=9;
-					sizeZ=7;
-				}else if(houseRand<74){
-					type=6;
-					sizeX=9;
-					sizeZ=13;
-				}else if(houseRand<84){
-					type=7;
-					sizeX=7;
-					sizeZ=10;
-				}
-				// NOVÉ: Knihovna (Hloubka do boku X=6, Délka podél cesty Z=9)
-				else if(houseRand<90){
-					type=12;
-					sizeX=6;
-					sizeZ=9;
-				}else if(houseRand<95){
-					type=8;
-					sizeX=11;
-					sizeZ=9;
-				}else{
-					type=9;
-					sizeX=14;
-					sizeZ=9;
-				}
-				if(leftZ+sizeZ>pathBox.maxZ()){
-					type=random.nextBoolean()?10:11;
-					sizeX=5;
-					sizeZ=4;
-					if(leftZ+sizeZ>pathBox.maxZ()) break;
-				}
-				if(random.nextFloat()<0.65F){
-					int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.minX(),leftZ,Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
-					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,houseY,leftZ,pathBox.minX()-1,houseY+12,leftZ+sizeZ-1,Direction.EAST,type);
-					leftZ+=sizeZ+random.nextInt(2)+2;
-				}else{
-					leftZ+=random.nextInt(3)+2;
-				}
-			}
-			// --- 2. CYKLUS: PRAVÁ STRANA ---
-			int rightZ=pathBox.minZ()+1;
-			while(rightZ<pathBox.maxZ()){
-				int houseRand=random.nextInt(100);
-				int type;
-				int sizeX;
-				int sizeZ;
-				if(houseRand<15){
-					type=2;
-					sizeX=5;
-					sizeZ=5;
-				}else if(houseRand<30){
-					type=3;
+				// FIX: Sjednoceno do 50/50 rozstřelu pro typy 2 a 3 (Malé domky)
+				if(houseRand<30){
+					type=random.nextBoolean()?2:3;
 					sizeX=5;
 					sizeZ=5;
 				}else if(houseRand<42){
@@ -214,8 +147,66 @@ public class OldVillageStructure extends Structure{
 					type=12;
 					sizeX=6;
 					sizeZ=9;
-				} // NOVÉ: Knihovna
-				else if(houseRand<95){
+				}else if(houseRand<95){
+					type=8;
+					sizeX=11;
+					sizeZ=9;
+				}else{
+					type=9;
+					sizeX=14;
+					sizeZ=9;
+				}
+				if(leftZ+sizeZ>pathBox.maxZ()){
+					type=random.nextBoolean()?10:11;
+					sizeX=5;
+					sizeZ=4;
+					if(leftZ+sizeZ>pathBox.maxZ()) break;
+				}
+				if(random.nextFloat()<0.65F){
+					int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.minX(),leftZ,Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
+					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,houseY,leftZ,pathBox.minX()-1,houseY+12,leftZ+sizeZ-1,Direction.EAST,type);
+					leftZ+=sizeZ+random.nextInt(2)+2;
+				}else{
+					leftZ+=random.nextInt(3)+2;
+				}
+			}
+			// --- 2. CYKLUS: PRAVÁ STRANA (Domy koukají na ZÁPAD ke gravelu) ---
+			int rightZ=pathBox.minZ()+1;
+			while(rightZ<pathBox.maxZ()){
+				int houseRand=random.nextInt(100);
+				int type;
+				int sizeX;
+				int sizeZ;
+				// FIX: 50/50 rozstřel domků pro pravou stranu
+				if(houseRand<30){
+					type=random.nextBoolean()?2:3;
+					sizeX=5;
+					sizeZ=5;
+				}else if(houseRand<42){
+					type=random.nextBoolean()?10:11;
+					sizeX=5;
+					sizeZ=4;
+				}else if(houseRand<54){
+					type=4;
+					sizeX=11;
+					sizeZ=9;
+				}else if(houseRand<64){
+					type=5;
+					sizeX=9;
+					sizeZ=7;
+				}else if(houseRand<74){
+					type=6;
+					sizeX=9;
+					sizeZ=13;
+				}else if(houseRand<84){
+					type=7;
+					sizeX=7;
+					sizeZ=10;
+				}else if(houseRand<90){
+					type=12;
+					sizeX=6;
+					sizeZ=9;
+				}else if(houseRand<95){
 					type=8;
 					sizeX=11;
 					sizeZ=9;
@@ -243,83 +234,16 @@ public class OldVillageStructure extends Structure{
 		// Osa VÝCHOD / ZÁPAD (Silnice běží horizontálně, domy stavíme Sever/Jih)
 		// ====================================================================
 		else{
-			// --- 1. CYKLUS: STRANA SEVER ---
+			// --- 1. CYKLUS: STRANA SEVER (Domy koukají na JIH) ---
 			int leftX=pathBox.minX()+1;
 			while(leftX<pathBox.maxX()){
 				int houseRand=random.nextInt(100);
 				int type;
 				int sizeX;
 				int sizeZ;
-				if(houseRand<15){
-					type=2;
-					sizeX=5;
-					sizeZ=5;
-				}else if(houseRand<30){
-					type=3;
-					sizeX=5;
-					sizeZ=5;
-				}else if(houseRand<42){
-					type=random.nextBoolean()?10:11;
-					sizeX=4;
-					sizeZ=5;
-				}else if(houseRand<54){
-					type=4;
-					sizeX=9;
-					sizeZ=11;
-				}else if(houseRand<64){
-					type=5;
-					sizeX=7;
-					sizeZ=9;
-				}else if(houseRand<74){
-					type=6;
-					sizeX=13;
-					sizeZ=9;
-				}else if(houseRand<84){
-					type=7;
-					sizeX=10;
-					sizeZ=7;
-				}
-				// NOVÉ: Knihovna kolmo (Šířka podél cesty X=9, Hloubka do boku Z=6)
-				else if(houseRand<90){
-					type=12;
-					sizeX=9;
-					sizeZ=6;
-				}else if(houseRand<95){
-					type=8;
-					sizeX=9;
-					sizeZ=11;
-				}else{
-					type=9;
-					sizeX=9;
-					sizeZ=14;
-				}
-				if(leftX+sizeX>pathBox.maxX()){
-					type=random.nextBoolean()?10:11;
-					sizeX=4;
-					sizeZ=5;
-					if(leftX+sizeX>pathBox.maxX()) break;
-				}
-				if(random.nextFloat()<0.65F){
-					int houseY=context.chunkGenerator().getFirstOccupiedHeight(leftX,pathBox.minZ(),Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
-					buildAbsoluteHouse(builder,placedBoxes,leftX,houseY,pathBox.minZ()-sizeZ,leftX+sizeX-1,houseY+12,pathBox.minZ()-1,Direction.SOUTH,type);
-					leftX+=sizeX+random.nextInt(2)+2;
-				}else{
-					leftX+=random.nextInt(3)+2;
-				}
-			}
-			// --- 2. CYKLUS: STRANA JIH ---
-			int rightX=pathBox.minX()+1;
-			while(rightX<pathBox.maxX()){
-				int houseRand=random.nextInt(100);
-				int type;
-				int sizeX;
-				int sizeZ;
-				if(houseRand<15){
-					type=2;
-					sizeX=5;
-					sizeZ=5;
-				}else if(houseRand<30){
-					type=3;
+				// FIX: 50/50 rozstřel domků pro severní stranu
+				if(houseRand<30){
+					type=random.nextBoolean()?2:3;
 					sizeX=5;
 					sizeZ=5;
 				}else if(houseRand<42){
@@ -346,8 +270,66 @@ public class OldVillageStructure extends Structure{
 					type=12;
 					sizeX=9;
 					sizeZ=6;
-				} // NOVÉ: Knihovna kolmo
-				else if(houseRand<95){
+				}else if(houseRand<95){
+					type=8;
+					sizeX=9;
+					sizeZ=11;
+				}else{
+					type=9;
+					sizeX=9;
+					sizeZ=14;
+				}
+				if(leftX+sizeX>pathBox.maxX()){
+					type=random.nextBoolean()?10:11;
+					sizeX=4;
+					sizeZ=5;
+					if(leftX+sizeX>pathBox.maxX()) break;
+				}
+				if(random.nextFloat()<0.65F){
+					int houseY=context.chunkGenerator().getFirstOccupiedHeight(leftX,pathBox.minZ(),Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
+					buildAbsoluteHouse(builder,placedBoxes,leftX,houseY,pathBox.minZ()-sizeZ,leftX+sizeX-1,houseY+12,pathBox.minZ()-1,Direction.SOUTH,type);
+					leftX+=sizeX+random.nextInt(2)+2;
+				}else{
+					leftX+=random.nextInt(3)+2;
+				}
+			}
+			// --- 2. CYKLUS: STRANA JIH (Domy koukají na SEVER) ---
+			int rightX=pathBox.minX()+1;
+			while(rightX<pathBox.maxX()){
+				int houseRand=random.nextInt(100);
+				int type;
+				int sizeX;
+				int sizeZ;
+				// FIX: 50/50 rozstřel domků pro jižní stranu
+				if(houseRand<30){
+					type=random.nextBoolean()?2:3;
+					sizeX=5;
+					sizeZ=5;
+				}else if(houseRand<42){
+					type=random.nextBoolean()?10:11;
+					sizeX=4;
+					sizeZ=5;
+				}else if(houseRand<54){
+					type=4;
+					sizeX=9;
+					sizeZ=11;
+				}else if(houseRand<64){
+					type=5;
+					sizeX=7;
+					sizeZ=9;
+				}else if(houseRand<74){
+					type=6;
+					sizeX=13;
+					sizeZ=9;
+				}else if(houseRand<84){
+					type=7;
+					sizeX=10;
+					sizeZ=7;
+				}else if(houseRand<90){
+					type=12;
+					sizeX=9;
+					sizeZ=6;
+				}else if(houseRand<95){
 					type=8;
 					sizeX=9;
 					sizeZ=11;

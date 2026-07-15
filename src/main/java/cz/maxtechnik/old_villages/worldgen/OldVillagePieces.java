@@ -79,12 +79,15 @@ public class OldVillagePieces{
 		protected void addAdditionalSaveData(@NotNull StructurePieceSerializationContext context,@NotNull CompoundTag tag){
 			tag.putInt("PieceType",this.pieceType);
 		}
-		protected void placeChest(WorldGenLevel level,BoundingBox box,RandomSource random,int x,int y,int z,Direction facing,ResourceKey<LootTable> lootTable){
+		protected void placeChest(WorldGenLevel level,BoundingBox box,int x,int y,int z,Direction facing,ResourceKey<LootTable> lootTable){
 			BlockPos worldPos=this.getWorldPos(x,y,z);
 			BlockState chestState=Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING,facing);
 			this.setBlock(level,box,x,y,z,chestState);
-			if(level.getBlockEntity(worldPos) instanceof ChestBlockEntity chest)
-				chest.setLootTable(lootTable,random.nextLong());
+			if(level.getBlockEntity(worldPos) instanceof ChestBlockEntity chest){
+				// FIX: Vytvoříme stabilní seed z kombinace seedu světa a absolutní pozice truhly
+				long stableChestSeed=level.getLevel().getSeed()^worldPos.asLong();
+				chest.setLootTable(lootTable,stableChestSeed);
+			}
 		}
 		protected void fillWithBlocks(WorldGenLevel level,BoundingBox box,int minX,int minY,int minZ,int maxX,int maxY,int maxZ,BlockState blockState){
 			for(int x=minX;x<=maxX;x++){
@@ -162,7 +165,8 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,1,4,1,4,4,4,cobble);
 		}
 		// UPRAVENO: Cesta nyní přijímá random a sem tam vygeneruje pouliční osvětlení
-		private void generatePath(WorldGenLevel level,BoundingBox box,RandomSource random){
+		// UPRAVENO: Stabilní generování světel vázané na seed a pozici úseku
+		private void generatePath(WorldGenLevel level,BoundingBox box){
 			BoundingBox pieceBox=this.getBoundingBox();
 			for(int x=pieceBox.minX();x<=pieceBox.maxX();x++){
 				for(int z=pieceBox.minZ();z<=pieceBox.maxZ();z++){
@@ -175,23 +179,28 @@ public class OldVillagePieces{
 					}
 				}
 			}
+			// FIX: Vygenerujeme stabilní seed vázaný na seed světa a absolutní pozici úseku silnice
+			long stablePathSeed=level.getLevel().getSeed()^BlockPos.asLong(pieceBox.minX(),pieceBox.minY(),pieceBox.minZ());
+			RandomSource stableRandom=RandomSource.create(stablePathSeed);
 			// --- PROCEDURÁLNÍ GENEROVÁNÍ SVĚTEL PODÉL CESTY ---
-			if(random.nextFloat()<0.20F){ // 20% šance na lampu pro tento úsek silnice
+			if(stableRandom.nextFloat()<0.20F){ // 20% šance na lampu pro tento úsek silnice (stabilní)
 				boolean isNorthSouth=pieceBox.getZSpan()>pieceBox.getXSpan();
 				if(isNorthSouth){
-					int randomZ=pieceBox.minZ()+random.nextInt(pieceBox.getZSpan());
-					int lampX=random.nextBoolean()?pieceBox.minX()-1:pieceBox.maxX()+1;
+					int randomZ=pieceBox.minZ()+stableRandom.nextInt(pieceBox.getZSpan());
+					int lampX=stableRandom.nextBoolean()?pieceBox.minX()-1:pieceBox.maxX()+1;
 					int lampY=level.getHeight(Heightmap.Types.WORLD_SURFACE_WG,lampX,randomZ);
 					BlockPos lampBase=new BlockPos(lampX,lampY,randomZ);
-					if(box.isInside(lampBase)&&level.getBlockState(lampBase.below()).isSolid()){
+					// FIX: Nahrazeno isSolid() za isFaceSturdy kontrolující vrchní stranu bloku
+					if(box.isInside(lampBase)&&level.getBlockState(lampBase.below()).isFaceSturdy(level,lampBase.below(),Direction.UP)){
 						spawnLampPost(level,lampBase);
 					}
 				}else{
-					int randomX=pieceBox.minX()+random.nextInt(pieceBox.getXSpan());
-					int lampZ=random.nextBoolean()?pieceBox.minZ()-1:pieceBox.maxZ()+1;
+					int randomX=pieceBox.minX()+stableRandom.nextInt(pieceBox.getXSpan());
+					int lampZ=stableRandom.nextBoolean()?pieceBox.minZ()-1:pieceBox.maxZ()+1;
 					int lampY=level.getHeight(Heightmap.Types.WORLD_SURFACE_WG,randomX,lampZ);
 					BlockPos lampBase=new BlockPos(randomX,lampY,lampZ);
-					if(box.isInside(lampBase)&&level.getBlockState(lampBase.below()).isSolid()){
+					// FIX: Nahrazeno isSolid() za isFaceSturdy
+					if(box.isInside(lampBase)&&level.getBlockState(lampBase.below()).isFaceSturdy(level,lampBase.below(),Direction.UP)){
 						spawnLampPost(level,lampBase);
 					}
 				}
@@ -328,7 +337,7 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,7,2,1,8,2,7,wheat.setValue(CropBlock.AGE,7));
 			this.fillWithBlocks(level,box,10,2,1,11,2,7,wheat.setValue(CropBlock.AGE,7));
 		}
-		private void generateBlacksmith(WorldGenLevel level,BoundingBox box,RandomSource random){
+		private void generateBlacksmith(WorldGenLevel level,BoundingBox box){
 			createBase(level,box,0,0,9,6,cobble);
 			createBaseStairs(level,box,6,7);
 			createBaseStairs(level,box,7,7);
@@ -344,7 +353,7 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,0,2,6,0,5,6,log);
 			this.fillWithBlocks(level,box,0,2,0,0,5,0,log);
 			this.fillWithBlocks(level,box,3,2,6,3,5,6,log);
-			this.placeChest(level,box,random,5,2,1,Direction.NORTH,ResourceKey.create(Registries.LOOT_TABLE,ResourceLocation.fromNamespaceAndPath(OldVillagesMod.MODID,"chests/village_blacksmith")));
+			this.placeChest(level,box,5,2,1,Direction.NORTH,ResourceKey.create(Registries.LOOT_TABLE,ResourceLocation.fromNamespaceAndPath(OldVillagesMod.MODID,"chests/village_blacksmith")));
 			this.fillWithBlocks(level,box,6,2,0,9,4,0,cobble);
 			this.fillWithBlocks(level,box,6,2,1,9,2,2,cobble);
 			this.fillWithBlocks(level,box,6,4,1,9,4,2,cobble);
@@ -519,13 +528,13 @@ public class OldVillagePieces{
 		public void postProcess(@NotNull WorldGenLevel level,@NotNull StructureManager structureManager,@NotNull ChunkGenerator generator,@NotNull RandomSource random,@NotNull BoundingBox box,@NotNull ChunkPos chunkPos,@NotNull BlockPos startPos){
 			switch(this.pieceType){
 				case 0 -> generateWell(level,box);
-				case 1 -> generatePath(level,box,random);
+				case 1 -> generatePath(level,box);
 				case 2 -> generateSmallHouse(level,box,false);
 				case 3 -> generateSmallHouse(level,box,true);
 				case 4 -> generateLargeHouse(level,box);
 				case 5 -> generateFarm(level,box);
 				case 6 -> generateLargeFarm(level,box);
-				case 7 -> generateBlacksmith(level,box,random);
+				case 7 -> generateBlacksmith(level,box);
 				case 8 -> generateTavern(level,box);     // NOVÉ: Hospoda
 				case 9 -> generateChurch(level,box);     // NOVÉ: Kostel
 				case 10 -> generateShack(level,box,false);    // NOVÉ: Malá chatka
