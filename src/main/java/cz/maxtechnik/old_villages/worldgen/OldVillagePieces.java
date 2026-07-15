@@ -168,7 +168,9 @@ public class OldVillagePieces{
 		// UPRAVENO: Stabilní generování světel vázané na seed a pozici úseku
 		// UPRAVENO: Častější a stabilní generování světel podél celé délky silnice s ochranou proti silnici a vzduchu
 		// UPRAVENO: Bezpečné a hustší generování světel přímo na okrajích štěrkových cest (respektuje seed)
-		private void generatePath(WorldGenLevel level, BoundingBox box){
+		// UPRAVENO: Vybalancovaná hustota světel 1 blok od cesty s inteligentní ochranou proti stěnám budov
+		// UPRAVENO: Balancovaná hustota lamp přesně 1 blok od cesty (na trávě) s funkční anti-clipping kontrolou zdí
+		private void generatePath(WorldGenLevel level,BoundingBox box){
 			BoundingBox pieceBox=this.getBoundingBox();
 			for(int x=pieceBox.minX();x<=pieceBox.maxX();x++){
 				for(int z=pieceBox.minZ();z<=pieceBox.maxZ();z++){
@@ -181,40 +183,65 @@ public class OldVillagePieces{
 					}
 				}
 			}
-
-			// Lokální stabilní generátor vázaný plynule na seed světa a pozici silnice
-			long stablePathSeed = level.getLevel().getSeed() ^ BlockPos.asLong(pieceBox.minX(), pieceBox.minY(), pieceBox.minZ());
-			RandomSource stableRandom = RandomSource.create(stablePathSeed);
-
-			boolean isNorthSouth = pieceBox.getZSpan() > pieceBox.getXSpan();
-
-			// --- PROCEDURÁLNÍ GENEROVÁNÍ SVĚTEL NA OKRAJÍCH CHODNÍKŮ ---
+			long stablePathSeed=level.getLevel().getSeed()^BlockPos.asLong(pieceBox.minX(),pieceBox.minY(),pieceBox.minZ());
+			RandomSource stableRandom=RandomSource.create(stablePathSeed);
+			boolean isNorthSouth=pieceBox.getZSpan()>pieceBox.getXSpan();
+			// --- PROCEDURÁLNÍ GENEROVÁNÍ SVĚTEL MIMO CESTU ---
 			if(isNorthSouth){
 				int zSpan=pieceBox.getZSpan();
-				// Pravidelný krok každých 5 až 8 bloků podél silnice (zaručí aspoň 3 lampy na delší ulici)
-				for(int zOffset=2; zOffset<zSpan-2; zOffset+=5+stableRandom.nextInt(4)){
-					int lampZ=pieceBox.minZ()+zOffset;
-					// FIX: Generujeme na minX/maxX (vnitřní kraj cesty) namísto -1/+1 (tráva), což kompletně eliminuje clipping
-					int lampX=stableRandom.nextBoolean()?pieceBox.minX():pieceBox.maxX();
-					int lampY=level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,lampX,lampZ);
-					BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
-
-					// Kontrola isInside a ověření sturdiness podkladu chodníku
-					if(box.isInside(lampBase)&&level.getBlockState(lampBase.below()).isFaceSturdy(level,lampBase.below(),Direction.UP)){
-						spawnLampPost(level,lampBase);
+				// FIX: Mnohem větší mezery mezi světly (krok 10 až 15 bloků), ať nejsou přeplněné
+				for(int zOffset=4;zOffset<zSpan-4;zOffset+=10+stableRandom.nextInt(6)){
+					if(stableRandom.nextFloat()<0.40F){
+						int lampZ=pieceBox.minZ()+zOffset;
+						// FIX: Posunuto zpět o 1 blok vně od štěrku (stojí čistě na trávě hned vedle cesty)
+						int lampX=stableRandom.nextBoolean()?pieceBox.minX()-1:pieceBox.maxX()+1;
+						int lampY=level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,lampX,lampZ);
+						BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
+						if(box.isInside(lampBase)){
+							BlockState belowState=level.getBlockState(lampBase.below());
+							if(belowState.isFaceSturdy(level,lampBase.below(),Direction.UP)&&!belowState.is(Blocks.GRAVEL)){
+								// FIX: Protože se cesta generuje AŽ PO domech, tahle smyčka konečně uvidí zdi a lampu v nich zruší!
+								boolean isSpaceClear=true;
+								for(int h=0;h<=3;h++){
+									BlockState stateAbove=level.getBlockState(lampBase.above(h));
+									if(!stateAbove.isAir()&&!stateAbove.is(Blocks.SHORT_GRASS)&&!stateAbove.is(Blocks.TALL_GRASS)){
+										isSpaceClear=false;
+										break;
+									}
+								}
+								if(isSpaceClear){
+									spawnLampPost(level,lampBase);
+								}
+							}
+						}
 					}
 				}
 			}else{
 				int xSpan=pieceBox.getXSpan();
-				for(int xOffset=2; xOffset<xSpan-2; xOffset+=5+stableRandom.nextInt(4)){
-					int lampX=pieceBox.minX()+xOffset;
-					// FIX: Vertikální okraj chodníku uvnitř cesty
-					int lampZ=stableRandom.nextBoolean()?pieceBox.minZ():pieceBox.maxZ();
-					int lampY=level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,lampX,lampZ);
-					BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
-
-					if(box.isInside(lampBase)&&level.getBlockState(lampBase.below()).isFaceSturdy(level,lampBase.below(),Direction.UP)){
-						spawnLampPost(level,lampBase);
+				// FIX: Větší mezery (krok 10 až 15 bloků) i pro horizontální osu
+				for(int xOffset=4;xOffset<xSpan-4;xOffset+=10+stableRandom.nextInt(6)){
+					if(stableRandom.nextFloat()<0.40F){
+						int lampX=pieceBox.minX()+xOffset;
+						// FIX: Posunuto o 1 blok vně od horizontálního chodníku do trávy
+						int lampZ=stableRandom.nextBoolean()?pieceBox.minZ()-1:pieceBox.maxZ()+1;
+						int lampY=level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,lampX,lampZ);
+						BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
+						if(box.isInside(lampBase)){
+							BlockState belowState=level.getBlockState(lampBase.below());
+							if(belowState.isFaceSturdy(level,lampBase.below(),Direction.UP)&&!belowState.is(Blocks.GRAVEL)){
+								boolean isSpaceClear=true;
+								for(int h=0;h<=3;h++){
+									BlockState stateAbove=level.getBlockState(lampBase.above(h));
+									if(!stateAbove.isAir()&&!stateAbove.is(Blocks.SHORT_GRASS)&&!stateAbove.is(Blocks.TALL_GRASS)){
+										isSpaceClear=false;
+										break;
+									}
+								}
+								if(isSpaceClear){
+									spawnLampPost(level,lampBase);
+								}
+							}
+						}
 					}
 				}
 			}

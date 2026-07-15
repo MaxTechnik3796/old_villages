@@ -54,27 +54,33 @@ public class OldVillageStructure extends Structure{
 		int maxZ=wellBox.maxZ();
 		int y=wellBox.minY();
 		List<PathRecord> pathQueue=new ArrayList<>();
+		// FIX: Dočasný seznam, do kterého schováme cesty, abychom je builderu předali až na konci
+		List<OldVillagePieces.VillagePiece> deferredPaths=new ArrayList<>();
 		BoundingBox nStart=new BoundingBox(minX+1,y-30,minZ-25,minX+3,y+30,minZ-1);
 		if(isAreaClear(placedBoxes,nStart)){
-			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,nStart,Direction.NORTH));
+			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,nStart,Direction.NORTH);
+			deferredPaths.add(p);
 			placedBoxes.add(nStart);
 			pathQueue.add(new PathRecord(nStart,Direction.NORTH,1));
 		}
 		BoundingBox sStart=new BoundingBox(minX+1,y-30,maxZ+1,minX+3,y+30,maxZ+25);
 		if(isAreaClear(placedBoxes,sStart)){
-			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,sStart,Direction.SOUTH));
+			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,sStart,Direction.SOUTH);
+			deferredPaths.add(p);
 			placedBoxes.add(sStart);
 			pathQueue.add(new PathRecord(sStart,Direction.SOUTH,1));
 		}
 		BoundingBox wStart=new BoundingBox(minX-25,y-30,minZ+1,minX-1,y+30,minZ+3);
 		if(isAreaClear(placedBoxes,wStart)){
-			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,wStart,Direction.WEST));
+			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,wStart,Direction.WEST);
+			deferredPaths.add(p);
 			placedBoxes.add(wStart);
 			pathQueue.add(new PathRecord(wStart,Direction.WEST,1));
 		}
 		BoundingBox eStart=new BoundingBox(maxX+1,y-30,minZ+1,maxX+25,y+30,minZ+3);
 		if(isAreaClear(placedBoxes,eStart)){
-			builder.addPiece(new OldVillagePieces.VillagePiece(1,1,eStart,Direction.EAST));
+			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,eStart,Direction.EAST);
+			deferredPaths.add(p);
 			placedBoxes.add(eStart);
 			pathQueue.add(new PathRecord(eStart,Direction.EAST,1));
 		}
@@ -98,12 +104,17 @@ public class OldVillageStructure extends Structure{
 					int nextLength=random.nextInt(16)+20;
 					BoundingBox nextPathBox=createNextPathBox(currentPath.box,currentPath.dir,nextDir,nextLength);
 					if(isAreaClear(placedBoxes,nextPathBox)){
-						builder.addPiece(new OldVillagePieces.VillagePiece(1,currentPath.depth+1,nextPathBox,nextDir));
+						OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,currentPath.depth+1,nextPathBox,nextDir);
+						deferredPaths.add(p);
 						placedBoxes.add(nextPathBox);
 						pathQueue.add(new PathRecord(nextPathBox,nextDir,currentPath.depth+1));
 					}
 				}
 			}
+		}
+		// FIX: Teprve TEĎ posíláme všechny cesty do builderu. Domy už stojí, takže cesta uvidí jejich zdi!
+		for(OldVillagePieces.VillagePiece pathPiece: deferredPaths){
+			builder.addPiece(pathPiece);
 		}
 	}
 	private static void placeHousesAlongPath(GenerationContext context,StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,BoundingBox pathBox,Direction pathDir,RandomSource random){
