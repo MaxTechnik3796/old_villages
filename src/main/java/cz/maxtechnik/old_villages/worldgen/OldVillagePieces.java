@@ -166,6 +166,7 @@ public class OldVillagePieces{
 		}
 		// UPRAVENO: Cesta nyní přijímá random a sem tam vygeneruje pouliční osvětlení
 		// UPRAVENO: Stabilní generování světel vázané na seed a pozici úseku
+		// UPRAVENO: Častější a stabilní generování světel podél celé délky silnice s ochranou proti silnici a vzduchu
 		private void generatePath(WorldGenLevel level,BoundingBox box){
 			BoundingBox pieceBox=this.getBoundingBox();
 			for(int x=pieceBox.minX();x<=pieceBox.maxX();x++){
@@ -179,29 +180,50 @@ public class OldVillagePieces{
 					}
 				}
 			}
-			// FIX: Vygenerujeme stabilní seed vázaný na seed světa a absolutní pozici úseku silnice
+
+			// Lokální stabilní náhodný generátor vázaný na seed světa a pozici silnice
 			long stablePathSeed=level.getLevel().getSeed()^BlockPos.asLong(pieceBox.minX(),pieceBox.minY(),pieceBox.minZ());
 			RandomSource stableRandom=RandomSource.create(stablePathSeed);
-			// --- PROCEDURÁLNÍ GENEROVÁNÍ SVĚTEL PODÉL CESTY ---
-			if(stableRandom.nextFloat()<0.20F){ // 20% šance na lampu pro tento úsek silnice (stabilní)
-				boolean isNorthSouth=pieceBox.getZSpan()>pieceBox.getXSpan();
-				if(isNorthSouth){
-					int randomZ=pieceBox.minZ()+stableRandom.nextInt(pieceBox.getZSpan());
-					int lampX=stableRandom.nextBoolean()?pieceBox.minX()-1:pieceBox.maxX()+1;
-					int lampY=level.getHeight(Heightmap.Types.WORLD_SURFACE_WG,lampX,randomZ);
-					BlockPos lampBase=new BlockPos(lampX,lampY,randomZ);
-					// FIX: Nahrazeno isSolid() za isFaceSturdy kontrolující vrchní stranu bloku
-					if(box.isInside(lampBase)&&level.getBlockState(lampBase.below()).isFaceSturdy(level,lampBase.below(),Direction.UP)){
-						spawnLampPost(level,lampBase);
+
+			boolean isNorthSouth=pieceBox.getZSpan()>pieceBox.getXSpan();
+
+			// FIX: Procházíme silnici krok za krokem po úsecích, aby byla světla hustší a pravidelná podél celé cesty
+			if(isNorthSouth){
+				int zSpan=pieceBox.getZSpan();
+				for(int zOffset=2;zOffset<zSpan-2;zOffset+=7+stableRandom.nextInt(4)){
+					if(stableRandom.nextFloat()<0.50F){ // 50% šance na každém kroku úseku
+						int lampZ=pieceBox.minZ()+zOffset;
+						int lampX=stableRandom.nextBoolean()?pieceBox.minX()-1:pieceBox.maxX()+1;
+
+						// FIX: OCEAN_FLOOR_WG ignoruje trávu/květiny, což zabraňuje létání lamp ve vzduchu
+						int lampY=level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,lampX,lampZ);
+						BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
+
+						// FIX: Pojistka !is(Blocks.GRAVEL) stoprocentně zakáže spawnování lamp na křižovatkách do silnice
+						if(box.isInside(lampBase)&&
+								level.getBlockState(lampBase.below()).isFaceSturdy(level,lampBase.below(),Direction.UP)&&
+								!level.getBlockState(lampBase.below()).is(Blocks.GRAVEL)){
+							spawnLampPost(level,lampBase);
+						}
 					}
-				}else{
-					int randomX=pieceBox.minX()+stableRandom.nextInt(pieceBox.getXSpan());
-					int lampZ=stableRandom.nextBoolean()?pieceBox.minZ()-1:pieceBox.maxZ()+1;
-					int lampY=level.getHeight(Heightmap.Types.WORLD_SURFACE_WG,randomX,lampZ);
-					BlockPos lampBase=new BlockPos(randomX,lampY,lampZ);
-					// FIX: Nahrazeno isSolid() za isFaceSturdy
-					if(box.isInside(lampBase)&&level.getBlockState(lampBase.below()).isFaceSturdy(level,lampBase.below(),Direction.UP)){
-						spawnLampPost(level,lampBase);
+				}
+			}else{
+				int xSpan=pieceBox.getXSpan();
+				for(int xOffset=2;xOffset<xSpan-2;xOffset+=7+stableRandom.nextInt(4)){
+					if(stableRandom.nextFloat()<0.50F){
+						int lampX=pieceBox.minX()+xOffset;
+						int lampZ=stableRandom.nextBoolean()?pieceBox.minZ()-1:pieceBox.maxZ()+1;
+
+						// FIX: OCEAN_FLOOR_WG pro horizontální osu silnice
+						int lampY=level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,lampX,lampZ);
+						BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
+
+						// FIX: Kontrola gravelu i pro horizontální osu silnice
+						if(box.isInside(lampBase)&&
+								level.getBlockState(lampBase.below()).isFaceSturdy(level,lampBase.below(),Direction.UP)&&
+								!level.getBlockState(lampBase.below()).is(Blocks.GRAVEL)){
+							spawnLampPost(level,lampBase);
+						}
 					}
 				}
 			}
