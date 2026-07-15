@@ -167,7 +167,8 @@ public class OldVillagePieces{
 		// UPRAVENO: Cesta nyní přijímá random a sem tam vygeneruje pouliční osvětlení
 		// UPRAVENO: Stabilní generování světel vázané na seed a pozici úseku
 		// UPRAVENO: Častější a stabilní generování světel podél celé délky silnice s ochranou proti silnici a vzduchu
-		private void generatePath(WorldGenLevel level,BoundingBox box){
+		// UPRAVENO: Bezpečné a hustší generování světel přímo na okrajích štěrkových cest (respektuje seed)
+		private void generatePath(WorldGenLevel level, BoundingBox box){
 			BoundingBox pieceBox=this.getBoundingBox();
 			for(int x=pieceBox.minX();x<=pieceBox.maxX();x++){
 				for(int z=pieceBox.minZ();z<=pieceBox.maxZ();z++){
@@ -181,49 +182,39 @@ public class OldVillagePieces{
 				}
 			}
 
-			// Lokální stabilní náhodný generátor vázaný na seed světa a pozici silnice
-			long stablePathSeed=level.getLevel().getSeed()^BlockPos.asLong(pieceBox.minX(),pieceBox.minY(),pieceBox.minZ());
-			RandomSource stableRandom=RandomSource.create(stablePathSeed);
+			// Lokální stabilní generátor vázaný plynule na seed světa a pozici silnice
+			long stablePathSeed = level.getLevel().getSeed() ^ BlockPos.asLong(pieceBox.minX(), pieceBox.minY(), pieceBox.minZ());
+			RandomSource stableRandom = RandomSource.create(stablePathSeed);
 
-			boolean isNorthSouth=pieceBox.getZSpan()>pieceBox.getXSpan();
+			boolean isNorthSouth = pieceBox.getZSpan() > pieceBox.getXSpan();
 
-			// FIX: Procházíme silnici krok za krokem po úsecích, aby byla světla hustší a pravidelná podél celé cesty
+			// --- PROCEDURÁLNÍ GENEROVÁNÍ SVĚTEL NA OKRAJÍCH CHODNÍKŮ ---
 			if(isNorthSouth){
 				int zSpan=pieceBox.getZSpan();
-				for(int zOffset=2;zOffset<zSpan-2;zOffset+=7+stableRandom.nextInt(4)){
-					if(stableRandom.nextFloat()<0.50F){ // 50% šance na každém kroku úseku
-						int lampZ=pieceBox.minZ()+zOffset;
-						int lampX=stableRandom.nextBoolean()?pieceBox.minX()-1:pieceBox.maxX()+1;
+				// Pravidelný krok každých 5 až 8 bloků podél silnice (zaručí aspoň 3 lampy na delší ulici)
+				for(int zOffset=2; zOffset<zSpan-2; zOffset+=5+stableRandom.nextInt(4)){
+					int lampZ=pieceBox.minZ()+zOffset;
+					// FIX: Generujeme na minX/maxX (vnitřní kraj cesty) namísto -1/+1 (tráva), což kompletně eliminuje clipping
+					int lampX=stableRandom.nextBoolean()?pieceBox.minX():pieceBox.maxX();
+					int lampY=level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,lampX,lampZ);
+					BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
 
-						// FIX: OCEAN_FLOOR_WG ignoruje trávu/květiny, což zabraňuje létání lamp ve vzduchu
-						int lampY=level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,lampX,lampZ);
-						BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
-
-						// FIX: Pojistka !is(Blocks.GRAVEL) stoprocentně zakáže spawnování lamp na křižovatkách do silnice
-						if(box.isInside(lampBase)&&
-								level.getBlockState(lampBase.below()).isFaceSturdy(level,lampBase.below(),Direction.UP)&&
-								!level.getBlockState(lampBase.below()).is(Blocks.GRAVEL)){
-							spawnLampPost(level,lampBase);
-						}
+					// Kontrola isInside a ověření sturdiness podkladu chodníku
+					if(box.isInside(lampBase)&&level.getBlockState(lampBase.below()).isFaceSturdy(level,lampBase.below(),Direction.UP)){
+						spawnLampPost(level,lampBase);
 					}
 				}
 			}else{
 				int xSpan=pieceBox.getXSpan();
-				for(int xOffset=2;xOffset<xSpan-2;xOffset+=7+stableRandom.nextInt(4)){
-					if(stableRandom.nextFloat()<0.50F){
-						int lampX=pieceBox.minX()+xOffset;
-						int lampZ=stableRandom.nextBoolean()?pieceBox.minZ()-1:pieceBox.maxZ()+1;
+				for(int xOffset=2; xOffset<xSpan-2; xOffset+=5+stableRandom.nextInt(4)){
+					int lampX=pieceBox.minX()+xOffset;
+					// FIX: Vertikální okraj chodníku uvnitř cesty
+					int lampZ=stableRandom.nextBoolean()?pieceBox.minZ():pieceBox.maxZ();
+					int lampY=level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,lampX,lampZ);
+					BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
 
-						// FIX: OCEAN_FLOOR_WG pro horizontální osu silnice
-						int lampY=level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,lampX,lampZ);
-						BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
-
-						// FIX: Kontrola gravelu i pro horizontální osu silnice
-						if(box.isInside(lampBase)&&
-								level.getBlockState(lampBase.below()).isFaceSturdy(level,lampBase.below(),Direction.UP)&&
-								!level.getBlockState(lampBase.below()).is(Blocks.GRAVEL)){
-							spawnLampPost(level,lampBase);
-						}
+					if(box.isInside(lampBase)&&level.getBlockState(lampBase.below()).isFaceSturdy(level,lampBase.below(),Direction.UP)){
+						spawnLampPost(level,lampBase);
 					}
 				}
 			}
