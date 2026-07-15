@@ -165,14 +165,6 @@ public class OldVillagePieces{
 			this.setBlock(level,box,4,3,4,fence);
 			this.fillWithBlocks(level,box,1,4,1,4,4,4,cobble);
 		}
-		// UPRAVENO: Cesta nyní přijímá random a sem tam vygeneruje pouliční osvětlení
-		// UPRAVENO: Stabilní generování světel vázané na seed a pozici úseku
-		// UPRAVENO: Častější a stabilní generování světel podél celé délky silnice s ochranou proti silnici a vzduchu
-		// UPRAVENO: Bezpečné a hustší generování světel přímo na okrajích štěrkových cest (respektuje seed)
-		// UPRAVENO: Vybalancovaná hustota světel 1 blok od cesty s inteligentní ochranou proti stěnám budov
-		// UPRAVENO: Balancovaná hustota lamp přesně 1 blok od cesty (na trávě) s funkční anti-clipping kontrolou zdí
-		// UPRAVENO: Inteligentní 3D kontrola (3x3x7) kompletně čistí prostor okolo budov a farem
-		// UPRAVENO: Bezpečné pokládání štěrku (nemaže schody budov) + opravený 3D skener lamp (ignoruje přírodní trávník a hlínu)
 		private void generatePath(WorldGenLevel level,BoundingBox box){
 			BoundingBox pieceBox=this.getBoundingBox();
 			for(int x=pieceBox.minX();x<=pieceBox.maxX();x++){
@@ -502,7 +494,6 @@ public class OldVillagePieces{
 			this.setBlock(level,box,6,3,7,pressurePlate);
 			this.fillWithBlocks(level,box,2,2,8,2,2,9,smoothStoneDoubleSlab);
 		}
-		// TYP 9: KOSTEL (Podlouhlá vysoká šablona 9x14)
 		private void generateChurch(WorldGenLevel level,BoundingBox box){
 			this.fillWithBlocks(level,box,0,1,0,4,12,8,air);
 			this.createBase(level,box,1,0,3,8,cobble);
@@ -577,9 +568,20 @@ public class OldVillagePieces{
 		}
 		// NOVÉ: Šablona pro Knihovnu (Tělo 9x6, schod přetéká na Z=6)
 		private void generateLibrary(WorldGenLevel level,BoundingBox box){
+			this.fillWithBlocks(level,box,0,1,0,8,9,5,air);
 			createBase(level,box,0,0,8,5,cobble);
-			this.fillWithBlocks(level,box,0,1,0,8,5,6,air); // Vyčištění vzduchu
-			this.fillWithBlocks(level,box,0,1,0,8,1,5,cobble); // Kamenná podlaha
+			this.fillWithBlocks(level,box,0,1,0,8,1,5,cobble);
+			createBaseStairs(level,box,7,6);
+			this.setBlock(level,box,7,1,6,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.fillWithBlocks(level,box,1,2,0,7,2,0,cobble);
+			this.fillWithBlocks(level,box,1,2,5,7,2,5,cobble);
+
+
+
+
+
+			/*
+			 // Kamenná podlaha
 			this.fillWithBlocks(level,box,0,2,0,8,4,0,planks); // Zadní stěna
 			this.fillWithBlocks(level,box,0,2,5,8,4,5,planks); // Přední stěna
 			this.fillWithBlocks(level,box,0,2,1,0,4,4,planks); // Levá stěna
@@ -600,13 +602,11 @@ public class OldVillagePieces{
 			this.setBlock(level,box,4,2,5,air);
 			this.setBlock(level,box,4,3,5,air);
 			// Předsazený schod lícující s hranou boxu (přetéká na silnici)
-			this.setBlock(level,box,4,1,6,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
-			createBaseStairs(level,box,4,6);
+
 			// Střecha dokola z logů, vnitřek z prken
 			this.fillWithBlocks(level,box,0,5,0,8,5,5,log);
-			this.fillWithBlocks(level,box,1,5,1,7,5,4,planks);
+			this.fillWithBlocks(level,box,1,5,1,7,5,4,planks);*/
 		}
-		// NOVÉ: Pomocná metoda, která postane lampu přesně podle obrázku
 		private void spawnLampPost(WorldGenLevel level,BlockPos basePos){
 			// Použijeme vlnu podle tvého perasu
 			// 3x plot nad sebou jako sloup
