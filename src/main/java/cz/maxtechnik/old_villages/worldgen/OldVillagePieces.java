@@ -56,6 +56,7 @@ public class OldVillagePieces{
 		BlockState craftingTable=Blocks.CRAFTING_TABLE.defaultBlockState();
 		BlockState bookshelf=Blocks.BOOKSHELF.defaultBlockState();
 		BlockState grindstone=Blocks.GRINDSTONE.defaultBlockState().setValue(GrindstoneBlock.FACE,AttachFace.FLOOR);
+		BlockState brewingStand=Blocks.BREWING_STAND.defaultBlockState();
 		BlockState bed=Blocks.RED_BED.defaultBlockState();
 		BlockState smoker=Blocks.SMOKER.defaultBlockState();
 		BlockState air=Blocks.AIR.defaultBlockState();
@@ -503,22 +504,49 @@ public class OldVillagePieces{
 		}
 		// TYP 9: KOSTEL (Podlouhlá vysoká šablona 9x14)
 		private void generateChurch(WorldGenLevel level,BoundingBox box){
+			this.fillWithBlocks(level,box,0,1,0,4,12,8,air);
+			this.createBase(level,box,1,0,3,8,cobble);
+			this.createBase(level,box,0,1,4,4,cobble);
 			this.fillWithBlocks(level,box,1,1,0,3,1,8,cobble);
 			this.fillWithBlocks(level,box,0,1,1,4,1,4,cobble);
-
+			this.createBaseStairs(level,box,2,9);
 			this.setBlock(level,box,2,1,9,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
-			/*
-			createBase(level,box,0,0,8,13,cobble);
-			this.fillWithBlocks(level,box,0,1,0,8,12,13,air); // Vyčištění prostoru (kostel je vysoký!)
-			// Kompletní stavba z cobblestonu (klasický vanilla styl)
-			this.fillWithBlocks(level,box,0,1,0,8,1,13,cobble); // Podlaha
-			this.fillWithBlocks(level,box,0,2,0,8,6,13,cobble); // Vysoké stěny hlavní lodi
-			this.fillWithBlocks(level,box,2,2,1,6,5,12,air);   // Vnitřní prostor lodi
-			// Přední věž kostela (X=3..5, Z=11..13) vytáhnutá do výšky Y=10
-			this.fillWithBlocks(level,box,3,6,11,5,10,13,cobble);
-			// Schod před hlavní vchod do věže (X=4, Z=14)
-			this.setBlock(level,box,4,1,14,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
-			createBaseStairs(level,box,4,14);*/
+			this.fillWithBlocks(level,box,1,2,0,3,5,0,cobble);
+			this.fillWithBlocks(level,box,0,2,1,0,5,7,cobble);
+			this.fillWithBlocks(level,box,4,2,1,4,5,7,cobble);
+			this.fillWithBlocks(level,box,1,2,8,3,11,8,cobble);
+			this.fillWithBlocks(level,box,0,6,5,0,11,7,cobble);
+			this.fillWithBlocks(level,box,4,6,5,4,11,7,cobble);
+			this.fillWithBlocks(level,box,1,5,4,3,11,4,cobble);
+			this.fillWithBlocks(level,box,0,5,5,4,5,8,cobble);
+			this.fillWithBlocks(level,box,0,10,4,4,10,8,cobble);
+			this.setBlock(level,box,0,12,6,cobble);
+			this.setBlock(level,box,4,12,6,cobble);
+			this.setBlock(level,box,2,12,4,cobble);
+			this.setBlock(level,box,2,12,8,cobble);
+			this.fillWithBlocks(level,box,1,6,1,3,6,3,cobble);
+			this.fillWithBlocks(level,box,1,2,1,3,2,2,cobble);
+			this.setBlock(level,box,1,2,3,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,3,2,3,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,2,2,2,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,1,3,1,cobbleStairs.setValue(StairBlock.FACING,Direction.WEST));
+			this.setBlock(level,box,3,3,1,cobbleStairs.setValue(StairBlock.FACING,Direction.EAST));
+			this.setBlock(level,box,1,5,2,wallTorch.setValue(WallTorchBlock.FACING,Direction.EAST));
+			this.setBlock(level,box,3,5,2,wallTorch.setValue(WallTorchBlock.FACING,Direction.WEST));
+			this.setBlock(level,box,2,5,1,wallTorch.setValue(WallTorchBlock.FACING,Direction.NORTH));
+			this.setBlock(level,box,2,2,8,door.setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER));
+			this.setBlock(level,box,2,3,8,door.setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));
+			this.setBlock(level,box,2,4,0,glassPane.setValue(CrossCollisionBlock.WEST,true).setValue(CrossCollisionBlock.EAST,true));
+			this.setBlock(level,box,0,4,2,glassPane.setValue(CrossCollisionBlock.SOUTH,true).setValue(CrossCollisionBlock.NORTH,true));
+			this.setBlock(level,box,4,4,2,glassPane.setValue(CrossCollisionBlock.SOUTH,true).setValue(CrossCollisionBlock.NORTH,true));
+			this.fillWithBlocks(level,box,0,3,6,0,4,6,glassPane.setValue(CrossCollisionBlock.SOUTH,true).setValue(CrossCollisionBlock.NORTH,true));
+			this.fillWithBlocks(level,box,4,3,6,4,4,6,glassPane.setValue(CrossCollisionBlock.SOUTH,true).setValue(CrossCollisionBlock.NORTH,true));
+			this.fillWithBlocks(level,box,0,7,6,0,8,6,glassPane.setValue(CrossCollisionBlock.SOUTH,true).setValue(CrossCollisionBlock.NORTH,true));
+			this.fillWithBlocks(level,box,4,7,6,4,8,6,glassPane.setValue(CrossCollisionBlock.SOUTH,true).setValue(CrossCollisionBlock.NORTH,true));
+			this.fillWithBlocks(level,box,2,7,8,2,8,8,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
+			this.fillWithBlocks(level,box,2,7,4,2,8,4,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
+			this.fillWithBlocks(level,box,1,2,5,1,10,5,ladder.setValue(LadderBlock.FACING,Direction.EAST));
+			this.setBlock(level,box,3,2,7,brewingStand);
 		}
 		private void generateShack(WorldGenLevel level,BoundingBox box,boolean highRoof){
 			this.fillWithBlocks(level,box,0,1,0,3,6,4,air);
