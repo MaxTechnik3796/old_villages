@@ -43,17 +43,21 @@ public class OldVillagePieces{
 		BlockState farmland=Blocks.FARMLAND.defaultBlockState().setValue(FarmBlock.MOISTURE,7);
 		BlockState wheat=Blocks.WHEAT.defaultBlockState();
 		BlockState dirt=Blocks.DIRT.defaultBlockState();
-		BlockState bed=Blocks.RED_BED.defaultBlockState();
 		BlockState furnace=Blocks.FURNACE.defaultBlockState();
 		BlockState ironBars=Blocks.IRON_BARS.defaultBlockState();
-		BlockState grindstone=Blocks.GRINDSTONE.defaultBlockState().setValue(GrindstoneBlock.FACE,AttachFace.FLOOR);
 		BlockState smoothStoneDoubleSlab=Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.DOUBLE);
 		BlockState smoothStoneSlab=Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.BOTTOM);
 		BlockState grass=Blocks.SHORT_GRASS.defaultBlockState();
 		BlockState glassPane=Blocks.GLASS_PANE.defaultBlockState();
 		BlockState wallTorch=Blocks.WALL_TORCH.defaultBlockState();
 		BlockState ladder=Blocks.LADDER.defaultBlockState();
+
+		BlockState craftingTable=Blocks.CRAFTING_TABLE.defaultBlockState();
 		BlockState bookshelf=Blocks.BOOKSHELF.defaultBlockState();
+		BlockState grindstone=Blocks.GRINDSTONE.defaultBlockState().setValue(GrindstoneBlock.FACE,AttachFace.FLOOR);
+		BlockState bed=Blocks.RED_BED.defaultBlockState();
+		BlockState smoker=Blocks.SMOKER.defaultBlockState();
+
 		BlockState air=Blocks.AIR.defaultBlockState();
 		// AKTUALIZOVÁNO: 0=Studna, 1=Cesta, 2=Malý dům A, 3=Malý dům B, 4=Velký dům, 5=Malá farma, 6=Velká farma, 7=Kovárna
 		private final int pieceType;
@@ -346,23 +350,61 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,0,6,0,9,6,6,smoothStoneSlab);
 			this.fillWithBlocks(level,box,1,6,1,8,6,5,air);
 		}
-		// TYP 8: HOSPODA / HOSPŮDKA (Základní rozvržení 13x13)
 		private void generateTavern(WorldGenLevel level,BoundingBox box){
-			createBase(level,box,0,0,12,12,cobble); // Masivní kamenné základy
-			this.fillWithBlocks(level,box,0,1,0,12,6,12,air); // Vyčištění prostoru
-			// Podlaha a hrubá kamenná podezdívka prvního patra
-			this.fillWithBlocks(level,box,0,1,0,12,1,12,cobble);
-			this.fillWithBlocks(level,box,0,2,0,12,3,12,planks);
-			// Rohové sloupy pro dekoraci (Klády)
-			this.fillWithBlocks(level,box,0,2,0,0,5,0,log);
-			this.fillWithBlocks(level,box,12,2,0,12,5,0,log);
-			this.fillWithBlocks(level,box,0,2,12,0,5,12,log);
-			this.fillWithBlocks(level,box,12,2,12,12,5,12,log);
-			// Plochý strop / střecha z dubových klád
-			this.fillWithBlocks(level,box,0,5,0,12,5,12,log);
-			// Vchodový schod na ose (X=6, Z=13 je předsunutý schod před dveřmi)
-			this.setBlock(level,box,6,1,13,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
-			createBaseStairs(level,box,6,13);
+			this.fillWithBlocks(level,box,0,1,0,8,7,10,air);
+			this.createBase(level,box,0,0,6,4,dirt);
+			this.createBase(level,box,0,5,8,10,cobble);
+			this.fillWithBlocks(level,box,0,1,0,6,1,4,dirt);
+			this.fillWithBlocks(level,box,0,1,5,8,1,10,cobble);
+			this.createBaseStairs(level,box,6,11);
+			this.setBlock(level,box,6,1,11,planksStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,2,1,4,cobble);
+			this.fillWithBlocks(level,box,1,1,6,7,1,9,planks);
+			this.fillWithBlocks(level,box,1,1,7,3,1,9,smoothStoneDoubleSlab);
+			this.fillWithBlocks(level,box,0,2,5,0,4,10,cobble);
+			this.fillWithBlocks(level,box,8,2,5,8,4,10,cobble);
+			this.fillWithBlocks(level,box,1,2,5,7,2,5,cobble);
+			this.fillWithBlocks(level,box,1,2,10,7,2,10,cobble);
+			this.fillWithBlocks(level,box,1,3,5,7,4,5,planks);
+			this.fillWithBlocks(level,box,1,3,10,7,4,10,planks);
+			this.setBlock(level,box,6,2,10,door.setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER));
+			this.setBlock(level,box,6,3,10,door.setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));
+			this.setBlock(level,box,2,2,5,door.setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER));
+			this.setBlock(level,box,2,3,5,door.setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));
+			this.setBlock(level,box,6,4,9,wallTorch.setValue(WallTorchBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,2,4,6,wallTorch.setValue(WallTorchBlock.FACING,Direction.NORTH));
+			this.fillWithBlocks(level,box,0,3,6,0,3,9,log);
+			this.fillWithBlocks(level,box,8,3,6,8,3,9,log);
+			this.fillWithBlocks(level,box,0,3,7,0,3,8,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+			this.fillWithBlocks(level,box,8,3,7,8,3,8,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+			this.fillWithBlocks(level,box,5,3,5,6,3,5,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
+			this.setBlock(level,box,3,3,10,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
+			this.setBlock(level,box,0,2,0,fence.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.EAST,true));
+			this.setBlock(level,box,6,2,0,fence.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.WEST,true));
+			this.fillWithBlocks(level,box,0,2,1,0,2,4,fence.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+			this.fillWithBlocks(level,box,6,2,1,6,2,4,fence.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+			this.fillWithBlocks(level,box,1,2,0,5,2,0,fence.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
+			this.fillWithBlocks(level,box,0,5,7,0,5,8,planks);
+			this.fillWithBlocks(level,box,8,5,7,8,5,8,planks);
+			this.fillWithBlocks(level,box,0,5,6,8,5,6,planks);
+			this.fillWithBlocks(level,box,0,5,9,8,5,9,planks);
+			this.fillWithBlocks(level,box,0,6,7,8,6,8,planks);
+			this.fillWithBlocks(level,box,0,4,4,8,4,4,planksStairs.setValue(StairBlock.FACING,Direction.NORTH));
+			this.fillWithBlocks(level,box,0,5,5,8,5,5,planksStairs.setValue(StairBlock.FACING,Direction.NORTH));
+			this.fillWithBlocks(level,box,0,6,6,8,6,6,planksStairs.setValue(StairBlock.FACING,Direction.NORTH));
+			this.fillWithBlocks(level,box,0,7,7,8,7,7,planksStairs.setValue(StairBlock.FACING,Direction.NORTH));
+			this.fillWithBlocks(level,box,0,4,11,8,4,11,planksStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.fillWithBlocks(level,box,0,5,10,8,5,10,planksStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.fillWithBlocks(level,box,0,6,9,8,6,9,planksStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.fillWithBlocks(level,box,0,7,8,8,7,8,planksStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,1,2,6,smoker);
+			this.setBlock(level,box,7,2,6,planks);
+			this.setBlock(level,box,6,2,6,planksStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,7,2,7,planksStairs.setValue(StairBlock.FACING,Direction.EAST));
+			this.setBlock(level,box,6,2,7,fence);
+			this.setBlock(level,box,6,3,7,pressurePlate);
+			this.fillWithBlocks(level,box,2,2,8,2,2,9,smoothStoneDoubleSlab);
+
 		}
 		// TYP 9: KOSTEL (Podlouhlá vysoká šablona 9x14)
 		private void generateChurch(WorldGenLevel level,BoundingBox box){

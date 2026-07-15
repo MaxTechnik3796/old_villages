@@ -155,8 +155,8 @@ public class OldVillageStructure extends Structure{
 				}  // FIX: Kovárna (Lokální Z=8 se mění na světové X, X=10 na Z!)
 				else if(houseRand<94){
 					type=8;
-					sizeX=13;
-					sizeZ=13;
+					sizeX=11;
+					sizeZ=9;
 				} // Hospoda
 				else{
 					type=9;
@@ -216,8 +216,8 @@ public class OldVillageStructure extends Structure{
 				}  // FIX: Kovárna rozměry
 				else if(houseRand<94){
 					type=8;
-					sizeX=13;
-					sizeZ=13;
+					sizeX=11;
+					sizeZ=9;
 				}else{
 					type=9;
 					sizeX=14;
@@ -281,8 +281,8 @@ public class OldVillageStructure extends Structure{
 				}  // FIX: Kovárna (Zde osy odpovídají reálu X=10, Z=8)
 				else if(houseRand<94){
 					type=8;
-					sizeX=13;
-					sizeZ=13;
+					sizeX=9;
+					sizeZ=11;
 				}else{
 					type=9;
 					sizeX=9;
@@ -341,8 +341,8 @@ public class OldVillageStructure extends Structure{
 				}  // FIX: Kovárna rozměry
 				else if(houseRand<94){
 					type=8;
-					sizeX=13;
-					sizeZ=13;
+					sizeX=9;
+					sizeZ=11;
 				}else{
 					type=9;
 					sizeX=9;
