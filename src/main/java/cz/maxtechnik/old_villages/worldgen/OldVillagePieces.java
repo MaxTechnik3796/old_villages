@@ -462,7 +462,7 @@ public class OldVillagePieces{
 				case 8 -> generateTavern(level,box);     // NOVÉ: Hospoda
 				case 9 -> generateChurch(level,box);     // NOVÉ: Kostel
 				case 10 -> generateShack(level,box,false);    // NOVÉ: Malá chatka
-				case 11 -> generateShack(level,box,false);
+				case 11 -> generateShack(level,box,true);
 				default -> {
 				}
 			}

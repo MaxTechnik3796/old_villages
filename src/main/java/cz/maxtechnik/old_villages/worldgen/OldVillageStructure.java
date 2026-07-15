@@ -127,11 +127,10 @@ public class OldVillageStructure extends Structure{
 					sizeX=5;
 					sizeZ=5;
 				}else if(houseRand<42){
-					type=10;
+					type=random.nextBoolean()?10:11; // FIX: 50/50 šance mezi typem 10 a 11
 					sizeX=5;
 					sizeZ=4;
-				} // Chatka
-				else if(houseRand<54){
+				}else if(houseRand<54){
 					type=4;
 					sizeX=11;
 					sizeZ=9;
@@ -157,7 +156,7 @@ public class OldVillageStructure extends Structure{
 					sizeZ=9;
 				}
 				if(leftZ+sizeZ>pathBox.maxZ()){
-					type=10;
+					type=random.nextBoolean()?10:11; // FIX: 50/50 fallback na konci ulice
 					sizeX=5;
 					sizeZ=4;
 					if(leftZ+sizeZ>pathBox.maxZ()) break;
@@ -186,7 +185,7 @@ public class OldVillageStructure extends Structure{
 					sizeX=5;
 					sizeZ=5;
 				}else if(houseRand<42){
-					type=10;
+					type=random.nextBoolean()?10:11; // FIX: 50/50 šance pro pravou stranu
 					sizeX=5;
 					sizeZ=4;
 				}else if(houseRand<54){
@@ -215,7 +214,7 @@ public class OldVillageStructure extends Structure{
 					sizeZ=9;
 				}
 				if(rightZ+sizeZ>pathBox.maxZ()){
-					type=10;
+					type=random.nextBoolean()?10:11; // FIX: 50/50 fallback pro pravou stranu
 					sizeX=5;
 					sizeZ=4;
 					if(rightZ+sizeZ>pathBox.maxZ()) break;
@@ -249,11 +248,10 @@ public class OldVillageStructure extends Structure{
 					sizeX=5;
 					sizeZ=5;
 				}else if(houseRand<42){
-					type=10;
+					type=random.nextBoolean()?10:11; // FIX: 50/50 šance na severní straně
 					sizeX=4;
 					sizeZ=5;
-				}
-				else if(houseRand<54){
+				}else if(houseRand<54){
 					type=4;
 					sizeX=9;
 					sizeZ=11;
@@ -279,7 +277,7 @@ public class OldVillageStructure extends Structure{
 					sizeZ=14;
 				}
 				if(leftX+sizeX>pathBox.maxX()){
-					type=10;
+					type=random.nextBoolean()?10:11; // FIX: 50/50 fallback na severní straně
 					sizeX=4;
 					sizeZ=5;
 					if(leftX+sizeX>pathBox.maxX()) break;
@@ -307,9 +305,8 @@ public class OldVillageStructure extends Structure{
 					type=3;
 					sizeX=5;
 					sizeZ=5;
-				}
-				else if(houseRand<42){
-					type=10;
+				}else if(houseRand<42){
+					type=random.nextBoolean()?10:11; // FIX: 50/50 šance na jižní straně
 					sizeX=4;
 					sizeZ=5;
 				}else if(houseRand<54){
@@ -338,7 +335,7 @@ public class OldVillageStructure extends Structure{
 					sizeZ=14;
 				}
 				if(rightX+sizeX>pathBox.maxX()){
-					type=10;
+					type=random.nextBoolean()?10:11; // FIX: 50/50 fallback na jižní straně
 					sizeX=4;
 					sizeZ=5;
 					if(rightX+sizeX>pathBox.maxX()) break;
