@@ -111,7 +111,7 @@ public class OldVillageStructure extends Structure{
 		// Osa SEVER / JIH (Silnice běží vertikálně, domy stavíme Vlevo/Vpravo)
 		// ====================================================================
 		if(pathDir==Direction.NORTH||pathDir==Direction.SOUTH){
-			// --- 1. CYKLUS: LEVÁ STRANA ---
+			// --- 1. CYKLUS: LEVÁ STRANA (Domy koukají na VÝCHOD ke gravelu) ---
 			int leftZ=pathBox.minZ()+1;
 			while(leftZ<pathBox.maxZ()){
 				int houseRand=random.nextInt(100);
@@ -130,7 +130,7 @@ public class OldVillageStructure extends Structure{
 					type=10;
 					sizeX=5;
 					sizeZ=4;
-				}  // FIX: Chatka tělo 4x5 (Hloubka X=4, Šířka podél cesty Z=5)
+				} // Chatka
 				else if(houseRand<54){
 					type=4;
 					sizeX=11;
@@ -159,7 +159,7 @@ public class OldVillageStructure extends Structure{
 				if(leftZ+sizeZ>pathBox.maxZ()){
 					type=10;
 					sizeX=5;
-					sizeZ=4; // FIX: Fallback sjednocen na 4x5
+					sizeZ=4;
 					if(leftZ+sizeZ>pathBox.maxZ()) break;
 				}
 				if(random.nextFloat()<0.65F){
@@ -170,7 +170,7 @@ public class OldVillageStructure extends Structure{
 					leftZ+=random.nextInt(3)+2;
 				}
 			}
-			// --- 2. CYKLUS: PRAVÁ STRANA ---
+			// --- 2. CYKLUS: PRAVÁ STRANA (Domy koukají na ZÁPAD ke gravelu) ---
 			int rightZ=pathBox.minZ()+1;
 			while(rightZ<pathBox.maxZ()){
 				int houseRand=random.nextInt(100);
@@ -189,8 +189,7 @@ public class OldVillageStructure extends Structure{
 					type=10;
 					sizeX=5;
 					sizeZ=4;
-				}  // FIX: Chatka tělo 4x5
-				else if(houseRand<54){
+				}else if(houseRand<54){
 					type=4;
 					sizeX=11;
 					sizeZ=9;
@@ -218,7 +217,7 @@ public class OldVillageStructure extends Structure{
 				if(rightZ+sizeZ>pathBox.maxZ()){
 					type=10;
 					sizeX=5;
-					sizeZ=4; // FIX: Fallback sjednocen na 4x5
+					sizeZ=4;
 					if(rightZ+sizeZ>pathBox.maxZ()) break;
 				}
 				if(random.nextFloat()<0.65F){
@@ -234,7 +233,7 @@ public class OldVillageStructure extends Structure{
 		// Osa VÝCHOD / ZÁPAD (Silnice běží horizontálně, domy stavíme Sever/Jih)
 		// ====================================================================
 		else{
-			// --- 1. CYKLUS: STRANA SEVER ---
+			// --- 1. CYKLUS: STRANA SEVER (Domy koukají na JIH) ---
 			int leftX=pathBox.minX()+1;
 			while(leftX<pathBox.maxX()){
 				int houseRand=random.nextInt(100);
@@ -253,7 +252,7 @@ public class OldVillageStructure extends Structure{
 					type=10;
 					sizeX=4;
 					sizeZ=5;
-				}  // FIX: Chatka kolmo na osu (Šířka podél cesty X=5, Hloubka Z=4)
+				}
 				else if(houseRand<54){
 					type=4;
 					sizeX=9;
@@ -282,7 +281,7 @@ public class OldVillageStructure extends Structure{
 				if(leftX+sizeX>pathBox.maxX()){
 					type=10;
 					sizeX=4;
-					sizeZ=5; // FIX: Fallback sjednocen na 5x4
+					sizeZ=5;
 					if(leftX+sizeX>pathBox.maxX()) break;
 				}
 				if(random.nextFloat()<0.65F){
@@ -293,7 +292,7 @@ public class OldVillageStructure extends Structure{
 					leftX+=random.nextInt(3)+2;
 				}
 			}
-			// --- 2. CYKLUS: STRANA JIH ---
+			// --- 2. CYKLUS: STRANA JIH (Domy koukají na SEVER) ---
 			int rightX=pathBox.minX()+1;
 			while(rightX<pathBox.maxX()){
 				int houseRand=random.nextInt(100);
@@ -308,12 +307,12 @@ public class OldVillageStructure extends Structure{
 					type=3;
 					sizeX=5;
 					sizeZ=5;
-				}else if(houseRand<42){
+				}
+				else if(houseRand<42){
 					type=10;
-					sizeX=5;
-					sizeZ=4;
-				}  // FIX: Chatka kolmo na osu 5x4
-				else if(houseRand<54){
+					sizeX=4;
+					sizeZ=5;
+				}else if(houseRand<54){
 					type=4;
 					sizeX=9;
 					sizeZ=11;
@@ -340,8 +339,8 @@ public class OldVillageStructure extends Structure{
 				}
 				if(rightX+sizeX>pathBox.maxX()){
 					type=10;
-					sizeX=5;
-					sizeZ=4; // FIX: Fallback sjednocen na 5x4
+					sizeX=4;
+					sizeZ=5;
 					if(rightX+sizeX>pathBox.maxX()) break;
 				}
 				if(random.nextFloat()<0.65F){

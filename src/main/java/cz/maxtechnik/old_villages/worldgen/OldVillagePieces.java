@@ -421,11 +421,32 @@ public class OldVillagePieces{
 			createBaseStairs(level,box,4,14);
 		}
 		// TYP 10: MALÁ CHATKA (Miniaturní domeček 4x4)
-		private void generateShack(WorldGenLevel level,BoundingBox box){
-
+		private void generateShack(WorldGenLevel level,BoundingBox box,boolean highRoof){
+			this.fillWithBlocks(level,box,0,1,0,3,6,4,air);
+			this.createBase(level,box,0,0,3,6,cobble);
 			this.fillWithBlocks(level,box,0,1,0,3,1,4,cobble);
+			this.createBaseStairs(level,box,2,5);
 			this.setBlock(level,box,2,1,5,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
-
+			this.fillWithBlocks(level,box,0,2,0,3,4,0,log);
+			this.fillWithBlocks(level,box,0,2,4,3,4,4,log);
+			this.fillWithBlocks(level,box,1,2,0,2,4,0,planks);
+			this.fillWithBlocks(level,box,1,2,4,2,4,4,planks);
+			this.fillWithBlocks(level,box,0,2,1,0,4,3,planks);
+			this.fillWithBlocks(level,box,3,2,1,3,4,3,planks);
+			this.setBlock(level,box,2,2,4,door.setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER));
+			this.setBlock(level,box,2,3,4,door.setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));
+			this.fillWithBlocks(level,box,1,1,1,2,1,3,dirt);
+			this.setBlock(level,box,2,2,3,grass);
+			this.setBlock(level,box,2,2,1,fence.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.SOUTH,true));
+			this.setBlock(level,box,2,3,1,pressurePlate);
+			this.setBlock(level,box,0,3,2,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+			this.setBlock(level,box,3,3,2,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+			this.fillWithBlocks(level,box,0,5,1,3,5,3,log);
+			this.fillWithBlocks(level,box,1,5,0,2,5,4,log);
+			if(highRoof){
+				this.fillWithBlocks(level,box,1,5,1,2,5,3,air);
+				this.fillWithBlocks(level,box,1,6,1,2,6,3,log);
+			}
 		}
 		@Override
 		public void postProcess(@NotNull WorldGenLevel level,@NotNull StructureManager structureManager,@NotNull ChunkGenerator generator,@NotNull RandomSource random,@NotNull BoundingBox box,@NotNull ChunkPos chunkPos,@NotNull BlockPos startPos){
@@ -440,7 +461,8 @@ public class OldVillagePieces{
 				case 7 -> generateBlacksmith(level,box,random);
 				case 8 -> generateTavern(level,box);     // NOVÉ: Hospoda
 				case 9 -> generateChurch(level,box);     // NOVÉ: Kostel
-				case 10 -> generateShack(level,box);    // NOVÉ: Malá chatka
+				case 10 -> generateShack(level,box,false);    // NOVÉ: Malá chatka
+				case 11 -> generateShack(level,box,false);
 				default -> {
 				}
 			}
