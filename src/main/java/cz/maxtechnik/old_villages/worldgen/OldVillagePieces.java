@@ -170,7 +170,8 @@ public class OldVillagePieces{
 		// UPRAVENO: Bezpečné a hustší generování světel přímo na okrajích štěrkových cest (respektuje seed)
 		// UPRAVENO: Vybalancovaná hustota světel 1 blok od cesty s inteligentní ochranou proti stěnám budov
 		// UPRAVENO: Balancovaná hustota lamp přesně 1 blok od cesty (na trávě) s funkční anti-clipping kontrolou zdí
-		private void generatePath(WorldGenLevel level,BoundingBox box){
+		// UPRAVENO: Inteligentní 3D kontrola (3x3x7) kompletně čistí prostor okolo budov a farem
+		private void generatePath(WorldGenLevel level, BoundingBox box){
 			BoundingBox pieceBox=this.getBoundingBox();
 			for(int x=pieceBox.minX();x<=pieceBox.maxX();x++){
 				for(int z=pieceBox.minZ();z<=pieceBox.maxZ();z++){
@@ -183,32 +184,43 @@ public class OldVillagePieces{
 					}
 				}
 			}
-			long stablePathSeed=level.getLevel().getSeed()^BlockPos.asLong(pieceBox.minX(),pieceBox.minY(),pieceBox.minZ());
-			RandomSource stableRandom=RandomSource.create(stablePathSeed);
-			boolean isNorthSouth=pieceBox.getZSpan()>pieceBox.getXSpan();
+
+			long stablePathSeed = level.getLevel().getSeed() ^ BlockPos.asLong(pieceBox.minX(), pieceBox.minY(), pieceBox.minZ());
+			RandomSource stableRandom = RandomSource.create(stablePathSeed);
+			boolean isNorthSouth = pieceBox.getZSpan() > pieceBox.getXSpan();
+
 			// --- PROCEDURÁLNÍ GENEROVÁNÍ SVĚTEL MIMO CESTU ---
 			if(isNorthSouth){
 				int zSpan=pieceBox.getZSpan();
-				// FIX: Mnohem větší mezery mezi světly (krok 10 až 15 bloků), ať nejsou přeplněné
-				for(int zOffset=4;zOffset<zSpan-4;zOffset+=10+stableRandom.nextInt(6)){
+				for(int zOffset=4; zOffset<zSpan-4; zOffset+=10+stableRandom.nextInt(6)){
 					if(stableRandom.nextFloat()<0.40F){
 						int lampZ=pieceBox.minZ()+zOffset;
-						// FIX: Posunuto zpět o 1 blok vně od štěrku (stojí čistě na trávě hned vedle cesty)
 						int lampX=stableRandom.nextBoolean()?pieceBox.minX()-1:pieceBox.maxX()+1;
 						int lampY=level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,lampX,lampZ);
 						BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
+
 						if(box.isInside(lampBase)){
-							BlockState belowState=level.getBlockState(lampBase.below());
+							BlockState belowState = level.getBlockState(lampBase.below());
 							if(belowState.isFaceSturdy(level,lampBase.below(),Direction.UP)&&!belowState.is(Blocks.GRAVEL)){
-								// FIX: Protože se cesta generuje AŽ PO domech, tahle smyčka konečně uvidí zdi a lampu v nich zruší!
-								boolean isSpaceClear=true;
-								for(int h=0;h<=3;h++){
-									BlockState stateAbove=level.getBlockState(lampBase.above(h));
-									if(!stateAbove.isAir()&&!stateAbove.is(Blocks.SHORT_GRASS)&&!stateAbove.is(Blocks.TALL_GRASS)){
-										isSpaceClear=false;
-										break;
+
+								// FIX: Masivní 3D sken (3x3x7) do šířky i výšky spolehlivě odhalí přesahy střech i ploty farem
+								boolean isSpaceClear = true;
+								for(int xCheck = -1; xCheck <= 1; xCheck++){
+									for(int zCheck = -1; zCheck <= 1; zCheck++){
+										for(int h = 0; h <= 6; h++){
+											BlockPos checkPos = lampBase.offset(xCheck, h, zCheck);
+											BlockState state = level.getBlockState(checkPos);
+											// Vzduch, trávu a štěrk pod nohama ignorujeme, cokoli jiného (zeď, střecha, log) lampu zruší
+											if(!state.isAir()&&!state.is(Blocks.SHORT_GRASS)&&!state.is(Blocks.TALL_GRASS)&&!state.is(Blocks.GRAVEL)){
+												isSpaceClear = false;
+												break;
+											}
+										}
+										if(!isSpaceClear) break;
 									}
+									if(!isSpaceClear) break;
 								}
+
 								if(isSpaceClear){
 									spawnLampPost(level,lampBase);
 								}
@@ -218,25 +230,34 @@ public class OldVillagePieces{
 				}
 			}else{
 				int xSpan=pieceBox.getXSpan();
-				// FIX: Větší mezery (krok 10 až 15 bloků) i pro horizontální osu
-				for(int xOffset=4;xOffset<xSpan-4;xOffset+=10+stableRandom.nextInt(6)){
+				for(int xOffset=4; xOffset<xSpan-4; xOffset+=10+stableRandom.nextInt(6)){
 					if(stableRandom.nextFloat()<0.40F){
 						int lampX=pieceBox.minX()+xOffset;
-						// FIX: Posunuto o 1 blok vně od horizontálního chodníku do trávy
 						int lampZ=stableRandom.nextBoolean()?pieceBox.minZ()-1:pieceBox.maxZ()+1;
 						int lampY=level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,lampX,lampZ);
 						BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
+
 						if(box.isInside(lampBase)){
-							BlockState belowState=level.getBlockState(lampBase.below());
+							BlockState belowState = level.getBlockState(lampBase.below());
 							if(belowState.isFaceSturdy(level,lampBase.below(),Direction.UP)&&!belowState.is(Blocks.GRAVEL)){
-								boolean isSpaceClear=true;
-								for(int h=0;h<=3;h++){
-									BlockState stateAbove=level.getBlockState(lampBase.above(h));
-									if(!stateAbove.isAir()&&!stateAbove.is(Blocks.SHORT_GRASS)&&!stateAbove.is(Blocks.TALL_GRASS)){
-										isSpaceClear=false;
-										break;
+
+								// FIX: 3D sken i pro horizontální osu silnice
+								boolean isSpaceClear = true;
+								for(int xCheck = -1; xCheck <= 1; xCheck++){
+									for(int zCheck = -1; zCheck <= 1; zCheck++){
+										for(int h = 0; h <= 6; h++){
+											BlockPos checkPos = lampBase.offset(xCheck, h, zCheck);
+											BlockState state = level.getBlockState(checkPos);
+											if(!state.isAir()&&!state.is(Blocks.SHORT_GRASS)&&!state.is(Blocks.TALL_GRASS)&&!state.is(Blocks.GRAVEL)){
+												isSpaceClear = false;
+												break;
+											}
+										}
+										if(!isSpaceClear) break;
 									}
+									if(!isSpaceClear) break;
 								}
+
 								if(isSpaceClear){
 									spawnLampPost(level,lampBase);
 								}
@@ -478,6 +499,10 @@ public class OldVillagePieces{
 		}
 		// TYP 9: KOSTEL (Podlouhlá vysoká šablona 9x14)
 		private void generateChurch(WorldGenLevel level,BoundingBox box){
+
+			this.fillWithBlocks(level,box,1,1,0,3,1,8,cobble);
+			this.fillWithBlocks(level,box,0,1,1,4,1,4,cobble);
+			/*
 			createBase(level,box,0,0,8,13,cobble);
 			this.fillWithBlocks(level,box,0,1,0,8,12,13,air); // Vyčištění prostoru (kostel je vysoký!)
 			// Kompletní stavba z cobblestonu (klasický vanilla styl)
@@ -488,7 +513,7 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,3,6,11,5,10,13,cobble);
 			// Schod před hlavní vchod do věže (X=4, Z=14)
 			this.setBlock(level,box,4,1,14,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
-			createBaseStairs(level,box,4,14);
+			createBaseStairs(level,box,4,14);*/
 		}
 		private void generateShack(WorldGenLevel level,BoundingBox box,boolean highRoof){
 			this.fillWithBlocks(level,box,0,1,0,3,6,4,air);
