@@ -111,7 +111,7 @@ public class OldVillageStructure extends Structure{
 		// Osa SEVER / JIH (Silnice běží vertikálně, domy stavíme Vlevo/Vpravo)
 		// ====================================================================
 		if(pathDir==Direction.NORTH||pathDir==Direction.SOUTH){
-			// --- 1. CYKLUS: LEVÁ STRANA (Domy koukají na VÝCHOD ke gravelu) ---
+			// --- 1. CYKLUS: LEVÁ STRANA ---
 			int leftZ=pathBox.minZ()+1;
 			while(leftZ<pathBox.maxZ()){
 				int houseRand=random.nextInt(100);
@@ -127,26 +127,32 @@ public class OldVillageStructure extends Structure{
 					sizeX=5;
 					sizeZ=5;
 				}else if(houseRand<42){
-					type=random.nextBoolean()?10:11; // FIX: 50/50 šance mezi typem 10 a 11
+					type=random.nextBoolean()?10:11;
 					sizeX=5;
 					sizeZ=4;
 				}else if(houseRand<54){
 					type=4;
 					sizeX=11;
 					sizeZ=9;
-				}else if(houseRand<66){
+				}else if(houseRand<64){
 					type=5;
 					sizeX=9;
 					sizeZ=7;
-				}else if(houseRand<78){
+				}else if(houseRand<74){
 					type=6;
 					sizeX=9;
 					sizeZ=13;
-				}else if(houseRand<88){
+				}else if(houseRand<84){
 					type=7;
 					sizeX=7;
 					sizeZ=10;
-				}else if(houseRand<94){
+				}
+				// NOVÉ: Knihovna (Hloubka do boku X=6, Délka podél cesty Z=9)
+				else if(houseRand<90){
+					type=12;
+					sizeX=6;
+					sizeZ=9;
+				}else if(houseRand<95){
 					type=8;
 					sizeX=11;
 					sizeZ=9;
@@ -156,7 +162,7 @@ public class OldVillageStructure extends Structure{
 					sizeZ=9;
 				}
 				if(leftZ+sizeZ>pathBox.maxZ()){
-					type=random.nextBoolean()?10:11; // FIX: 50/50 fallback na konci ulice
+					type=random.nextBoolean()?10:11;
 					sizeX=5;
 					sizeZ=4;
 					if(leftZ+sizeZ>pathBox.maxZ()) break;
@@ -169,7 +175,7 @@ public class OldVillageStructure extends Structure{
 					leftZ+=random.nextInt(3)+2;
 				}
 			}
-			// --- 2. CYKLUS: PRAVÁ STRANA (Domy koukají na ZÁPAD ke gravelu) ---
+			// --- 2. CYKLUS: PRAVÁ STRANA ---
 			int rightZ=pathBox.minZ()+1;
 			while(rightZ<pathBox.maxZ()){
 				int houseRand=random.nextInt(100);
@@ -185,26 +191,31 @@ public class OldVillageStructure extends Structure{
 					sizeX=5;
 					sizeZ=5;
 				}else if(houseRand<42){
-					type=random.nextBoolean()?10:11; // FIX: 50/50 šance pro pravou stranu
+					type=random.nextBoolean()?10:11;
 					sizeX=5;
 					sizeZ=4;
 				}else if(houseRand<54){
 					type=4;
 					sizeX=11;
 					sizeZ=9;
-				}else if(houseRand<66){
+				}else if(houseRand<64){
 					type=5;
 					sizeX=9;
 					sizeZ=7;
-				}else if(houseRand<78){
+				}else if(houseRand<74){
 					type=6;
 					sizeX=9;
 					sizeZ=13;
-				}else if(houseRand<88){
+				}else if(houseRand<84){
 					type=7;
 					sizeX=7;
 					sizeZ=10;
-				}else if(houseRand<94){
+				}else if(houseRand<90){
+					type=12;
+					sizeX=6;
+					sizeZ=9;
+				} // NOVÉ: Knihovna
+				else if(houseRand<95){
 					type=8;
 					sizeX=11;
 					sizeZ=9;
@@ -214,7 +225,7 @@ public class OldVillageStructure extends Structure{
 					sizeZ=9;
 				}
 				if(rightZ+sizeZ>pathBox.maxZ()){
-					type=random.nextBoolean()?10:11; // FIX: 50/50 fallback pro pravou stranu
+					type=random.nextBoolean()?10:11;
 					sizeX=5;
 					sizeZ=4;
 					if(rightZ+sizeZ>pathBox.maxZ()) break;
@@ -232,7 +243,7 @@ public class OldVillageStructure extends Structure{
 		// Osa VÝCHOD / ZÁPAD (Silnice běží horizontálně, domy stavíme Sever/Jih)
 		// ====================================================================
 		else{
-			// --- 1. CYKLUS: STRANA SEVER (Domy koukají na JIH) ---
+			// --- 1. CYKLUS: STRANA SEVER ---
 			int leftX=pathBox.minX()+1;
 			while(leftX<pathBox.maxX()){
 				int houseRand=random.nextInt(100);
@@ -248,26 +259,32 @@ public class OldVillageStructure extends Structure{
 					sizeX=5;
 					sizeZ=5;
 				}else if(houseRand<42){
-					type=random.nextBoolean()?10:11; // FIX: 50/50 šance na severní straně
+					type=random.nextBoolean()?10:11;
 					sizeX=4;
 					sizeZ=5;
 				}else if(houseRand<54){
 					type=4;
 					sizeX=9;
 					sizeZ=11;
-				}else if(houseRand<66){
+				}else if(houseRand<64){
 					type=5;
 					sizeX=7;
 					sizeZ=9;
-				}else if(houseRand<78){
+				}else if(houseRand<74){
 					type=6;
 					sizeX=13;
 					sizeZ=9;
-				}else if(houseRand<88){
+				}else if(houseRand<84){
 					type=7;
 					sizeX=10;
 					sizeZ=7;
-				}else if(houseRand<94){
+				}
+				// NOVÉ: Knihovna kolmo (Šířka podél cesty X=9, Hloubka do boku Z=6)
+				else if(houseRand<90){
+					type=12;
+					sizeX=9;
+					sizeZ=6;
+				}else if(houseRand<95){
 					type=8;
 					sizeX=9;
 					sizeZ=11;
@@ -277,7 +294,7 @@ public class OldVillageStructure extends Structure{
 					sizeZ=14;
 				}
 				if(leftX+sizeX>pathBox.maxX()){
-					type=random.nextBoolean()?10:11; // FIX: 50/50 fallback na severní straně
+					type=random.nextBoolean()?10:11;
 					sizeX=4;
 					sizeZ=5;
 					if(leftX+sizeX>pathBox.maxX()) break;
@@ -290,7 +307,7 @@ public class OldVillageStructure extends Structure{
 					leftX+=random.nextInt(3)+2;
 				}
 			}
-			// --- 2. CYKLUS: STRANA JIH (Domy koukají na SEVER) ---
+			// --- 2. CYKLUS: STRANA JIH ---
 			int rightX=pathBox.minX()+1;
 			while(rightX<pathBox.maxX()){
 				int houseRand=random.nextInt(100);
@@ -306,26 +323,31 @@ public class OldVillageStructure extends Structure{
 					sizeX=5;
 					sizeZ=5;
 				}else if(houseRand<42){
-					type=random.nextBoolean()?10:11; // FIX: 50/50 šance na jižní straně
+					type=random.nextBoolean()?10:11;
 					sizeX=4;
 					sizeZ=5;
 				}else if(houseRand<54){
 					type=4;
 					sizeX=9;
 					sizeZ=11;
-				}else if(houseRand<66){
+				}else if(houseRand<64){
 					type=5;
 					sizeX=7;
 					sizeZ=9;
-				}else if(houseRand<78){
+				}else if(houseRand<74){
 					type=6;
 					sizeX=13;
 					sizeZ=9;
-				}else if(houseRand<88){
+				}else if(houseRand<84){
 					type=7;
 					sizeX=10;
 					sizeZ=7;
-				}else if(houseRand<94){
+				}else if(houseRand<90){
+					type=12;
+					sizeX=9;
+					sizeZ=6;
+				} // NOVÉ: Knihovna kolmo
+				else if(houseRand<95){
 					type=8;
 					sizeX=9;
 					sizeZ=11;
@@ -335,7 +357,7 @@ public class OldVillageStructure extends Structure{
 					sizeZ=14;
 				}
 				if(rightX+sizeX>pathBox.maxX()){
-					type=random.nextBoolean()?10:11; // FIX: 50/50 fallback na jižní straně
+					type=random.nextBoolean()?10:11;
 					sizeX=4;
 					sizeZ=5;
 					if(rightX+sizeX>pathBox.maxX()) break;

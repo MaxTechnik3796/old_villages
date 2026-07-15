@@ -50,14 +50,14 @@ public class OldVillagePieces{
 		BlockState grass=Blocks.SHORT_GRASS.defaultBlockState();
 		BlockState glassPane=Blocks.GLASS_PANE.defaultBlockState();
 		BlockState wallTorch=Blocks.WALL_TORCH.defaultBlockState();
+		BlockState torch=Blocks.TORCH.defaultBlockState();
+		BlockState wool=Blocks.BLACK_WOOL.defaultBlockState();
 		BlockState ladder=Blocks.LADDER.defaultBlockState();
-
 		BlockState craftingTable=Blocks.CRAFTING_TABLE.defaultBlockState();
 		BlockState bookshelf=Blocks.BOOKSHELF.defaultBlockState();
 		BlockState grindstone=Blocks.GRINDSTONE.defaultBlockState().setValue(GrindstoneBlock.FACE,AttachFace.FLOOR);
 		BlockState bed=Blocks.RED_BED.defaultBlockState();
 		BlockState smoker=Blocks.SMOKER.defaultBlockState();
-
 		BlockState air=Blocks.AIR.defaultBlockState();
 		// AKTUALIZOVÁNO: 0=Studna, 1=Cesta, 2=Malý dům A, 3=Malý dům B, 4=Velký dům, 5=Malá farma, 6=Velká farma, 7=Kovárna
 		private final int pieceType;
@@ -161,7 +161,8 @@ public class OldVillagePieces{
 			this.setBlock(level,box,4,3,4,fence);
 			this.fillWithBlocks(level,box,1,4,1,4,4,4,cobble);
 		}
-		private void generatePath(WorldGenLevel level,BoundingBox box){
+		// UPRAVENO: Cesta nyní přijímá random a sem tam vygeneruje pouliční osvětlení
+		private void generatePath(WorldGenLevel level,BoundingBox box,RandomSource random){
 			BoundingBox pieceBox=this.getBoundingBox();
 			for(int x=pieceBox.minX();x<=pieceBox.maxX();x++){
 				for(int z=pieceBox.minZ();z<=pieceBox.maxZ();z++){
@@ -171,6 +172,27 @@ public class OldVillagePieces{
 						level.setBlock(pathPos,gravel,2);
 						level.setBlock(pathPos.above(),air,2);
 						level.setBlock(pathPos.above(2),air,2);
+					}
+				}
+			}
+			// --- PROCEDURÁLNÍ GENEROVÁNÍ SVĚTEL PODÉL CESTY ---
+			if(random.nextFloat()<0.20F){ // 20% šance na lampu pro tento úsek silnice
+				boolean isNorthSouth=pieceBox.getZSpan()>pieceBox.getXSpan();
+				if(isNorthSouth){
+					int randomZ=pieceBox.minZ()+random.nextInt(pieceBox.getZSpan());
+					int lampX=random.nextBoolean()?pieceBox.minX()-1:pieceBox.maxX()+1;
+					int lampY=level.getHeight(Heightmap.Types.WORLD_SURFACE_WG,lampX,randomZ);
+					BlockPos lampBase=new BlockPos(lampX,lampY,randomZ);
+					if(box.isInside(lampBase)&&level.getBlockState(lampBase.below()).isSolid()){
+						spawnLampPost(level,lampBase);
+					}
+				}else{
+					int randomX=pieceBox.minX()+random.nextInt(pieceBox.getXSpan());
+					int lampZ=random.nextBoolean()?pieceBox.minZ()-1:pieceBox.maxZ()+1;
+					int lampY=level.getHeight(Heightmap.Types.WORLD_SURFACE_WG,randomX,lampZ);
+					BlockPos lampBase=new BlockPos(randomX,lampY,lampZ);
+					if(box.isInside(lampBase)&&level.getBlockState(lampBase.below()).isSolid()){
+						spawnLampPost(level,lampBase);
 					}
 				}
 			}
@@ -404,7 +426,6 @@ public class OldVillagePieces{
 			this.setBlock(level,box,6,2,7,fence);
 			this.setBlock(level,box,6,3,7,pressurePlate);
 			this.fillWithBlocks(level,box,2,2,8,2,2,9,smoothStoneDoubleSlab);
-
 		}
 		// TYP 9: KOSTEL (Podlouhlá vysoká šablona 9x14)
 		private void generateChurch(WorldGenLevel level,BoundingBox box){
@@ -420,7 +441,6 @@ public class OldVillagePieces{
 			this.setBlock(level,box,4,1,14,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
 			createBaseStairs(level,box,4,14);
 		}
-		// TYP 10: MALÁ CHATKA (Miniaturní domeček 4x4)
 		private void generateShack(WorldGenLevel level,BoundingBox box,boolean highRoof){
 			this.fillWithBlocks(level,box,0,1,0,3,6,4,air);
 			this.createBase(level,box,0,0,3,6,cobble);
@@ -448,11 +468,58 @@ public class OldVillagePieces{
 				this.fillWithBlocks(level,box,1,6,1,2,6,3,log);
 			}
 		}
+		// NOVÉ: Šablona pro Knihovnu (Tělo 9x6, schod přetéká na Z=6)
+		private void generateLibrary(WorldGenLevel level,BoundingBox box){
+			createBase(level,box,0,0,8,5,cobble);
+			this.fillWithBlocks(level,box,0,1,0,8,5,6,air); // Vyčištění vzduchu
+			this.fillWithBlocks(level,box,0,1,0,8,1,5,cobble); // Kamenná podlaha
+			this.fillWithBlocks(level,box,0,2,0,8,4,0,planks); // Zadní stěna
+			this.fillWithBlocks(level,box,0,2,5,8,4,5,planks); // Přední stěna
+			this.fillWithBlocks(level,box,0,2,1,0,4,4,planks); // Levá stěna
+			this.fillWithBlocks(level,box,8,2,1,8,4,4,planks); // Pravá stěna
+			// Rohové ozdobné sloupy z logů
+			this.fillWithBlocks(level,box,0,2,0,0,4,0,log);
+			this.fillWithBlocks(level,box,8,2,0,8,4,0,log);
+			this.fillWithBlocks(level,box,0,2,5,0,4,5,log);
+			this.fillWithBlocks(level,box,8,2,5,8,4,5,log);
+			// Uvnitř naskládáme knižní regály (Bookshelfy)
+			this.fillWithBlocks(level,box,1,2,1,1,3,3,bookshelf);
+			this.fillWithBlocks(level,box,7,2,1,7,3,3,bookshelf);
+			this.setBlock(level,box,4,2,2,craftingTable); // Pracovní stůl uprostřed
+			// Okna do stran
+			this.setBlock(level,box,0,3,2,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+			this.setBlock(level,box,8,3,2,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+			// Vchod (X=4, Z=5)
+			this.setBlock(level,box,4,2,5,air);
+			this.setBlock(level,box,4,3,5,air);
+			// Předsazený schod lícující s hranou boxu (přetéká na silnici)
+			this.setBlock(level,box,4,1,6,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			createBaseStairs(level,box,4,6);
+			// Střecha dokola z logů, vnitřek z prken
+			this.fillWithBlocks(level,box,0,5,0,8,5,5,log);
+			this.fillWithBlocks(level,box,1,5,1,7,5,4,planks);
+		}
+		// NOVÉ: Pomocná metoda, která postane lampu přesně podle obrázku
+		private void spawnLampPost(WorldGenLevel level,BlockPos basePos){
+			// Použijeme vlnu podle tvého perasu
+			// 3x plot nad sebou jako sloup
+			level.setBlock(basePos,fence,2);
+			level.setBlock(basePos.above(),fence,2);
+			level.setBlock(basePos.above(2),fence,2);
+			// Černá kostka navrchu sloupu
+			BlockPos woolPos=basePos.above(3);
+			level.setBlock(woolPos,wool,2);
+			// 4 torchky dokola okolo té vlny
+			level.setBlock(woolPos.north(),wallTorch.setValue(WallTorchBlock.FACING,Direction.NORTH),2);
+			level.setBlock(woolPos.south(),wallTorch.setValue(WallTorchBlock.FACING,Direction.SOUTH),2);
+			level.setBlock(woolPos.east(),wallTorch.setValue(WallTorchBlock.FACING,Direction.EAST),2);
+			level.setBlock(woolPos.west(),wallTorch.setValue(WallTorchBlock.FACING,Direction.WEST),2);
+		}
 		@Override
 		public void postProcess(@NotNull WorldGenLevel level,@NotNull StructureManager structureManager,@NotNull ChunkGenerator generator,@NotNull RandomSource random,@NotNull BoundingBox box,@NotNull ChunkPos chunkPos,@NotNull BlockPos startPos){
 			switch(this.pieceType){
 				case 0 -> generateWell(level,box);
-				case 1 -> generatePath(level,box);
+				case 1 -> generatePath(level,box,random);
 				case 2 -> generateSmallHouse(level,box,false);
 				case 3 -> generateSmallHouse(level,box,true);
 				case 4 -> generateLargeHouse(level,box);
@@ -463,6 +530,7 @@ public class OldVillagePieces{
 				case 9 -> generateChurch(level,box);     // NOVÉ: Kostel
 				case 10 -> generateShack(level,box,false);    // NOVÉ: Malá chatka
 				case 11 -> generateShack(level,box,true);
+				case 12 -> generateLibrary(level,box);
 				default -> {
 				}
 			}
