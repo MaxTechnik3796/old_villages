@@ -164,8 +164,8 @@ public class OldVillageStructure extends Structure{
 					sizeZ=9;
 				}else{
 					type=9;
-					sizeX=14;
-					sizeZ=9;
+					sizeX=9;
+					sizeZ=5;
 				}
 				if(leftZ+sizeZ>pathBox.maxZ()){
 					type=random.nextBoolean()?10:11;
@@ -223,8 +223,8 @@ public class OldVillageStructure extends Structure{
 					sizeZ=9;
 				}else{
 					type=9;
-					sizeX=14;
-					sizeZ=9;
+					sizeX=9;
+					sizeZ=5;
 				}
 				if(rightZ+sizeZ>pathBox.maxZ()){
 					type=random.nextBoolean()?10:11;
@@ -287,8 +287,8 @@ public class OldVillageStructure extends Structure{
 					sizeZ=11;
 				}else{
 					type=9;
-					sizeX=9;
-					sizeZ=14;
+					sizeX=5;
+					sizeZ=9;
 				}
 				if(leftX+sizeX>pathBox.maxX()){
 					type=random.nextBoolean()?10:11;
@@ -346,8 +346,8 @@ public class OldVillageStructure extends Structure{
 					sizeZ=11;
 				}else{
 					type=9;
-					sizeX=9;
-					sizeZ=14;
+					sizeX=5;
+					sizeZ=9;
 				}
 				if(rightX+sizeX>pathBox.maxX()){
 					type=random.nextBoolean()?10:11;

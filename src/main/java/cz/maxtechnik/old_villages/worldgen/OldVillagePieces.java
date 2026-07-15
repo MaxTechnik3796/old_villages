@@ -171,48 +171,56 @@ public class OldVillagePieces{
 		// UPRAVENO: Vybalancovaná hustota světel 1 blok od cesty s inteligentní ochranou proti stěnám budov
 		// UPRAVENO: Balancovaná hustota lamp přesně 1 blok od cesty (na trávě) s funkční anti-clipping kontrolou zdí
 		// UPRAVENO: Inteligentní 3D kontrola (3x3x7) kompletně čistí prostor okolo budov a farem
-		private void generatePath(WorldGenLevel level, BoundingBox box){
+		// UPRAVENO: Bezpečné pokládání štěrku (nemaže schody budov) + opravený 3D skener lamp (ignoruje přírodní trávník a hlínu)
+		private void generatePath(WorldGenLevel level,BoundingBox box){
 			BoundingBox pieceBox=this.getBoundingBox();
 			for(int x=pieceBox.minX();x<=pieceBox.maxX();x++){
 				for(int z=pieceBox.minZ();z<=pieceBox.maxZ();z++){
 					int surfaceY=level.getHeight(Heightmap.Types.WORLD_SURFACE_WG,x,z);
 					BlockPos pathPos=new BlockPos(x,surfaceY-1,z);
 					if(box.isInside(pathPos)){
-						level.setBlock(pathPos,gravel,2);
-						level.setBlock(pathPos.above(),air,2);
-						level.setBlock(pathPos.above(2),air,2);
+						// FIX: Cesta běží až po domech, takže pokládáme štěrky a čistíme vzduch pouze tehdy, pokud je tam vzduch nebo přírodní terén (nemaže schody!)
+						BlockState currentBlock=level.getBlockState(pathPos);
+						if(currentBlock.isAir()||currentBlock.is(Blocks.SHORT_GRASS)||currentBlock.is(Blocks.TALL_GRASS)||currentBlock.is(Blocks.GRASS_BLOCK)||currentBlock.is(Blocks.DIRT)||currentBlock.is(Blocks.STONE)||currentBlock.is(Blocks.SAND)){
+							level.setBlock(pathPos,gravel,2);
+						}
+						BlockPos above1=pathPos.above();
+						BlockState state1=level.getBlockState(above1);
+						if(state1.isAir()||state1.is(Blocks.SHORT_GRASS)||state1.is(Blocks.TALL_GRASS)||state1.is(Blocks.GRASS_BLOCK)||state1.is(Blocks.DIRT)){
+							level.setBlock(above1,air,2);
+						}
+						BlockPos above2=pathPos.above(2);
+						BlockState state2=level.getBlockState(above2);
+						if(state2.isAir()||state2.is(Blocks.SHORT_GRASS)||state2.is(Blocks.TALL_GRASS)||state2.is(Blocks.GRASS_BLOCK)||state2.is(Blocks.DIRT)){
+							level.setBlock(above2,air,2);
+						}
 					}
 				}
 			}
-
-			long stablePathSeed = level.getLevel().getSeed() ^ BlockPos.asLong(pieceBox.minX(), pieceBox.minY(), pieceBox.minZ());
-			RandomSource stableRandom = RandomSource.create(stablePathSeed);
-			boolean isNorthSouth = pieceBox.getZSpan() > pieceBox.getXSpan();
-
+			long stablePathSeed=level.getLevel().getSeed()^BlockPos.asLong(pieceBox.minX(),pieceBox.minY(),pieceBox.minZ());
+			RandomSource stableRandom=RandomSource.create(stablePathSeed);
+			boolean isNorthSouth=pieceBox.getZSpan()>pieceBox.getXSpan();
 			// --- PROCEDURÁLNÍ GENEROVÁNÍ SVĚTEL MIMO CESTU ---
 			if(isNorthSouth){
 				int zSpan=pieceBox.getZSpan();
-				for(int zOffset=4; zOffset<zSpan-4; zOffset+=10+stableRandom.nextInt(6)){
-					if(stableRandom.nextFloat()<0.40F){
+				for(int zOffset=4;zOffset<zSpan-4;zOffset+=10+stableRandom.nextInt(6)){
+					if(stableRandom.nextFloat()<0.7F){
 						int lampZ=pieceBox.minZ()+zOffset;
 						int lampX=stableRandom.nextBoolean()?pieceBox.minX()-1:pieceBox.maxX()+1;
 						int lampY=level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,lampX,lampZ);
 						BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
-
 						if(box.isInside(lampBase)){
-							BlockState belowState = level.getBlockState(lampBase.below());
+							BlockState belowState=level.getBlockState(lampBase.below());
 							if(belowState.isFaceSturdy(level,lampBase.below(),Direction.UP)&&!belowState.is(Blocks.GRAVEL)){
-
-								// FIX: Masivní 3D sken (3x3x7) do šířky i výšky spolehlivě odhalí přesahy střech i ploty farem
-								boolean isSpaceClear = true;
-								for(int xCheck = -1; xCheck <= 1; xCheck++){
-									for(int zCheck = -1; zCheck <= 1; zCheck++){
-										for(int h = 0; h <= 6; h++){
-											BlockPos checkPos = lampBase.offset(xCheck, h, zCheck);
-											BlockState state = level.getBlockState(checkPos);
-											// Vzduch, trávu a štěrk pod nohama ignorujeme, cokoli jiného (zeď, střecha, log) lampu zruší
-											if(!state.isAir()&&!state.is(Blocks.SHORT_GRASS)&&!state.is(Blocks.TALL_GRASS)&&!state.is(Blocks.GRAVEL)){
-												isSpaceClear = false;
+								// FIX: Do skeneru přidán GRASS_BLOCK a DIRT, aby přírodní podklad neshazoval validaci čistého místa pro lampu
+								boolean isSpaceClear=true;
+								for(int xCheck=-1;xCheck<=1;xCheck++){
+									for(int zCheck=-1;zCheck<=1;zCheck++){
+										for(int h=0;h<=6;h++){
+											BlockPos checkPos=lampBase.offset(xCheck,h,zCheck);
+											BlockState state=level.getBlockState(checkPos);
+											if(!state.isAir()&&!state.is(Blocks.SHORT_GRASS)&&!state.is(Blocks.TALL_GRASS)&&!state.is(Blocks.GRAVEL)&&!state.is(Blocks.GRASS_BLOCK)&&!state.is(Blocks.DIRT)){
+												isSpaceClear=false;
 												break;
 											}
 										}
@@ -220,7 +228,6 @@ public class OldVillagePieces{
 									}
 									if(!isSpaceClear) break;
 								}
-
 								if(isSpaceClear){
 									spawnLampPost(level,lampBase);
 								}
@@ -230,26 +237,24 @@ public class OldVillagePieces{
 				}
 			}else{
 				int xSpan=pieceBox.getXSpan();
-				for(int xOffset=4; xOffset<xSpan-4; xOffset+=10+stableRandom.nextInt(6)){
-					if(stableRandom.nextFloat()<0.40F){
+				for(int xOffset=4;xOffset<xSpan-4;xOffset+=10+stableRandom.nextInt(6)){
+					if(stableRandom.nextFloat()<0.7F){
 						int lampX=pieceBox.minX()+xOffset;
 						int lampZ=stableRandom.nextBoolean()?pieceBox.minZ()-1:pieceBox.maxZ()+1;
 						int lampY=level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,lampX,lampZ);
 						BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
-
 						if(box.isInside(lampBase)){
-							BlockState belowState = level.getBlockState(lampBase.below());
+							BlockState belowState=level.getBlockState(lampBase.below());
 							if(belowState.isFaceSturdy(level,lampBase.below(),Direction.UP)&&!belowState.is(Blocks.GRAVEL)){
-
-								// FIX: 3D sken i pro horizontální osu silnice
-								boolean isSpaceClear = true;
-								for(int xCheck = -1; xCheck <= 1; xCheck++){
-									for(int zCheck = -1; zCheck <= 1; zCheck++){
-										for(int h = 0; h <= 6; h++){
-											BlockPos checkPos = lampBase.offset(xCheck, h, zCheck);
-											BlockState state = level.getBlockState(checkPos);
-											if(!state.isAir()&&!state.is(Blocks.SHORT_GRASS)&&!state.is(Blocks.TALL_GRASS)&&!state.is(Blocks.GRAVEL)){
-												isSpaceClear = false;
+								// FIX: Ignorování trávy a hlíny i pro horizontální silnice
+								boolean isSpaceClear=true;
+								for(int xCheck=-1;xCheck<=1;xCheck++){
+									for(int zCheck=-1;zCheck<=1;zCheck++){
+										for(int h=0;h<=6;h++){
+											BlockPos checkPos=lampBase.offset(xCheck,h,zCheck);
+											BlockState state=level.getBlockState(checkPos);
+											if(!state.isAir()&&!state.is(Blocks.SHORT_GRASS)&&!state.is(Blocks.TALL_GRASS)&&!state.is(Blocks.GRAVEL)&&!state.is(Blocks.GRASS_BLOCK)&&!state.is(Blocks.DIRT)){
+												isSpaceClear=false;
 												break;
 											}
 										}
@@ -257,7 +262,6 @@ public class OldVillagePieces{
 									}
 									if(!isSpaceClear) break;
 								}
-
 								if(isSpaceClear){
 									spawnLampPost(level,lampBase);
 								}
@@ -308,7 +312,7 @@ public class OldVillagePieces{
 			createBaseStairs(level,box,6,11);
 			this.fillWithBlocks(level,box,0,1,0,6,1,4,cobble);
 			this.fillWithBlocks(level,box,0,1,5,8,1,10,cobble);
-			this.setBlock(level,box,6,1,11,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,6,1,11,planksStairs.setValue(StairBlock.FACING,Direction.SOUTH));
 			this.fillWithBlocks(level,box,1,1,1,5,1,5,planks);
 			this.fillWithBlocks(level,box,1,1,6,7,1,9,planks);
 			this.fillWithBlocks(level,box,0,2,0,6,4,0,cobble);
@@ -499,9 +503,10 @@ public class OldVillagePieces{
 		}
 		// TYP 9: KOSTEL (Podlouhlá vysoká šablona 9x14)
 		private void generateChurch(WorldGenLevel level,BoundingBox box){
-
 			this.fillWithBlocks(level,box,1,1,0,3,1,8,cobble);
 			this.fillWithBlocks(level,box,0,1,1,4,1,4,cobble);
+
+			this.setBlock(level,box,2,1,9,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
 			/*
 			createBase(level,box,0,0,8,13,cobble);
 			this.fillWithBlocks(level,box,0,1,0,8,12,13,air); // Vyčištění prostoru (kostel je vysoký!)
