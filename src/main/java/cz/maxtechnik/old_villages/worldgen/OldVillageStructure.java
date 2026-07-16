@@ -31,9 +31,8 @@ public class OldVillageStructure extends Structure{
 		int houseY=context.chunkGenerator().getFirstOccupiedHeight(x,z,Heightmap.Types.WORLD_SURFACE_WG,context.heightAccessor(),context.randomState());
 		if(houseY<seaLevel){
 			BlockColumn column=context.chunkGenerator().getBaseColumn(x,z,context.heightAccessor(),context.randomState());
-			if(column.getBlock(seaLevel-2).is(Blocks.WATER)){
-				return seaLevel;
-			}
+			if(column.getBlock(seaLevel-2).is(Blocks.WATER))
+				return seaLevel-1;
 		}
 		return houseY;
 	}
