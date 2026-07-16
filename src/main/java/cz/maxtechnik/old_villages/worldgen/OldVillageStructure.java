@@ -36,6 +36,13 @@ public class OldVillageStructure extends Structure{
 				context.heightAccessor(),
 				context.randomState()
 		);
+
+		// FIX: Pokud je střed vesnice (studna) plánován v oceánu/řece pod hladinou moře, uzamkneme ho na hladinu vody
+		int seaLevel = context.chunkGenerator().getSeaLevel();
+		if(height < seaLevel) {
+			height = seaLevel;
+		}
+
 		if(height<=context.heightAccessor().getMinBuildHeight())
 			height=context.chunkGenerator().getFirstFreeHeight(blockX,blockZ,Heightmap.Types.WORLD_SURFACE,context.heightAccessor(),context.randomState());
 		BlockPos startPos=new BlockPos(blockX,height,blockZ);
