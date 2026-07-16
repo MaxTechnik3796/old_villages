@@ -66,7 +66,7 @@ public class OldVillagePieces{
 		BlockState smoker=Blocks.SMOKER.defaultBlockState();
 		BlockState air=Blocks.AIR.defaultBlockState();
 		private final int pieceType;
-		private int villageStyle=0;// 0=Plains, 1=Desert, 2=Savanna, 3=Taiga
+		private final int villageStyle;// 0=Plains, 1=Desert, 2=Savanna, 3=Taiga
 		// UPRAVENO: Konstruktory a načítání tagů nyní přijímají/ukládají villageStyle a spouští initBlocks()
 		public VillagePiece(int pieceType,int genDepth,int x,int y,int z,int sizeX,int sizeY,int sizeZ,Direction orientation,int villageStyle){
 			super(OldVillagesMod.OLD_VILLAGE_PIECE.get(),genDepth,BoundingBox.orientBox(x,y,z,0,0,0,sizeX,sizeY,sizeZ,orientation));
