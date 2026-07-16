@@ -1,15 +1,15 @@
 {
-	"structures": [
+	"structures":[
 		{
-			"structure": "old_villages:old_village",
-			"weight": 1
+			"structure":"old_villages:old_village",
+			"weight":1
 		}
 	],
-	"placement": {
-		"type": "minecraft:random_spread",
-		"spacing": 34,
-		"separation": 8,
-		"spread_type": "linear",
-		"salt": 10347352
+	"placement":{
+		"type":"minecraft:random_spread",
+		"spacing":34,
+		"separation":8,
+		"spread_type":"linear",
+		"salt":10347352
 	}
 }

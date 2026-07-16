@@ -44,30 +44,27 @@ public class OldVillageStructure extends Structure{
 		List<BoundingBox> placedBoxes=new ArrayList<>();
 		RandomSource random=context.random();
 		Direction wellDirection=Direction.Plane.HORIZONTAL.getRandomDirection(random);
-
 		// FIX: Server-safe zjištění biomu na přesné pozici generovaného středu vesnice
-		net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> biomeHolder = context.biomeSource().getNoiseBiome(
+		net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> biomeHolder=context.biomeSource().getNoiseBiome(
 				net.minecraft.core.QuartPos.fromBlock(pos.getX()),
 				net.minecraft.core.QuartPos.fromBlock(pos.getY()),
 				net.minecraft.core.QuartPos.fromBlock(pos.getZ()),
 				context.randomState().sampler()
 		);
-
-		int villageStyle = 0; // Výchozí: 0 = Plains (Oak)
-		if (biomeHolder.unwrapKey().isPresent()) {
-			net.minecraft.resources.ResourceLocation biomeLoc = biomeHolder.unwrapKey().get().location();
-			String path = biomeLoc.getPath();
-			if (path.contains("desert")) {
-				villageStyle = 1; // Poušť (Sandstone)
-			} else if (path.contains("savanna")) {
-				villageStyle = 2; // Savana (Acacia)
-			} else if (path.contains("taiga") || path.contains("snowy")) {
-				villageStyle = 3; // Taiga a sněžné pláně (Spruce)
+		int villageStyle=0; // Výchozí: 0 = Plains (Oak)
+		if(biomeHolder.unwrapKey().isPresent()){
+			net.minecraft.resources.ResourceLocation biomeLoc=biomeHolder.unwrapKey().get().location();
+			String path=biomeLoc.getPath();
+			if(path.contains("desert")){
+				villageStyle=1; // Poušť (Sandstone)
+			}else if(path.contains("savanna")){
+				villageStyle=2; // Savana (Acacia)
+			}else if(path.contains("taiga")||path.contains("snowy")){
+				villageStyle=3; // Taiga a sněžné pláně (Spruce)
 			}
 		}
-
 		// Předání vybraného stylu do studny a všech větví cest
-		OldVillagePieces.VillagePiece well=new OldVillagePieces.VillagePiece(0,0,pos.getX(),pos.getY(),pos.getZ(),6,7,6,wellDirection, villageStyle);
+		OldVillagePieces.VillagePiece well=new OldVillagePieces.VillagePiece(0,0,pos.getX(),pos.getY(),pos.getZ(),6,7,6,wellDirection,villageStyle);
 		builder.addPiece(well);
 		BoundingBox wellBox=well.getBoundingBox();
 		placedBoxes.add(wellBox);
@@ -77,39 +74,38 @@ public class OldVillageStructure extends Structure{
 		int maxZ=wellBox.maxZ();
 		int y=wellBox.minY();
 		List<PathRecord> pathQueue=new ArrayList<>();
-
 		List<OldVillagePieces.VillagePiece> deferredPaths=new ArrayList<>();
 		BoundingBox nStart=new BoundingBox(minX+1,y-30,minZ-25,minX+3,y+30,minZ-1);
 		if(isAreaClear(placedBoxes,nStart)){
-			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,nStart,Direction.NORTH, villageStyle);
+			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,nStart,Direction.NORTH,villageStyle);
 			deferredPaths.add(p);
 			placedBoxes.add(nStart);
 			pathQueue.add(new PathRecord(nStart,Direction.NORTH,1));
 		}
 		BoundingBox sStart=new BoundingBox(minX+1,y-30,maxZ+1,minX+3,y+30,maxZ+25);
 		if(isAreaClear(placedBoxes,sStart)){
-			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,sStart,Direction.SOUTH, villageStyle);
+			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,sStart,Direction.SOUTH,villageStyle);
 			deferredPaths.add(p);
 			placedBoxes.add(sStart);
 			pathQueue.add(new PathRecord(sStart,Direction.SOUTH,1));
 		}
 		BoundingBox wStart=new BoundingBox(minX-25,y-30,minZ+1,minX-1,y+30,minZ+3);
 		if(isAreaClear(placedBoxes,wStart)){
-			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,wStart,Direction.WEST, villageStyle);
+			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,wStart,Direction.WEST,villageStyle);
 			deferredPaths.add(p);
 			placedBoxes.add(wStart);
 			pathQueue.add(new PathRecord(wStart,Direction.WEST,1));
 		}
 		BoundingBox eStart=new BoundingBox(maxX+1,y-30,minZ+1,maxX+25,y+30,minZ+3);
 		if(isAreaClear(placedBoxes,eStart)){
-			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,eStart,Direction.EAST, villageStyle);
+			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,eStart,Direction.EAST,villageStyle);
 			deferredPaths.add(p);
 			placedBoxes.add(eStart);
 			pathQueue.add(new PathRecord(eStart,Direction.EAST,1));
 		}
 		while(!pathQueue.isEmpty()){
 			PathRecord currentPath=pathQueue.removeFirst();
-			placeHousesAlongPath(context,builder,placedBoxes,currentPath.box,currentPath.dir,random, villageStyle);
+			placeHousesAlongPath(context,builder,placedBoxes,currentPath.box,currentPath.dir,random,villageStyle);
 			if(currentPath.depth<3){
 				float roll=random.nextFloat();
 				List<Direction> nextDirections=new ArrayList<>();
@@ -127,7 +123,7 @@ public class OldVillageStructure extends Structure{
 					int nextLength=random.nextInt(16)+20;
 					BoundingBox nextPathBox=createNextPathBox(currentPath.box,currentPath.dir,nextDir,nextLength);
 					if(isAreaClear(placedBoxes,nextPathBox)){
-						OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,currentPath.depth+1,nextPathBox,nextDir, villageStyle);
+						OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,currentPath.depth+1,nextPathBox,nextDir,villageStyle);
 						deferredPaths.add(p);
 						placedBoxes.add(nextPathBox);
 						pathQueue.add(new PathRecord(nextPathBox,nextDir,currentPath.depth+1));
@@ -139,7 +135,7 @@ public class OldVillageStructure extends Structure{
 			builder.addPiece(pathPiece);
 		}
 	}
-	private static void placeHousesAlongPath(GenerationContext context,StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,BoundingBox pathBox,Direction pathDir,RandomSource random, int villageStyle){
+	private static void placeHousesAlongPath(GenerationContext context,StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,BoundingBox pathBox,Direction pathDir,RandomSource random,int villageStyle){
 		// ====================================================================
 		// Osa SEVER / JIH (Silnice běží vertikálně, domy stavíme Vlevo/Vpravo)
 		// ====================================================================
@@ -151,7 +147,6 @@ public class OldVillageStructure extends Structure{
 				int type;
 				int sizeX;
 				int sizeZ;
-				// FIX: Sjednoceno do 50/50 rozstřelu pro typy 2 a 3 (Malé domky)
 				if(houseRand<30){
 					type=random.nextBoolean()?2:3;
 					sizeX=5;
@@ -197,7 +192,8 @@ public class OldVillageStructure extends Structure{
 				}
 				if(random.nextFloat()<0.65F){
 					int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.minX(),leftZ,Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
-					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,houseY,leftZ,pathBox.minX()-1,houseY+12,leftZ+sizeZ-1,Direction.EAST,type);
+					// FIX: Přidán parametr villageStyle na konec volání
+					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,houseY,leftZ,pathBox.minX()-1,houseY+12,leftZ+sizeZ-1,Direction.EAST,type,villageStyle);
 					leftZ+=sizeZ+random.nextInt(2)+2;
 				}else{
 					leftZ+=random.nextInt(3)+2;
@@ -210,7 +206,6 @@ public class OldVillageStructure extends Structure{
 				int type;
 				int sizeX;
 				int sizeZ;
-				// FIX: 50/50 rozstřel domků pro pravou stranu
 				if(houseRand<30){
 					type=random.nextBoolean()?2:3;
 					sizeX=5;
@@ -256,7 +251,8 @@ public class OldVillageStructure extends Structure{
 				}
 				if(random.nextFloat()<0.65F){
 					int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.maxX(),rightZ,Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
-					buildAbsoluteHouse(builder,placedBoxes,pathBox.maxX()+1,houseY,rightZ,pathBox.maxX()+sizeX,houseY+12,rightZ+sizeZ-1,Direction.WEST,type);
+					// FIX: Přidán parametr villageStyle na konec volání
+					buildAbsoluteHouse(builder,placedBoxes,pathBox.maxX()+1,houseY,rightZ,pathBox.maxX()+sizeX,houseY+12,rightZ+sizeZ-1,Direction.WEST,type,villageStyle);
 					rightZ+=sizeZ+random.nextInt(2)+2;
 				}else{
 					rightZ+=random.nextInt(3)+2;
@@ -274,7 +270,6 @@ public class OldVillageStructure extends Structure{
 				int type;
 				int sizeX;
 				int sizeZ;
-				// FIX: 50/50 rozstřel domků pro severní stranu
 				if(houseRand<30){
 					type=random.nextBoolean()?2:3;
 					sizeX=5;
@@ -320,7 +315,8 @@ public class OldVillageStructure extends Structure{
 				}
 				if(random.nextFloat()<0.65F){
 					int houseY=context.chunkGenerator().getFirstOccupiedHeight(leftX,pathBox.minZ(),Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
-					buildAbsoluteHouse(builder,placedBoxes,leftX,houseY,pathBox.minZ()-sizeZ,leftX+sizeX-1,houseY+12,pathBox.minZ()-1,Direction.SOUTH,type);
+					// FIX: Přidán parametr villageStyle na konec volání
+					buildAbsoluteHouse(builder,placedBoxes,leftX,houseY,pathBox.minZ()-sizeZ,leftX+sizeX-1,houseY+12,pathBox.minZ()-1,Direction.SOUTH,type,villageStyle);
 					leftX+=sizeX+random.nextInt(2)+2;
 				}else{
 					leftX+=random.nextInt(3)+2;
@@ -333,7 +329,6 @@ public class OldVillageStructure extends Structure{
 				int type;
 				int sizeX;
 				int sizeZ;
-				// FIX: 50/50 rozstřel domků pro jižní stranu
 				if(houseRand<30){
 					type=random.nextBoolean()?2:3;
 					sizeX=5;
@@ -379,7 +374,8 @@ public class OldVillageStructure extends Structure{
 				}
 				if(random.nextFloat()<0.65F){
 					int houseY=context.chunkGenerator().getFirstOccupiedHeight(rightX,pathBox.maxZ(),Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
-					buildAbsoluteHouse(builder,placedBoxes,rightX,houseY,pathBox.maxZ()+1,rightX+sizeX-1,houseY+12,pathBox.maxZ()+sizeZ,Direction.NORTH,type);
+					// FIX: Přidán parametr villageStyle na konec volání
+					buildAbsoluteHouse(builder,placedBoxes,rightX,houseY,pathBox.maxZ()+1,rightX+sizeX-1,houseY+12,pathBox.maxZ()+sizeZ,Direction.NORTH,type,villageStyle);
 					rightX+=sizeX+random.nextInt(2)+2;
 				}else{
 					rightX+=random.nextInt(3)+2;
@@ -413,10 +409,10 @@ public class OldVillageStructure extends Structure{
 		return parent;
 	}
 	// UPRAVENO: Pomocná metoda nyní přijímá a předává dál villageStyle
-	private static void buildAbsoluteHouse(StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,int minX,int minY,int minZ,int maxX,int maxY,int maxZ,Direction facing,int pieceType, int villageStyle){
+	private static void buildAbsoluteHouse(StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,int minX,int minY,int minZ,int maxX,int maxY,int maxZ,Direction facing,int pieceType,int villageStyle){
 		BoundingBox houseBox=new BoundingBox(minX,minY,minZ,maxX,maxY,maxZ);
 		if(isAreaClear(placedBoxes,houseBox)){
-			builder.addPiece(new OldVillagePieces.VillagePiece(pieceType,1,houseBox,facing, villageStyle));
+			builder.addPiece(new OldVillagePieces.VillagePiece(pieceType,1,houseBox,facing,villageStyle));
 			placedBoxes.add(houseBox);
 		}
 	}

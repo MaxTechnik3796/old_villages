@@ -1,16 +1,7 @@
 {
-	"type": "old_villages:old_village",
-	"biomes": [
-		"minecraft:plains",
-		"minecraft:sunflower_plains",
-		"minecraft:desert",
-		"minecraft:savanna",
-		"minecraft:savanna_plateau",
-		"minecraft:taiga",
-		"minecraft:snowy_plains",
-		"minecraft:meadow"
-	],
-	"spawn_overrides": {},
-	"step": "surface_structures",
-	"terrain_adaptation": "none"
+	"type":"old_villages:old_village",
+	"biomes":"#old_villages:has_structure/old_village",
+	"spawn_overrides":{},
+	"step":"surface_structures",
+	"terrain_adaptation":"none"
 }
