@@ -5,8 +5,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import cz.maxtechnik.old_villages.OldVillagesMod;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.QuartPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -29,13 +32,12 @@ public class OldVillageStructure extends Structure{
 		int blockZ=chunkPos.getMinBlockZ()+8;
 		int height=context.chunkGenerator().getFirstOccupiedHeight(
 				blockX,blockZ,
-				Heightmap.Types.OCEAN_FLOOR_WG,
+				Heightmap.Types.WORLD_SURFACE_WG,
 				context.heightAccessor(),
 				context.randomState()
 		);
-		if(height<=context.heightAccessor().getMinBuildHeight()){
+		if(height<=context.heightAccessor().getMinBuildHeight())
 			height=context.chunkGenerator().getFirstFreeHeight(blockX,blockZ,Heightmap.Types.WORLD_SURFACE,context.heightAccessor(),context.randomState());
-		}
 		BlockPos startPos=new BlockPos(blockX,height,blockZ);
 		return Optional.of(new GenerationStub(startPos,(builder)->generatePieces(builder,context,startPos)));
 	}
@@ -43,26 +45,20 @@ public class OldVillageStructure extends Structure{
 		List<BoundingBox> placedBoxes=new ArrayList<>();
 		RandomSource random=context.random();
 		Direction wellDirection=Direction.Plane.HORIZONTAL.getRandomDirection(random);
-		// FIX: Server-safe zjištění biomu na přesné pozici generovaného středu vesnice
-		net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> biomeHolder=context.biomeSource().getNoiseBiome(
-				net.minecraft.core.QuartPos.fromBlock(pos.getX()),
-				net.minecraft.core.QuartPos.fromBlock(pos.getY()),
-				net.minecraft.core.QuartPos.fromBlock(pos.getZ()),
+		Holder<Biome> biomeHolder=context.biomeSource().getNoiseBiome(
+				QuartPos.fromBlock(pos.getX()),
+				QuartPos.fromBlock(pos.getY()),
+				QuartPos.fromBlock(pos.getZ()),
 				context.randomState().sampler()
 		);
-		int villageStyle=0; // Výchozí: 0 = Plains (Oak)
+		int villageStyle=0;
 		if(biomeHolder.unwrapKey().isPresent()){
 			net.minecraft.resources.ResourceLocation biomeLoc=biomeHolder.unwrapKey().get().location();
 			String path=biomeLoc.getPath();
-			if(path.contains("desert")){
-				villageStyle=1; // Poušť (Sandstone)
-			}else if(path.contains("savanna")){
-				villageStyle=2; // Savana (Acacia)
-			}else if(path.contains("taiga")||path.contains("snowy")){
-				villageStyle=3; // Taiga a sněžné pláně (Spruce)
-			}
+			if(path.contains("desert")) villageStyle=1;
+			else if(path.contains("savanna")) villageStyle=2;
+			else if(path.contains("taiga")||path.contains("snowy")) villageStyle=3;
 		}
-		// Předání vybraného stylu do studny a všech větví cest
 		OldVillagePieces.VillagePiece well=new OldVillagePieces.VillagePiece(0,0,pos.getX(),pos.getY(),pos.getZ(),6,7,6,wellDirection,villageStyle);
 		builder.addPiece(well);
 		BoundingBox wellBox=well.getBoundingBox();
@@ -186,7 +182,7 @@ public class OldVillageStructure extends Structure{
 					if(leftZ+sizeZ>pathBox.maxZ()) break;
 				}
 				if(random.nextFloat()<0.65F){
-					int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.minX(),leftZ,Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
+					int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.minX(),leftZ,Heightmap.Types.WORLD_SURFACE_WG,context.heightAccessor(),context.randomState());
 					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,houseY,leftZ,pathBox.minX()-1,houseY+12,leftZ+sizeZ-1,Direction.EAST,type,villageStyle);
 					leftZ+=sizeZ+random.nextInt(2)+2;
 				}else{
@@ -243,15 +239,14 @@ public class OldVillageStructure extends Structure{
 					if(rightZ+sizeZ>pathBox.maxZ()) break;
 				}
 				if(random.nextFloat()<0.65F){
-					int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.maxX(),rightZ,Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
+					int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.maxX(),rightZ,Heightmap.Types.WORLD_SURFACE_WG,context.heightAccessor(),context.randomState());
 					buildAbsoluteHouse(builder,placedBoxes,pathBox.maxX()+1,houseY,rightZ,pathBox.maxX()+sizeX,houseY+12,rightZ+sizeZ-1,Direction.WEST,type,villageStyle);
 					rightZ+=sizeZ+random.nextInt(2)+2;
 				}else{
 					rightZ+=random.nextInt(3)+2;
 				}
 			}
-		}
-		else{//EAST/WEST
+		}else{//EAST/WEST
 			int leftX=pathBox.minX()+1;//SOUTH
 			while(leftX<pathBox.maxX()){
 				int houseRand=random.nextInt(100);
@@ -302,7 +297,7 @@ public class OldVillageStructure extends Structure{
 					if(leftX+sizeX>pathBox.maxX()) break;
 				}
 				if(random.nextFloat()<0.65F){
-					int houseY=context.chunkGenerator().getFirstOccupiedHeight(leftX,pathBox.minZ(),Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
+					int houseY=context.chunkGenerator().getFirstOccupiedHeight(leftX,pathBox.minZ(),Heightmap.Types.WORLD_SURFACE_WG,context.heightAccessor(),context.randomState());
 					buildAbsoluteHouse(builder,placedBoxes,leftX,houseY,pathBox.minZ()-sizeZ,leftX+sizeX-1,houseY+12,pathBox.minZ()-1,Direction.SOUTH,type,villageStyle);
 					leftX+=sizeX+random.nextInt(2)+2;
 				}else{
@@ -359,7 +354,7 @@ public class OldVillageStructure extends Structure{
 					if(rightX+sizeX>pathBox.maxX()) break;
 				}
 				if(random.nextFloat()<0.65F){
-					int houseY=context.chunkGenerator().getFirstOccupiedHeight(rightX,pathBox.maxZ(),Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
+					int houseY=context.chunkGenerator().getFirstOccupiedHeight(rightX,pathBox.maxZ(),Heightmap.Types.WORLD_SURFACE_WG,context.heightAccessor(),context.randomState());
 					buildAbsoluteHouse(builder,placedBoxes,rightX,houseY,pathBox.maxZ()+1,rightX+sizeX-1,houseY+12,pathBox.maxZ()+sizeZ,Direction.NORTH,type,villageStyle);
 					rightX+=sizeX+random.nextInt(2)+2;
 				}else{
