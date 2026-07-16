@@ -181,28 +181,25 @@ public class OldVillagePieces{
 					int surfaceY=level.getHeight(Heightmap.Types.WORLD_SURFACE_WG,x,z);
 					BlockPos pathPos=new BlockPos(x,surfaceY-1,z);
 					if(box.isInside(pathPos)){
-						// FIX: Cesta běží až po domech, takže pokládáme štěrky a čistíme vzduch pouze tehdy, pokud je tam vzduch nebo přírodní terén (nemaže schody!)
 						BlockState currentBlock=level.getBlockState(pathPos);
-						if(currentBlock.isAir()||currentBlock.is(Blocks.SHORT_GRASS)||currentBlock.is(Blocks.TALL_GRASS)||currentBlock.is(Blocks.GRASS_BLOCK)||currentBlock.is(Blocks.DIRT)||currentBlock.is(Blocks.STONE)||currentBlock.is(Blocks.SAND)){
+						if(currentBlock.is(Blocks.WATER))
+							level.setBlock(pathPos,planks,2);
+						else if(currentBlock.isAir()||currentBlock.is(Blocks.SHORT_GRASS)||currentBlock.is(Blocks.TALL_GRASS)||currentBlock.is(Blocks.GRASS_BLOCK)||currentBlock.is(Blocks.DIRT)||currentBlock.is(Blocks.STONE)||currentBlock.is(Blocks.SAND))
 							level.setBlock(pathPos,gravel,2);
-						}
 						BlockPos above1=pathPos.above();
 						BlockState state1=level.getBlockState(above1);
-						if(state1.isAir()||state1.is(Blocks.SHORT_GRASS)||state1.is(Blocks.TALL_GRASS)||state1.is(Blocks.GRASS_BLOCK)||state1.is(Blocks.DIRT)){
+						if(state1.isAir()||state1.is(Blocks.SHORT_GRASS)||state1.is(Blocks.TALL_GRASS)||state1.is(Blocks.GRASS_BLOCK)||state1.is(Blocks.DIRT))
 							level.setBlock(above1,air,2);
-						}
 						BlockPos above2=pathPos.above(2);
 						BlockState state2=level.getBlockState(above2);
-						if(state2.isAir()||state2.is(Blocks.SHORT_GRASS)||state2.is(Blocks.TALL_GRASS)||state2.is(Blocks.GRASS_BLOCK)||state2.is(Blocks.DIRT)){
+						if(state2.isAir()||state2.is(Blocks.SHORT_GRASS)||state2.is(Blocks.TALL_GRASS)||state2.is(Blocks.GRASS_BLOCK)||state2.is(Blocks.DIRT))
 							level.setBlock(above2,air,2);
-						}
 					}
 				}
 			}
 			long stablePathSeed=level.getLevel().getSeed()^BlockPos.asLong(pieceBox.minX(),pieceBox.minY(),pieceBox.minZ());
 			RandomSource stableRandom=RandomSource.create(stablePathSeed);
 			boolean isNorthSouth=pieceBox.getZSpan()>pieceBox.getXSpan();
-			// --- PROCEDURÁLNÍ GENEROVÁNÍ SVĚTEL MIMO CESTU ---
 			if(isNorthSouth){
 				int zSpan=pieceBox.getZSpan();
 				for(int zOffset=4;zOffset<zSpan-4;zOffset+=10+stableRandom.nextInt(6)){
@@ -213,8 +210,7 @@ public class OldVillagePieces{
 						BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
 						if(box.isInside(lampBase)){
 							BlockState belowState=level.getBlockState(lampBase.below());
-							if(belowState.isFaceSturdy(level,lampBase.below(),Direction.UP)&&!belowState.is(Blocks.GRAVEL)){
-								// FIX: Do skeneru přidán GRASS_BLOCK a DIRT, aby přírodní podklad neshazoval validaci čistého místa pro lampu
+							if(belowState.isFaceSturdy(level,lampBase.below(),Direction.UP)&&!belowState.is(Blocks.GRAVEL)&&!belowState.is(Blocks.OAK_PLANKS)){
 								boolean isSpaceClear=true;
 								for(int xCheck=-1;xCheck<=1;xCheck++){
 									for(int zCheck=-1;zCheck<=1;zCheck++){
@@ -247,8 +243,7 @@ public class OldVillagePieces{
 						BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
 						if(box.isInside(lampBase)){
 							BlockState belowState=level.getBlockState(lampBase.below());
-							if(belowState.isFaceSturdy(level,lampBase.below(),Direction.UP)&&!belowState.is(Blocks.GRAVEL)){
-								// FIX: Ignorování trávy a hlíny i pro horizontální silnice
+							if(belowState.isFaceSturdy(level,lampBase.below(),Direction.UP)&&!belowState.is(Blocks.GRAVEL)&&!belowState.is(Blocks.OAK_PLANKS)){
 								boolean isSpaceClear=true;
 								for(int xCheck=-1;xCheck<=1;xCheck++){
 									for(int zCheck=-1;zCheck<=1;zCheck++){
@@ -588,7 +583,7 @@ public class OldVillagePieces{
 		}
 		private void generateShack(WorldGenLevel level,BoundingBox box,boolean highRoof){
 			this.fillWithBlocks(level,box,0,1,0,3,6,4,air);
-			this.createBase(level,box,0,0,3,6,cobble);
+			this.createBase(level,box,0,0,3,4,cobble);
 			this.fillWithBlocks(level,box,0,1,0,3,1,4,cobble);
 			this.createBaseStairs(level,box,2,5);
 			this.setBlock(level,box,2,1,5,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
