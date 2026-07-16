@@ -44,7 +44,30 @@ public class OldVillageStructure extends Structure{
 		List<BoundingBox> placedBoxes=new ArrayList<>();
 		RandomSource random=context.random();
 		Direction wellDirection=Direction.Plane.HORIZONTAL.getRandomDirection(random);
-		OldVillagePieces.VillagePiece well=new OldVillagePieces.VillagePiece(0,0,pos.getX(),pos.getY(),pos.getZ(),6,7,6,wellDirection);
+
+		// FIX: Server-safe zjištění biomu na přesné pozici generovaného středu vesnice
+		net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> biomeHolder = context.biomeSource().getNoiseBiome(
+				net.minecraft.core.QuartPos.fromBlock(pos.getX()),
+				net.minecraft.core.QuartPos.fromBlock(pos.getY()),
+				net.minecraft.core.QuartPos.fromBlock(pos.getZ()),
+				context.randomState().sampler()
+		);
+
+		int villageStyle = 0; // Výchozí: 0 = Plains (Oak)
+		if (biomeHolder.unwrapKey().isPresent()) {
+			net.minecraft.resources.ResourceLocation biomeLoc = biomeHolder.unwrapKey().get().location();
+			String path = biomeLoc.getPath();
+			if (path.contains("desert")) {
+				villageStyle = 1; // Poušť (Sandstone)
+			} else if (path.contains("savanna")) {
+				villageStyle = 2; // Savana (Acacia)
+			} else if (path.contains("taiga") || path.contains("snowy")) {
+				villageStyle = 3; // Taiga a sněžné pláně (Spruce)
+			}
+		}
+
+		// Předání vybraného stylu do studny a všech větví cest
+		OldVillagePieces.VillagePiece well=new OldVillagePieces.VillagePiece(0,0,pos.getX(),pos.getY(),pos.getZ(),6,7,6,wellDirection, villageStyle);
 		builder.addPiece(well);
 		BoundingBox wellBox=well.getBoundingBox();
 		placedBoxes.add(wellBox);
@@ -54,39 +77,39 @@ public class OldVillageStructure extends Structure{
 		int maxZ=wellBox.maxZ();
 		int y=wellBox.minY();
 		List<PathRecord> pathQueue=new ArrayList<>();
-		// FIX: Dočasný seznam, do kterého schováme cesty, abychom je builderu předali až na konci
+
 		List<OldVillagePieces.VillagePiece> deferredPaths=new ArrayList<>();
 		BoundingBox nStart=new BoundingBox(minX+1,y-30,minZ-25,minX+3,y+30,minZ-1);
 		if(isAreaClear(placedBoxes,nStart)){
-			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,nStart,Direction.NORTH);
+			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,nStart,Direction.NORTH, villageStyle);
 			deferredPaths.add(p);
 			placedBoxes.add(nStart);
 			pathQueue.add(new PathRecord(nStart,Direction.NORTH,1));
 		}
 		BoundingBox sStart=new BoundingBox(minX+1,y-30,maxZ+1,minX+3,y+30,maxZ+25);
 		if(isAreaClear(placedBoxes,sStart)){
-			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,sStart,Direction.SOUTH);
+			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,sStart,Direction.SOUTH, villageStyle);
 			deferredPaths.add(p);
 			placedBoxes.add(sStart);
 			pathQueue.add(new PathRecord(sStart,Direction.SOUTH,1));
 		}
 		BoundingBox wStart=new BoundingBox(minX-25,y-30,minZ+1,minX-1,y+30,minZ+3);
 		if(isAreaClear(placedBoxes,wStart)){
-			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,wStart,Direction.WEST);
+			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,wStart,Direction.WEST, villageStyle);
 			deferredPaths.add(p);
 			placedBoxes.add(wStart);
 			pathQueue.add(new PathRecord(wStart,Direction.WEST,1));
 		}
 		BoundingBox eStart=new BoundingBox(maxX+1,y-30,minZ+1,maxX+25,y+30,minZ+3);
 		if(isAreaClear(placedBoxes,eStart)){
-			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,eStart,Direction.EAST);
+			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,eStart,Direction.EAST, villageStyle);
 			deferredPaths.add(p);
 			placedBoxes.add(eStart);
 			pathQueue.add(new PathRecord(eStart,Direction.EAST,1));
 		}
 		while(!pathQueue.isEmpty()){
 			PathRecord currentPath=pathQueue.removeFirst();
-			placeHousesAlongPath(context,builder,placedBoxes,currentPath.box,currentPath.dir,random);
+			placeHousesAlongPath(context,builder,placedBoxes,currentPath.box,currentPath.dir,random, villageStyle);
 			if(currentPath.depth<3){
 				float roll=random.nextFloat();
 				List<Direction> nextDirections=new ArrayList<>();
@@ -104,7 +127,7 @@ public class OldVillageStructure extends Structure{
 					int nextLength=random.nextInt(16)+20;
 					BoundingBox nextPathBox=createNextPathBox(currentPath.box,currentPath.dir,nextDir,nextLength);
 					if(isAreaClear(placedBoxes,nextPathBox)){
-						OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,currentPath.depth+1,nextPathBox,nextDir);
+						OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,currentPath.depth+1,nextPathBox,nextDir, villageStyle);
 						deferredPaths.add(p);
 						placedBoxes.add(nextPathBox);
 						pathQueue.add(new PathRecord(nextPathBox,nextDir,currentPath.depth+1));
@@ -112,12 +135,11 @@ public class OldVillageStructure extends Structure{
 				}
 			}
 		}
-		// FIX: Teprve TEĎ posíláme všechny cesty do builderu. Domy už stojí, takže cesta uvidí jejich zdi!
 		for(OldVillagePieces.VillagePiece pathPiece: deferredPaths){
 			builder.addPiece(pathPiece);
 		}
 	}
-	private static void placeHousesAlongPath(GenerationContext context,StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,BoundingBox pathBox,Direction pathDir,RandomSource random){
+	private static void placeHousesAlongPath(GenerationContext context,StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,BoundingBox pathBox,Direction pathDir,RandomSource random, int villageStyle){
 		// ====================================================================
 		// Osa SEVER / JIH (Silnice běží vertikálně, domy stavíme Vlevo/Vpravo)
 		// ====================================================================
@@ -390,10 +412,11 @@ public class OldVillageStructure extends Structure{
 		}
 		return parent;
 	}
-	private static void buildAbsoluteHouse(StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,int minX,int minY,int minZ,int maxX,int maxY,int maxZ,Direction facing,int pieceType){
+	// UPRAVENO: Pomocná metoda nyní přijímá a předává dál villageStyle
+	private static void buildAbsoluteHouse(StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,int minX,int minY,int minZ,int maxX,int maxY,int maxZ,Direction facing,int pieceType, int villageStyle){
 		BoundingBox houseBox=new BoundingBox(minX,minY,minZ,maxX,maxY,maxZ);
 		if(isAreaClear(placedBoxes,houseBox)){
-			builder.addPiece(new OldVillagePieces.VillagePiece(pieceType,1,houseBox,facing));
+			builder.addPiece(new OldVillagePieces.VillagePiece(pieceType,1,houseBox,facing, villageStyle));
 			placedBoxes.add(houseBox);
 		}
 	}

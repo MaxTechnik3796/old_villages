@@ -66,23 +66,58 @@ public class OldVillagePieces{
 		BlockState smoker=Blocks.SMOKER.defaultBlockState();
 		BlockState air=Blocks.AIR.defaultBlockState();
 		private final int pieceType;
-		public VillagePiece(int pieceType,int genDepth,int x,int y,int z,int sizeX,int sizeY,int sizeZ,Direction orientation){
+		private int villageStyle=0;// 0=Plains, 1=Desert, 2=Savanna, 3=Taiga
+		// UPRAVENO: Konstruktory a načítání tagů nyní přijímají/ukládají villageStyle a spouští initBlocks()
+		public VillagePiece(int pieceType,int genDepth,int x,int y,int z,int sizeX,int sizeY,int sizeZ,Direction orientation, int villageStyle){
 			super(OldVillagesMod.OLD_VILLAGE_PIECE.get(),genDepth,BoundingBox.orientBox(x,y,z,0,0,0,sizeX,sizeY,sizeZ,orientation));
 			this.pieceType=pieceType;
+			this.villageStyle=villageStyle;
 			this.setOrientation(orientation);
+			this.initBlocks();
 		}
-		public VillagePiece(int pieceType,int genDepth,BoundingBox box,Direction orientation){
+		public VillagePiece(int pieceType,int genDepth,BoundingBox box,Direction orientation, int villageStyle){
 			super(OldVillagesMod.OLD_VILLAGE_PIECE.get(),genDepth,box);
 			this.pieceType=pieceType;
+			this.villageStyle=villageStyle;
 			this.setOrientation(orientation);
+			this.initBlocks();
 		}
 		public VillagePiece(CompoundTag tag){
 			super(OldVillagesMod.OLD_VILLAGE_PIECE.get(),tag);
 			this.pieceType=tag.getInt("PieceType");
+			this.villageStyle=tag.getInt("VillageStyle");
+			this.initBlocks();
 		}
 		@Override
 		protected void addAdditionalSaveData(@NotNull StructurePieceSerializationContext context,@NotNull CompoundTag tag){
 			tag.putInt("PieceType",this.pieceType);
+			tag.putInt("VillageStyle",this.villageStyle);
+		}
+
+		// NOVÉ: Dynamické přemapování kategorie "changeable" podle zamčeného biomu vesnice
+		private void initBlocks() {
+			if (this.villageStyle == 1) { // Poušť (Sandstone variace, dveře/ploty zůstávají dubové)
+				this.planks = Blocks.CUT_SANDSTONE.defaultBlockState();
+				this.planksStairs = Blocks.SANDSTONE_STAIRS.defaultBlockState();
+				this.log = Blocks.SANDSTONE.defaultBlockState();
+				this.gravel = Blocks.SANDSTONE.defaultBlockState();
+				this.cobble = Blocks.SANDSTONE.defaultBlockState();
+				this.cobbleStairs = Blocks.SANDSTONE_STAIRS.defaultBlockState();
+			} else if (this.villageStyle == 2) { // Savana (Komplet Acacia dřeva, cobble zůstává)
+				this.planks = Blocks.ACACIA_PLANKS.defaultBlockState();
+				this.planksStairs = Blocks.ACACIA_STAIRS.defaultBlockState();
+				this.log = Blocks.ACACIA_LOG.defaultBlockState();
+				this.door = Blocks.ACACIA_DOOR.defaultBlockState();
+				this.fence = Blocks.ACACIA_FENCE.defaultBlockState();
+				this.pressurePlate = Blocks.ACACIA_PRESSURE_PLATE.defaultBlockState();
+			} else if (this.villageStyle == 3) { // Taiga / Snowy (Komplet Spruce dřeva, cobble zůstává)
+				this.planks = Blocks.SPRUCE_PLANKS.defaultBlockState();
+				this.planksStairs = Blocks.SPRUCE_STAIRS.defaultBlockState();
+				this.log = Blocks.SPRUCE_LOG.defaultBlockState();
+				this.door = Blocks.SPRUCE_DOOR.defaultBlockState();
+				this.fence = Blocks.SPRUCE_FENCE.defaultBlockState();
+				this.pressurePlate = Blocks.SPRUCE_PRESSURE_PLATE.defaultBlockState();
+			}
 		}
 		protected void placeChest(WorldGenLevel level,BoundingBox box,int x,int y,int z,Direction facing,ResourceKey<LootTable> lootTable){
 			BlockPos worldPos=this.getWorldPos(x,y,z);
@@ -210,7 +245,8 @@ public class OldVillagePieces{
 						BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
 						if(box.isInside(lampBase)){
 							BlockState belowState=level.getBlockState(lampBase.below());
-							if(belowState.isFaceSturdy(level,lampBase.below(),Direction.UP)&&!belowState.is(Blocks.GRAVEL)&&!belowState.is(Blocks.OAK_PLANKS)){
+							// Změň původní podmínku na koncích os v generatePath na toto:
+							if(belowState.isFaceSturdy(level,lampBase.below(),Direction.UP)&&!belowState.is(Blocks.GRAVEL)&&!belowState.is(this.planks.getBlock())){
 								boolean isSpaceClear=true;
 								for(int xCheck=-1;xCheck<=1;xCheck++){
 									for(int zCheck=-1;zCheck<=1;zCheck++){
