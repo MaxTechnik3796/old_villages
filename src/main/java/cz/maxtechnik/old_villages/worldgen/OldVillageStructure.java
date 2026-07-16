@@ -10,6 +10,8 @@ import net.minecraft.core.QuartPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.chunk.BlockColumn;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -26,10 +28,10 @@ public class OldVillageStructure extends Structure{
 		super(settings);
 	}
 	private static int getRealHouseHeight(GenerationContext context,int x,int z,int seaLevel){
-		int houseY=context.chunkGenerator().getFirstOccupiedHeight(x,z,net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG,context.heightAccessor(),context.randomState());
+		int houseY=context.chunkGenerator().getFirstOccupiedHeight(x,z,Heightmap.Types.WORLD_SURFACE_WG,context.heightAccessor(),context.randomState());
 		if(houseY<seaLevel){
-			net.minecraft.world.level.chunk.BlockColumn column=context.chunkGenerator().getBaseColumn(x,z,context.heightAccessor(),context.randomState());
-			if(column.getBlock(seaLevel-1).is(net.minecraft.world.level.block.Blocks.WATER)){
+			BlockColumn column=context.chunkGenerator().getBaseColumn(x,z,context.heightAccessor(),context.randomState());
+			if(column.getBlock(seaLevel-2).is(Blocks.WATER)){
 				return seaLevel;
 			}
 		}
