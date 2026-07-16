@@ -42,6 +42,9 @@ public class OldVillagePieces{
 		BlockState lava=Blocks.LAVA.defaultBlockState();
 		BlockState farmland=Blocks.FARMLAND.defaultBlockState().setValue(FarmBlock.MOISTURE,7);
 		BlockState wheat=Blocks.WHEAT.defaultBlockState();
+		BlockState carrot=Blocks.CARROTS.defaultBlockState();
+		BlockState potato=Blocks.POTATOES.defaultBlockState();
+		BlockState beetroot=Blocks.BEETROOTS.defaultBlockState();
 		BlockState dirt=Blocks.DIRT.defaultBlockState();
 		BlockState furnace=Blocks.FURNACE.defaultBlockState();
 		BlockState ironBars=Blocks.IRON_BARS.defaultBlockState();
@@ -56,6 +59,7 @@ public class OldVillagePieces{
 		BlockState craftingTable=Blocks.CRAFTING_TABLE.defaultBlockState();
 		BlockState bookshelf=Blocks.BOOKSHELF.defaultBlockState();
 		BlockState lectern=Blocks.LECTERN.defaultBlockState();
+		BlockState composter=Blocks.COMPOSTER.defaultBlockState();
 		BlockState grindstone=Blocks.GRINDSTONE.defaultBlockState().setValue(GrindstoneBlock.FACE,AttachFace.FLOOR);
 		BlockState brewingStand=Blocks.BREWING_STAND.defaultBlockState();
 		BlockState bed=Blocks.RED_BED.defaultBlockState();
@@ -89,11 +93,17 @@ public class OldVillagePieces{
 				chest.setLootTable(lootTable,stableChestSeed);
 			}
 		}
+		private BlockState getRandomCropForType(int typeRoll,RandomSource random){
+			if(typeRoll<50) return wheat.setValue(CropBlock.AGE,random.nextInt(8));
+			else if(typeRoll<70) return carrot.setValue(CropBlock.AGE,random.nextInt(8));
+			else if(typeRoll<90) return potato.setValue(CropBlock.AGE,random.nextInt(8));
+			else return beetroot.setValue(BeetrootBlock.AGE,random.nextInt(4));
+		}
 		protected void fillWithBlocks(WorldGenLevel level,BoundingBox box,int minX,int minY,int minZ,int maxX,int maxY,int maxZ,BlockState blockState){
 			for(int x=minX;x<=maxX;x++){
 				for(int y=minY;y<=maxY;y++){
 					for(int z=minZ;z<=maxZ;z++){
-						this.placeBlock(level,blockState,x,y,z,box);
+						this.setBlock(level,box,x,y,z,blockState);
 					}
 				}
 			}
@@ -378,8 +388,21 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,0,1,0,6,1,8,log);
 			this.fillWithBlocks(level,box,1,1,1,5,1,7,farmland);
 			this.fillWithBlocks(level,box,3,1,1,3,1,7,water);
-			this.fillWithBlocks(level,box,1,2,1,2,2,7,wheat.setValue(CropBlock.AGE,7));
-			this.fillWithBlocks(level,box,4,2,1,5,2,7,wheat.setValue(CropBlock.AGE,7));
+			BoundingBox pieceBox=this.getBoundingBox();
+			long stableSeed=level.getLevel().getSeed()^BlockPos.asLong(pieceBox.minX(),pieceBox.minY(),pieceBox.minZ());
+			RandomSource stableRandom=RandomSource.create(stableSeed);
+			int leftPlotType=stableRandom.nextInt(100);
+			for(int x=1;x<=2;x++){
+				for(int z=1;z<=7;z++){
+					this.setBlock(level,box,x,2,z,getRandomCropForType(leftPlotType,stableRandom));
+				}
+			}
+			int rightPlotType=stableRandom.nextInt(100);
+			for(int x=4;x<=5;x++){
+				for(int z=1;z<=7;z++){
+					this.setBlock(level,box,x,2,z,getRandomCropForType(rightPlotType,stableRandom));
+				}
+			}
 		}
 		private void generateLargeFarm(WorldGenLevel level,BoundingBox box){
 			createBase(level,box,0,0,12,8,dirt);
@@ -389,10 +412,35 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,7,1,1,11,1,7,farmland);
 			this.fillWithBlocks(level,box,3,1,1,3,1,7,water);
 			this.fillWithBlocks(level,box,9,1,1,9,1,7,water);
-			this.fillWithBlocks(level,box,1,2,1,2,2,7,wheat.setValue(CropBlock.AGE,7));
-			this.fillWithBlocks(level,box,4,2,1,5,2,7,wheat.setValue(CropBlock.AGE,7));
-			this.fillWithBlocks(level,box,7,2,1,8,2,7,wheat.setValue(CropBlock.AGE,7));
-			this.fillWithBlocks(level,box,10,2,1,11,2,7,wheat.setValue(CropBlock.AGE,7));
+			BoundingBox pieceBox=this.getBoundingBox();
+			long stableSeed=level.getLevel().getSeed()^BlockPos.asLong(pieceBox.minX(),pieceBox.minY(),pieceBox.minZ());
+			RandomSource stableRandom=RandomSource.create(stableSeed);
+			int type1=stableRandom.nextInt(100);
+			for(int x=1;x<=2;x++){
+				for(int z=1;z<=7;z++){
+					this.setBlock(level,box,x,2,z,getRandomCropForType(type1,stableRandom));
+				}
+			}
+			int type2=stableRandom.nextInt(100);
+			for(int x=4;x<=5;x++){
+				for(int z=1;z<=7;z++){
+					this.setBlock(level,box,x,2,z,getRandomCropForType(type2,stableRandom));
+				}
+			}
+			int type3=stableRandom.nextInt(100);
+			for(int x=7;x<=8;x++){
+				for(int z=1;z<=7;z++){
+					this.setBlock(level,box,x,2,z,getRandomCropForType(type3,stableRandom));
+				}
+			}
+			int type4=stableRandom.nextInt(100);
+			for(int x=10;x<=11;x++){
+				for(int z=1;z<=7;z++){
+					this.setBlock(level,box,x,2,z,getRandomCropForType(type4,stableRandom));
+				}
+			}
+			this.setBlock(level,box,1,2,7,composter);
+			this.setBlock(level,box,1,1,7,dirt);
 		}
 		private void generateBlacksmith(WorldGenLevel level,BoundingBox box){
 			createBase(level,box,0,0,9,6,cobble);
