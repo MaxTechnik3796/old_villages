@@ -221,12 +221,22 @@ public class OldVillagePieces{
 			this.setBlock(level,box,4,3,4,fence);
 			this.fillWithBlocks(level,box,1,4,1,4,4,4,cobble);
 		}
+		// UPRAVENO: Inteligentní detekce povrchu propadává skrz přesahy střech až na skutečnou přírodní zem
 		private void generatePath(WorldGenLevel level,BoundingBox box){
 			BoundingBox pieceBox=this.getBoundingBox();
 			for(int x=pieceBox.minX();x<=pieceBox.maxX();x++){
 				for(int z=pieceBox.minZ();z<=pieceBox.maxZ();z++){
 					int surfaceY=level.getHeight(Heightmap.Types.WORLD_SURFACE_WG,x,z);
-					BlockPos pathPos=new BlockPos(x,surfaceY-1,z);
+					// FIX: Skenujeme odshora dolů a ignorujeme bloky budov, dokud netrefíme reálný povrch planety
+					BlockPos.MutableBlockPos mutablePath=new BlockPos.MutableBlockPos(x,surfaceY,z);
+					while(mutablePath.getY()>level.getMinBuildHeight()){
+						BlockState state=level.getBlockState(mutablePath);
+						if(state.is(Blocks.GRASS_BLOCK)||state.is(Blocks.DIRT)||state.is(Blocks.STONE)||state.is(Blocks.SAND)||state.is(Blocks.WATER)||state.is(Blocks.GRAVEL)||state.is(this.planks.getBlock())){
+							break;
+						}
+						mutablePath.move(Direction.DOWN);
+					}
+					BlockPos pathPos=mutablePath.immutable();
 					if(box.isInside(pathPos)){
 						BlockState currentBlock=level.getBlockState(pathPos);
 						if(currentBlock.is(Blocks.WATER))
@@ -254,7 +264,17 @@ public class OldVillagePieces{
 						int lampZ=pieceBox.minZ()+zOffset;
 						int lampX=stableRandom.nextBoolean()?pieceBox.minX()-1:pieceBox.maxX()+1;
 						int lampY=level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,lampX,lampZ);
-						BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
+						// FIX: Stejný propad dolů aplikujeme i pro základnu lampy, aby kvůli střeše nevisela v oblacích
+						BlockPos.MutableBlockPos mutableLamp=new BlockPos.MutableBlockPos(lampX,lampY,lampZ);
+						while(mutableLamp.getY()>level.getMinBuildHeight()){
+							BlockState state=level.getBlockState(mutableLamp);
+							if(state.is(Blocks.GRASS_BLOCK)||state.is(Blocks.DIRT)||state.is(Blocks.STONE)||state.is(Blocks.SAND)||state.is(Blocks.WATER)||state.is(Blocks.GRAVEL)){
+								break;
+							}
+							mutableLamp.move(Direction.DOWN);
+						}
+						// lampBase ustavíme přesně 1 blok nad zjištěný pevný podklad
+						BlockPos lampBase=mutableLamp.immutable().above();
 						if(box.isInside(lampBase)){
 							BlockState belowState=level.getBlockState(lampBase.below());
 							if(belowState.isFaceSturdy(level,lampBase.below(),Direction.UP)&&!belowState.is(Blocks.GRAVEL)&&!belowState.is(this.planks.getBlock())){
@@ -287,7 +307,16 @@ public class OldVillagePieces{
 						int lampX=pieceBox.minX()+xOffset;
 						int lampZ=stableRandom.nextBoolean()?pieceBox.minZ()-1:pieceBox.maxZ()+1;
 						int lampY=level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,lampX,lampZ);
-						BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
+						// FIX: Propad dolů pro horizontální větve silnic
+						BlockPos.MutableBlockPos mutableLamp=new BlockPos.MutableBlockPos(lampX,lampY,lampZ);
+						while(mutableLamp.getY()>level.getMinBuildHeight()){
+							BlockState state=level.getBlockState(mutableLamp);
+							if(state.is(Blocks.GRASS_BLOCK)||state.is(Blocks.DIRT)||state.is(Blocks.STONE)||state.is(Blocks.SAND)||state.is(Blocks.WATER)||state.is(Blocks.GRAVEL)){
+								break;
+							}
+							mutableLamp.move(Direction.DOWN);
+						}
+						BlockPos lampBase=mutableLamp.immutable().above();
 						if(box.isInside(lampBase)){
 							BlockState belowState=level.getBlockState(lampBase.below());
 							if(belowState.isFaceSturdy(level,lampBase.below(),Direction.UP)&&!belowState.is(Blocks.GRAVEL)&&!belowState.is(Blocks.OAK_PLANKS)){
