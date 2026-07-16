@@ -221,14 +221,19 @@ public class OldVillagePieces{
 			this.setBlock(level,box,4,3,4,fence);
 			this.fillWithBlocks(level,box,1,4,1,4,4,4,cobble);
 		}
-		// UPRAVENO: Inteligentní detekce povrchu propadává skrz přesahy střech až na skutečnou přírodní zem
-		// UPRAVENO: Fixnuté létání lamp (odstraněno nadbytečné .above() při spawnu)
 		private void generatePath(WorldGenLevel level,BoundingBox box){
 			BoundingBox pieceBox=this.getBoundingBox();
 			for(int x=pieceBox.minX();x<=pieceBox.maxX();x++){
 				for(int z=pieceBox.minZ();z<=pieceBox.maxZ();z++){
 					int surfaceY=level.getHeight(Heightmap.Types.WORLD_SURFACE_WG,x,z);
-					BlockPos pathPos=new BlockPos(x,surfaceY-1,z);
+					BlockPos.MutableBlockPos mutablePath=new BlockPos.MutableBlockPos(x,surfaceY,z);
+					while(mutablePath.getY()>level.getMinBuildHeight()){
+						BlockState state=level.getBlockState(mutablePath);
+						if(state.is(Blocks.GRASS_BLOCK)||state.is(Blocks.DIRT)||state.is(Blocks.STONE)||state.is(Blocks.SAND)||state.is(Blocks.WATER)||state.is(Blocks.GRAVEL)||state.is(this.planks.getBlock()))
+							break;
+						mutablePath.move(Direction.DOWN);
+					}
+					BlockPos pathPos=mutablePath.immutable();
 					if(box.isInside(pathPos)){
 						BlockState currentBlock=level.getBlockState(pathPos);
 						if(currentBlock.is(Blocks.WATER))
@@ -259,9 +264,8 @@ public class OldVillagePieces{
 						BlockPos.MutableBlockPos mutableLamp=new BlockPos.MutableBlockPos(lampX,lampY,lampZ);
 						while(mutableLamp.getY()>level.getMinBuildHeight()){
 							BlockState state=level.getBlockState(mutableLamp);
-							if(state.is(Blocks.GRASS_BLOCK)||state.is(Blocks.DIRT)||state.is(Blocks.STONE)||state.is(Blocks.SAND)||state.is(Blocks.WATER)||state.is(Blocks.GRAVEL)){
+							if(state.is(Blocks.GRASS_BLOCK)||state.is(Blocks.DIRT)||state.is(Blocks.STONE)||state.is(Blocks.SAND)||state.is(Blocks.WATER)||state.is(Blocks.GRAVEL))
 								break;
-							}
 							mutableLamp.move(Direction.DOWN);
 						}
 						BlockPos lampBase=mutableLamp.immutable().above();
@@ -283,10 +287,8 @@ public class OldVillagePieces{
 									}
 									if(!isSpaceClear) break;
 								}
-								if(isSpaceClear){
-									// FIX: Odstraněno .above(), posíláme rovnou na připravenou zem!
+								if(isSpaceClear)
 									spawnLampPost(level,lampBase);
-								}
 							}
 						}
 					}
@@ -301,9 +303,8 @@ public class OldVillagePieces{
 						BlockPos.MutableBlockPos mutableLamp=new BlockPos.MutableBlockPos(lampX,lampY,lampZ);
 						while(mutableLamp.getY()>level.getMinBuildHeight()){
 							BlockState state=level.getBlockState(mutableLamp);
-							if(state.is(Blocks.GRASS_BLOCK)||state.is(Blocks.DIRT)||state.is(Blocks.STONE)||state.is(Blocks.SAND)||state.is(Blocks.WATER)||state.is(Blocks.GRAVEL)){
+							if(state.is(Blocks.GRASS_BLOCK)||state.is(Blocks.DIRT)||state.is(Blocks.STONE)||state.is(Blocks.SAND)||state.is(Blocks.WATER)||state.is(Blocks.GRAVEL))
 								break;
-							}
 							mutableLamp.move(Direction.DOWN);
 						}
 						BlockPos lampBase=mutableLamp.immutable().above();
@@ -325,10 +326,8 @@ public class OldVillagePieces{
 									}
 									if(!isSpaceClear) break;
 								}
-								if(isSpaceClear){
-									// FIX: Odstraněno .above() pro horizontální osu
+								if(isSpaceClear)
 									spawnLampPost(level,lampBase);
-								}
 							}
 						}
 					}
