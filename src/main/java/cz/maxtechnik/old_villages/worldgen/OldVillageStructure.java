@@ -25,24 +25,26 @@ public class OldVillageStructure extends Structure{
 	public OldVillageStructure(StructureSettings settings){
 		super(settings);
 	}
+	// OPRAVENO: V rozhraní BlockColumn se metoda pro získání BlockState jmenuje getBlock(int)
+	private static int getRealHouseHeight(GenerationContext context,int x,int z,int seaLevel){
+		int houseY=context.chunkGenerator().getFirstOccupiedHeight(x,z,net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG,context.heightAccessor(),context.randomState());
+		// Pokud jsme pod hladinou moře, ověříme, zda je na hladině skutečně fyzická voda
+		if(houseY<seaLevel){
+			net.minecraft.world.level.chunk.BlockColumn column=context.chunkGenerator().getBaseColumn(x,z,context.heightAccessor(),context.randomState());
+			if(column.getBlock(seaLevel-1).is(net.minecraft.world.level.block.Blocks.WATER)){
+				return seaLevel; // Je to voda (oceán/řeka) -> zvedáme na hladinu
+			}
+		}
+		return houseY; // Je to vzduch (Superflat/jeskyně) -> necháváme přirozenou výšku terénu
+	}
 	@Override
 	protected @NotNull Optional<GenerationStub> findGenerationPoint(GenerationContext context){
 		ChunkPos chunkPos=context.chunkPos();
 		int blockX=chunkPos.getMinBlockX()+8;
 		int blockZ=chunkPos.getMinBlockZ()+8;
-		int height=context.chunkGenerator().getFirstOccupiedHeight(
-				blockX,blockZ,
-				Heightmap.Types.WORLD_SURFACE_WG,
-				context.heightAccessor(),
-				context.randomState()
-		);
-
-		// FIX: Pokud je střed vesnice (studna) plánován v oceánu/řece pod hladinou moře, uzamkneme ho na hladinu vody
-		int seaLevel = context.chunkGenerator().getSeaLevel();
-		if(height < seaLevel) {
-			height = seaLevel;
-		}
-
+		int seaLevel=context.chunkGenerator().getSeaLevel();
+		// FIX: Využití chytrého skeneru výšky pro studnu
+		int height=getRealHouseHeight(context,blockX,blockZ,seaLevel);
 		if(height<=context.heightAccessor().getMinBuildHeight())
 			height=context.chunkGenerator().getFirstFreeHeight(blockX,blockZ,Heightmap.Types.WORLD_SURFACE,context.heightAccessor(),context.randomState());
 		BlockPos startPos=new BlockPos(blockX,height,blockZ);
