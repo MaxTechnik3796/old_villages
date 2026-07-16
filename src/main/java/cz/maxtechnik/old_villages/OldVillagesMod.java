@@ -21,18 +21,10 @@ import org.slf4j.Logger;
 public class OldVillagesMod{
 	public static final String MODID="old_villages";
 	public static final Logger LOGGER=LogUtils.getLogger();
-	// Registry pro typ struktury
-	private static final DeferredRegister<StructureType<?>> STRUCTURE_TYPES=
-			DeferredRegister.create(Registries.STRUCTURE_TYPE,MODID);
-	// Registry pro procedurální kousky (domky, studny...)
-	private static final DeferredRegister<StructurePieceType> PIECE_TYPES=
-			DeferredRegister.create(Registries.STRUCTURE_PIECE,MODID);
-	// Registrujeme samotnou strukturu vesnice
-	public static final DeferredHolder<StructureType<?>,StructureType<OldVillageStructure>> OLD_VILLAGE=
-			STRUCTURE_TYPES.register("old_village",()->()->OldVillageStructure.CODEC);
-	// Registrujeme typ kousku (všechny domky mohou sdílet jeden typ, pokud je správně načteme z NBT)
-	public static final DeferredHolder<StructurePieceType,StructurePieceType> OLD_VILLAGE_PIECE=
-			PIECE_TYPES.register("ov_piece",()->(context,tag)->new OldVillagePieces.VillagePiece(tag));
+	private static final DeferredRegister<StructureType<?>> STRUCTURE_TYPES=DeferredRegister.create(Registries.STRUCTURE_TYPE,MODID);
+	private static final DeferredRegister<StructurePieceType> PIECE_TYPES=DeferredRegister.create(Registries.STRUCTURE_PIECE,MODID);
+	public static final DeferredHolder<StructureType<?>,StructureType<OldVillageStructure>> OLD_VILLAGE=STRUCTURE_TYPES.register("old_village",()->()->OldVillageStructure.CODEC);
+	public static final DeferredHolder<StructurePieceType,StructurePieceType> OLD_VILLAGE_PIECE=PIECE_TYPES.register("ov_piece",()->(context,tag)->new OldVillagePieces.VillagePiece(tag));
 	public OldVillagesMod(IEventBus modEventBus,ModContainer modContainer){
 		STRUCTURE_TYPES.register(modEventBus);
 		PIECE_TYPES.register(modEventBus);

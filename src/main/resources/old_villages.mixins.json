@@ -4,8 +4,7 @@
 	"package":"cz.maxtechnik.old_villages.mixin",
 	"compatibilityLevel":"JAVA_21",
 	"mixins":[
-	],
-	"client":[
+		"DisableVanillaVillagesMixin"
 	],
 	"injectors":{
 		"defaultRequire":1

@@ -18,8 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 public class OldVillageStructure extends Structure{
-	public static final MapCodec<OldVillageStructure> CODEC=RecordCodecBuilder.mapCodec(instance->
-			instance.group(settingsCodec(instance)).apply(instance,OldVillageStructure::new));
+	public static final MapCodec<OldVillageStructure> CODEC=RecordCodecBuilder.mapCodec(instance->instance.group(settingsCodec(instance)).apply(instance,OldVillageStructure::new));
 	public OldVillageStructure(StructureSettings settings){
 		super(settings);
 	}
