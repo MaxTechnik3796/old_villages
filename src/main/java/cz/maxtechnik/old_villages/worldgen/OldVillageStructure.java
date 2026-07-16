@@ -136,12 +136,8 @@ public class OldVillageStructure extends Structure{
 		}
 	}
 	private static void placeHousesAlongPath(GenerationContext context,StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,BoundingBox pathBox,Direction pathDir,RandomSource random,int villageStyle){
-		// ====================================================================
-		// Osa SEVER / JIH (Silnice běží vertikálně, domy stavíme Vlevo/Vpravo)
-		// ====================================================================
 		if(pathDir==Direction.NORTH||pathDir==Direction.SOUTH){
-			// --- 1. CYKLUS: LEVÁ STRANA (Domy koukají na VÝCHOD ke gravelu) ---
-			int leftZ=pathBox.minZ()+1;
+			int leftZ=pathBox.minZ()+1;//EAST
 			while(leftZ<pathBox.maxZ()){
 				int houseRand=random.nextInt(100);
 				int type;
@@ -192,15 +188,13 @@ public class OldVillageStructure extends Structure{
 				}
 				if(random.nextFloat()<0.65F){
 					int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.minX(),leftZ,Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
-					// FIX: Přidán parametr villageStyle na konec volání
 					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,houseY,leftZ,pathBox.minX()-1,houseY+12,leftZ+sizeZ-1,Direction.EAST,type,villageStyle);
 					leftZ+=sizeZ+random.nextInt(2)+2;
 				}else{
 					leftZ+=random.nextInt(3)+2;
 				}
 			}
-			// --- 2. CYKLUS: PRAVÁ STRANA (Domy koukají na ZÁPAD ke gravelu) ---
-			int rightZ=pathBox.minZ()+1;
+			int rightZ=pathBox.minZ()+1;//WEST
 			while(rightZ<pathBox.maxZ()){
 				int houseRand=random.nextInt(100);
 				int type;
@@ -251,7 +245,6 @@ public class OldVillageStructure extends Structure{
 				}
 				if(random.nextFloat()<0.65F){
 					int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.maxX(),rightZ,Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
-					// FIX: Přidán parametr villageStyle na konec volání
 					buildAbsoluteHouse(builder,placedBoxes,pathBox.maxX()+1,houseY,rightZ,pathBox.maxX()+sizeX,houseY+12,rightZ+sizeZ-1,Direction.WEST,type,villageStyle);
 					rightZ+=sizeZ+random.nextInt(2)+2;
 				}else{
@@ -259,12 +252,8 @@ public class OldVillageStructure extends Structure{
 				}
 			}
 		}
-		// ====================================================================
-		// Osa VÝCHOD / ZÁPAD (Silnice běží horizontálně, domy stavíme Sever/Jih)
-		// ====================================================================
-		else{
-			// --- 1. CYKLUS: STRANA SEVER (Domy koukají na JIH) ---
-			int leftX=pathBox.minX()+1;
+		else{//EAST/WEST
+			int leftX=pathBox.minX()+1;//SOUTH
 			while(leftX<pathBox.maxX()){
 				int houseRand=random.nextInt(100);
 				int type;
@@ -315,15 +304,13 @@ public class OldVillageStructure extends Structure{
 				}
 				if(random.nextFloat()<0.65F){
 					int houseY=context.chunkGenerator().getFirstOccupiedHeight(leftX,pathBox.minZ(),Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
-					// FIX: Přidán parametr villageStyle na konec volání
 					buildAbsoluteHouse(builder,placedBoxes,leftX,houseY,pathBox.minZ()-sizeZ,leftX+sizeX-1,houseY+12,pathBox.minZ()-1,Direction.SOUTH,type,villageStyle);
 					leftX+=sizeX+random.nextInt(2)+2;
 				}else{
 					leftX+=random.nextInt(3)+2;
 				}
 			}
-			// --- 2. CYKLUS: STRANA JIH (Domy koukají na SEVER) ---
-			int rightX=pathBox.minX()+1;
+			int rightX=pathBox.minX()+1;//NORTH
 			while(rightX<pathBox.maxX()){
 				int houseRand=random.nextInt(100);
 				int type;
@@ -374,7 +361,6 @@ public class OldVillageStructure extends Structure{
 				}
 				if(random.nextFloat()<0.65F){
 					int houseY=context.chunkGenerator().getFirstOccupiedHeight(rightX,pathBox.maxZ(),Heightmap.Types.OCEAN_FLOOR_WG,context.heightAccessor(),context.randomState());
-					// FIX: Přidán parametr villageStyle na konec volání
 					buildAbsoluteHouse(builder,placedBoxes,rightX,houseY,pathBox.maxZ()+1,rightX+sizeX-1,houseY+12,pathBox.maxZ()+sizeZ,Direction.NORTH,type,villageStyle);
 					rightX+=sizeX+random.nextInt(2)+2;
 				}else{
@@ -408,7 +394,6 @@ public class OldVillageStructure extends Structure{
 		}
 		return parent;
 	}
-	// UPRAVENO: Pomocná metoda nyní přijímá a předává dál villageStyle
 	private static void buildAbsoluteHouse(StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,int minX,int minY,int minZ,int maxX,int maxY,int maxZ,Direction facing,int pieceType,int villageStyle){
 		BoundingBox houseBox=new BoundingBox(minX,minY,minZ,maxX,maxY,maxZ);
 		if(isAreaClear(placedBoxes,houseBox)){

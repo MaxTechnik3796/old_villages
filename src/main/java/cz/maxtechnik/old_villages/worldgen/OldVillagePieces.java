@@ -1,5 +1,6 @@
 package cz.maxtechnik.old_villages.worldgen;
 
+import cz.maxtechnik.old_villages.OldVillagesCommonConfig;
 import cz.maxtechnik.old_villages.OldVillagesMod;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -8,6 +9,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
@@ -66,8 +70,7 @@ public class OldVillagePieces{
 		BlockState smoker=Blocks.SMOKER.defaultBlockState();
 		BlockState air=Blocks.AIR.defaultBlockState();
 		private final int pieceType;
-		private final int villageStyle;// 0=Plains, 1=Desert, 2=Savanna, 3=Taiga
-		// UPRAVENO: Konstruktory a načítání tagů nyní přijímají/ukládají villageStyle a spouští initBlocks()
+		private final int villageStyle;//0=Plains,1=Desert,2=Savanna,3=Taiga
 		public VillagePiece(int pieceType,int genDepth,int x,int y,int z,int sizeX,int sizeY,int sizeZ,Direction orientation,int villageStyle){
 			super(OldVillagesMod.OLD_VILLAGE_PIECE.get(),genDepth,BoundingBox.orientBox(x,y,z,0,0,0,sizeX,sizeY,sizeZ,orientation));
 			this.pieceType=pieceType;
@@ -93,23 +96,22 @@ public class OldVillagePieces{
 			tag.putInt("PieceType",this.pieceType);
 			tag.putInt("VillageStyle",this.villageStyle);
 		}
-		// NOVÉ: Dynamické přemapování kategorie "changeable" podle zamčeného biomu vesnice
 		private void initBlocks(){
-			if(this.villageStyle==1){ // Poušť (Sandstone variace, dveře/ploty zůstávají dubové)
+			if(this.villageStyle==1){//Desert
 				this.planks=Blocks.CUT_SANDSTONE.defaultBlockState();
 				this.planksStairs=Blocks.SANDSTONE_STAIRS.defaultBlockState();
 				this.log=Blocks.SANDSTONE.defaultBlockState();
 				this.gravel=Blocks.SANDSTONE.defaultBlockState();
 				this.cobble=Blocks.SANDSTONE.defaultBlockState();
 				this.cobbleStairs=Blocks.SANDSTONE_STAIRS.defaultBlockState();
-			}else if(this.villageStyle==2){ // Savana (Komplet Acacia dřeva, cobble zůstává)
+			}else if(this.villageStyle==2){//Savanna
 				this.planks=Blocks.ACACIA_PLANKS.defaultBlockState();
 				this.planksStairs=Blocks.ACACIA_STAIRS.defaultBlockState();
 				this.log=Blocks.ACACIA_LOG.defaultBlockState();
 				this.door=Blocks.ACACIA_DOOR.defaultBlockState();
 				this.fence=Blocks.ACACIA_FENCE.defaultBlockState();
 				this.pressurePlate=Blocks.ACACIA_PRESSURE_PLATE.defaultBlockState();
-			}else if(this.villageStyle==3){ // Taiga / Snowy (Komplet Spruce dřeva, cobble zůstává)
+			}else if(this.villageStyle==3){//Taiga
 				this.planks=Blocks.SPRUCE_PLANKS.defaultBlockState();
 				this.planksStairs=Blocks.SPRUCE_STAIRS.defaultBlockState();
 				this.log=Blocks.SPRUCE_LOG.defaultBlockState();
@@ -125,6 +127,17 @@ public class OldVillagePieces{
 			if(level.getBlockEntity(worldPos) instanceof ChestBlockEntity chest){
 				long stableChestSeed=level.getLevel().getSeed()^worldPos.asLong();
 				chest.setLootTable(lootTable,stableChestSeed);
+			}
+		}
+		protected void spawnVillager(WorldGenLevel level,BoundingBox box,int x,int y,int z){
+			BlockPos worldPos=this.getWorldPos(x,y,z);
+			if(box.isInside(worldPos)){
+				Villager villager=EntityType.VILLAGER.create(level.getLevel());
+				if(villager!=null){
+					villager.moveTo(worldPos.getX()+0.5D,worldPos.getY(),worldPos.getZ()+0.5D,0.0F,0.0F);
+					villager.finalizeSpawn(level,level.getCurrentDifficultyAt(worldPos),MobSpawnType.STRUCTURE,null);
+					level.addFreshEntity(villager);
+				}
 			}
 		}
 		private BlockState getRandomCropForType(int typeRoll,RandomSource random){
@@ -244,7 +257,6 @@ public class OldVillagePieces{
 						BlockPos lampBase=new BlockPos(lampX,lampY,lampZ);
 						if(box.isInside(lampBase)){
 							BlockState belowState=level.getBlockState(lampBase.below());
-							// Změň původní podmínku na koncích os v generatePath na toto:
 							if(belowState.isFaceSturdy(level,lampBase.below(),Direction.UP)&&!belowState.is(Blocks.GRAVEL)&&!belowState.is(this.planks.getBlock())){
 								boolean isSpaceClear=true;
 								for(int xCheck=-1;xCheck<=1;xCheck++){
@@ -262,7 +274,7 @@ public class OldVillagePieces{
 									if(!isSpaceClear) break;
 								}
 								if(isSpaceClear){
-									spawnLampPost(level,lampBase);
+									spawnLampPost(level,lampBase.above());
 								}
 							}
 						}
@@ -295,7 +307,7 @@ public class OldVillagePieces{
 									if(!isSpaceClear) break;
 								}
 								if(isSpaceClear){
-									spawnLampPost(level,lampBase);
+									spawnLampPost(level,lampBase.above());
 								}
 							}
 						}
@@ -411,6 +423,8 @@ public class OldVillagePieces{
 			this.setBlock(level,box,4,2,1,bed.setValue(BedBlock.PART,BedPart.HEAD).setValue(BedBlock.FACING,Direction.SOUTH));
 			this.setBlock(level,box,2,2,2,bed.setValue(BedBlock.PART,BedPart.FOOT).setValue(BedBlock.FACING,Direction.SOUTH));
 			this.setBlock(level,box,4,2,2,bed.setValue(BedBlock.PART,BedPart.FOOT).setValue(BedBlock.FACING,Direction.SOUTH));
+			this.spawnVillager(level,box,2,2,3);
+			this.spawnVillager(level,box,4,2,3);
 		}
 		private void generateFarm(WorldGenLevel level,BoundingBox box){
 			createBase(level,box,0,0,6,8,dirt);
@@ -515,6 +529,7 @@ public class OldVillagePieces{
 			this.setBlock(level,box,0,3,4,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
 			this.fillWithBlocks(level,box,0,6,0,9,6,6,smoothStoneSlab);
 			this.fillWithBlocks(level,box,1,6,1,8,6,5,air);
+			this.spawnVillager(level,box,4,2,2);
 		}
 		private void generateTavern(WorldGenLevel level,BoundingBox box){
 			this.fillWithBlocks(level,box,0,1,0,8,7,10,air);
@@ -570,6 +585,8 @@ public class OldVillagePieces{
 			this.setBlock(level,box,6,2,7,fence);
 			this.setBlock(level,box,6,3,7,pressurePlate);
 			this.fillWithBlocks(level,box,2,2,8,2,2,9,smoothStoneDoubleSlab);
+			this.spawnVillager(level,box,1,2,7);
+			this.spawnVillager(level,box,4,2,7);
 		}
 		private void generateChurch(WorldGenLevel level,BoundingBox box){
 			this.fillWithBlocks(level,box,0,1,0,4,12,8,air);
@@ -615,6 +632,7 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,2,7,4,2,8,4,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
 			this.fillWithBlocks(level,box,1,2,5,1,10,5,ladder.setValue(LadderBlock.FACING,Direction.EAST));
 			this.setBlock(level,box,3,2,7,brewingStand);
+			this.spawnVillager(level,box,2,2,7);
 		}
 		private void generateShack(WorldGenLevel level,BoundingBox box,boolean highRoof){
 			this.fillWithBlocks(level,box,0,1,0,3,6,4,air);
@@ -687,6 +705,7 @@ public class OldVillagePieces{
 			this.fillWithBlocks(level,box,1,5,1,7,5,1,planks);
 			this.fillWithBlocks(level,box,1,5,4,7,5,4,planks);
 			this.fillWithBlocks(level,box,1,4,1,7,4,1,bookshelf);
+			this.spawnVillager(level,box,2,2,3);
 		}
 		private void spawnLampPost(WorldGenLevel level,BlockPos basePos){
 			level.setBlock(basePos,fence,2);
@@ -694,10 +713,17 @@ public class OldVillagePieces{
 			level.setBlock(basePos.above(2),fence,2);
 			BlockPos woolPos=basePos.above(3);
 			level.setBlock(woolPos,wool,2);
-			level.setBlock(woolPos.north(),wallTorch.setValue(WallTorchBlock.FACING,Direction.NORTH),2);
-			level.setBlock(woolPos.south(),wallTorch.setValue(WallTorchBlock.FACING,Direction.SOUTH),2);
-			level.setBlock(woolPos.east(),wallTorch.setValue(WallTorchBlock.FACING,Direction.EAST),2);
-			level.setBlock(woolPos.west(),wallTorch.setValue(WallTorchBlock.FACING,Direction.WEST),2);
+			if(OldVillagesCommonConfig.MC14TORCHES.get()){
+				level.setBlock(woolPos.north(),torch,2);
+				level.setBlock(woolPos.south(),torch,2);
+				level.setBlock(woolPos.east(),torch,2);
+				level.setBlock(woolPos.west(),torch,2);
+			}else{
+				level.setBlock(woolPos.north(),wallTorch.setValue(WallTorchBlock.FACING,Direction.NORTH),2);
+				level.setBlock(woolPos.south(),wallTorch.setValue(WallTorchBlock.FACING,Direction.SOUTH),2);
+				level.setBlock(woolPos.east(),wallTorch.setValue(WallTorchBlock.FACING,Direction.EAST),2);
+				level.setBlock(woolPos.west(),wallTorch.setValue(WallTorchBlock.FACING,Direction.WEST),2);
+			}
 		}
 		@Override
 		public void postProcess(@NotNull WorldGenLevel level,@NotNull StructureManager structureManager,@NotNull ChunkGenerator generator,@NotNull RandomSource random,@NotNull BoundingBox box,@NotNull ChunkPos chunkPos,@NotNull BlockPos startPos){
