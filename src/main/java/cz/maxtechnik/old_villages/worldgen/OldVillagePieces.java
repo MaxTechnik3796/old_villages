@@ -55,12 +55,12 @@ public class OldVillagePieces{
 		BlockState ladder=Blocks.LADDER.defaultBlockState();
 		BlockState craftingTable=Blocks.CRAFTING_TABLE.defaultBlockState();
 		BlockState bookshelf=Blocks.BOOKSHELF.defaultBlockState();
+		BlockState lectern=Blocks.LECTERN.defaultBlockState();
 		BlockState grindstone=Blocks.GRINDSTONE.defaultBlockState().setValue(GrindstoneBlock.FACE,AttachFace.FLOOR);
 		BlockState brewingStand=Blocks.BREWING_STAND.defaultBlockState();
 		BlockState bed=Blocks.RED_BED.defaultBlockState();
 		BlockState smoker=Blocks.SMOKER.defaultBlockState();
 		BlockState air=Blocks.AIR.defaultBlockState();
-		// AKTUALIZOVÁNO: 0=Studna, 1=Cesta, 2=Malý dům A, 3=Malý dům B, 4=Velký dům, 5=Malá farma, 6=Velká farma, 7=Kovárna
 		private final int pieceType;
 		public VillagePiece(int pieceType,int genDepth,int x,int y,int z,int sizeX,int sizeY,int sizeZ,Direction orientation){
 			super(OldVillagesMod.OLD_VILLAGE_PIECE.get(),genDepth,BoundingBox.orientBox(x,y,z,0,0,0,sizeX,sizeY,sizeZ,orientation));
@@ -85,7 +85,6 @@ public class OldVillagePieces{
 			BlockState chestState=Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING,facing);
 			this.setBlock(level,box,x,y,z,chestState);
 			if(level.getBlockEntity(worldPos) instanceof ChestBlockEntity chest){
-				// FIX: Vytvoříme stabilní seed z kombinace seedu světa a absolutní pozice truhly
 				long stableChestSeed=level.getLevel().getSeed()^worldPos.asLong();
 				chest.setLootTable(lootTable,stableChestSeed);
 			}
@@ -566,7 +565,6 @@ public class OldVillagePieces{
 				this.fillWithBlocks(level,box,1,6,1,2,6,3,log);
 			}
 		}
-		// NOVÉ: Šablona pro Knihovnu (Tělo 9x6, schod přetéká na Z=6)
 		private void generateLibrary(WorldGenLevel level,BoundingBox box){
 			this.fillWithBlocks(level,box,0,1,0,8,9,5,air);
 			createBase(level,box,0,0,8,5,cobble);
@@ -575,48 +573,49 @@ public class OldVillagePieces{
 			this.setBlock(level,box,7,1,6,cobbleStairs.setValue(StairBlock.FACING,Direction.SOUTH));
 			this.fillWithBlocks(level,box,1,2,0,7,2,0,cobble);
 			this.fillWithBlocks(level,box,1,2,5,7,2,5,cobble);
-
-
-
-
-
-			/*
-			 // Kamenná podlaha
-			this.fillWithBlocks(level,box,0,2,0,8,4,0,planks); // Zadní stěna
-			this.fillWithBlocks(level,box,0,2,5,8,4,5,planks); // Přední stěna
-			this.fillWithBlocks(level,box,0,2,1,0,4,4,planks); // Levá stěna
-			this.fillWithBlocks(level,box,8,2,1,8,4,4,planks); // Pravá stěna
-			// Rohové ozdobné sloupy z logů
-			this.fillWithBlocks(level,box,0,2,0,0,4,0,log);
-			this.fillWithBlocks(level,box,8,2,0,8,4,0,log);
-			this.fillWithBlocks(level,box,0,2,5,0,4,5,log);
-			this.fillWithBlocks(level,box,8,2,5,8,4,5,log);
-			// Uvnitř naskládáme knižní regály (Bookshelfy)
-			this.fillWithBlocks(level,box,1,2,1,1,3,3,bookshelf);
-			this.fillWithBlocks(level,box,7,2,1,7,3,3,bookshelf);
-			this.setBlock(level,box,4,2,2,craftingTable); // Pracovní stůl uprostřed
-			// Okna do stran
-			this.setBlock(level,box,0,3,2,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
-			this.setBlock(level,box,8,3,2,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
-			// Vchod (X=4, Z=5)
-			this.setBlock(level,box,4,2,5,air);
-			this.setBlock(level,box,4,3,5,air);
-			// Předsazený schod lícující s hranou boxu (přetéká na silnici)
-
-			// Střecha dokola z logů, vnitřek z prken
-			this.fillWithBlocks(level,box,0,5,0,8,5,5,log);
-			this.fillWithBlocks(level,box,1,5,1,7,5,4,planks);*/
+			this.fillWithBlocks(level,box,0,2,0,0,6,5,cobble);
+			this.fillWithBlocks(level,box,8,2,0,8,6,5,cobble);
+			this.fillWithBlocks(level,box,0,8,2,8,8,3,cobble);
+			this.fillWithBlocks(level,box,0,3,1,0,5,4,planks);
+			this.fillWithBlocks(level,box,8,3,1,8,5,4,planks);
+			this.fillWithBlocks(level,box,1,3,0,7,5,0,planks);
+			this.fillWithBlocks(level,box,1,3,5,7,5,5,planks);
+			this.fillWithBlocks(level,box,1,6,0,7,6,5,cobble);
+			this.fillWithBlocks(level,box,0,7,1,8,7,4,cobble);
+			this.setBlock(level,box,7,2,5,door.setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER));
+			this.setBlock(level,box,7,3,5,door.setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));
+			this.fillWithBlocks(level,box,2,3,0,3,3,0,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
+			this.fillWithBlocks(level,box,5,3,0,6,3,0,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
+			this.fillWithBlocks(level,box,2,3,5,4,4,5,glassPane.setValue(CrossCollisionBlock.EAST,true).setValue(CrossCollisionBlock.WEST,true));
+			this.fillWithBlocks(level,box,0,3,2,0,4,3,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+			this.fillWithBlocks(level,box,8,3,2,8,4,3,glassPane.setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true));
+			this.fillWithBlocks(level,box,0,6,-1,8,6,-1,planksStairs.setValue(StairBlock.FACING,Direction.NORTH));
+			this.fillWithBlocks(level,box,0,7,0,8,7,0,planksStairs.setValue(StairBlock.FACING,Direction.NORTH));
+			this.fillWithBlocks(level,box,0,8,1,8,8,1,planksStairs.setValue(StairBlock.FACING,Direction.NORTH));
+			this.fillWithBlocks(level,box,0,9,2,8,9,2,planksStairs.setValue(StairBlock.FACING,Direction.NORTH));
+			this.fillWithBlocks(level,box,0,6,6,8,6,6,planksStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.fillWithBlocks(level,box,0,7,5,8,7,5,planksStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.fillWithBlocks(level,box,0,8,4,8,8,4,planksStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.fillWithBlocks(level,box,0,9,3,8,9,3,planksStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,1,2,1,planks);
+			this.setBlock(level,box,1,2,2,planksStairs.setValue(StairBlock.FACING,Direction.WEST));
+			this.setBlock(level,box,1,2,3,lectern.setValue(LecternBlock.FACING,Direction.EAST));
+			this.setBlock(level,box,1,2,4,craftingTable);
+			this.fillWithBlocks(level,box,2,2,1,5,2,1,planksStairs.setValue(StairBlock.FACING,Direction.SOUTH));
+			this.setBlock(level,box,2,2,2,fence);
+			this.setBlock(level,box,2,3,2,pressurePlate);
+			this.setBlock(level,box,4,2,2,fence);
+			this.setBlock(level,box,4,3,2,pressurePlate);
+			this.fillWithBlocks(level,box,1,5,1,7,5,1,planks);
+			this.fillWithBlocks(level,box,1,5,4,7,5,4,planks);
+			this.fillWithBlocks(level,box,1,4,1,7,4,1,bookshelf);
 		}
 		private void spawnLampPost(WorldGenLevel level,BlockPos basePos){
-			// Použijeme vlnu podle tvého perasu
-			// 3x plot nad sebou jako sloup
 			level.setBlock(basePos,fence,2);
 			level.setBlock(basePos.above(),fence,2);
 			level.setBlock(basePos.above(2),fence,2);
-			// Černá kostka navrchu sloupu
 			BlockPos woolPos=basePos.above(3);
 			level.setBlock(woolPos,wool,2);
-			// 4 torchky dokola okolo té vlny
 			level.setBlock(woolPos.north(),wallTorch.setValue(WallTorchBlock.FACING,Direction.NORTH),2);
 			level.setBlock(woolPos.south(),wallTorch.setValue(WallTorchBlock.FACING,Direction.SOUTH),2);
 			level.setBlock(woolPos.east(),wallTorch.setValue(WallTorchBlock.FACING,Direction.EAST),2);
