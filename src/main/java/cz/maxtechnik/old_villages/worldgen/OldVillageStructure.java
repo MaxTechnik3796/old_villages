@@ -110,18 +110,18 @@ public class OldVillageStructure extends Structure{
 			if(currentPath.depth<3){
 				float roll=random.nextFloat();
 				List<Direction> nextDirections=new ArrayList<>();
-				if(roll<0.4F){
+				if(roll<0.25F){
 					nextDirections.add(currentPath.dir);
-				}else if(roll<0.6F){
+				}else if(roll<0.55F){
 					nextDirections.add(currentPath.dir.getCounterClockWise());
-				}else if(roll<0.8F){
+				}else if(roll<0.85F){
 					nextDirections.add(currentPath.dir.getClockWise());
 				}else if(roll<0.95F){
 					nextDirections.add(currentPath.dir.getCounterClockWise());
 					nextDirections.add(currentPath.dir.getClockWise());
 				}
 				for(Direction nextDir: nextDirections){
-					int nextLength=random.nextInt(16)+20;
+					int nextLength=random.nextInt(12)+14;
 					BoundingBox nextPathBox=createNextPathBox(currentPath.box,currentPath.dir,nextDir,nextLength);
 					if(isAreaClear(placedBoxes,nextPathBox)){
 						OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,currentPath.depth+1,nextPathBox,nextDir,villageStyle);
@@ -137,6 +137,7 @@ public class OldVillageStructure extends Structure{
 		}
 	}
 	private static void placeHousesAlongPath(GenerationContext context,StructurePiecesBuilder builder,List<BoundingBox> placedBoxes,BoundingBox pathBox,Direction pathDir,RandomSource random,int villageStyle){
+		int seaLevel=context.chunkGenerator().getSeaLevel();
 		if(pathDir==Direction.NORTH||pathDir==Direction.SOUTH){
 			int leftZ=pathBox.minZ()+1;//EAST
 			while(leftZ<pathBox.maxZ()){
@@ -187,13 +188,12 @@ public class OldVillageStructure extends Structure{
 					sizeZ=4;
 					if(leftZ+sizeZ>pathBox.maxZ()) break;
 				}
-				if(random.nextFloat()<0.65F){
-					int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.minX(),leftZ,Heightmap.Types.WORLD_SURFACE_WG,context.heightAccessor(),context.randomState());
+				if(random.nextFloat()<0.40F){
+					int houseY=getRealHouseHeight(context,pathBox.minX(),leftZ,seaLevel);
 					buildAbsoluteHouse(builder,placedBoxes,pathBox.minX()-sizeX,houseY,leftZ,pathBox.minX()-1,houseY+12,leftZ+sizeZ-1,Direction.EAST,type,villageStyle);
-					leftZ+=sizeZ+random.nextInt(2)+2;
-				}else{
-					leftZ+=random.nextInt(3)+2;
-				}
+					leftZ+=sizeZ+random.nextInt(4)+4;
+				}else
+					leftZ+=random.nextInt(4)+3;
 			}
 			int rightZ=pathBox.minZ()+1;//WEST
 			while(rightZ<pathBox.maxZ()){
@@ -244,13 +244,12 @@ public class OldVillageStructure extends Structure{
 					sizeZ=4;
 					if(rightZ+sizeZ>pathBox.maxZ()) break;
 				}
-				if(random.nextFloat()<0.65F){
-					int houseY=context.chunkGenerator().getFirstOccupiedHeight(pathBox.maxX(),rightZ,Heightmap.Types.WORLD_SURFACE_WG,context.heightAccessor(),context.randomState());
+				if(random.nextFloat()<0.40F){
+					int houseY=getRealHouseHeight(context,pathBox.maxX(),rightZ,seaLevel);
 					buildAbsoluteHouse(builder,placedBoxes,pathBox.maxX()+1,houseY,rightZ,pathBox.maxX()+sizeX,houseY+12,rightZ+sizeZ-1,Direction.WEST,type,villageStyle);
-					rightZ+=sizeZ+random.nextInt(2)+2;
-				}else{
-					rightZ+=random.nextInt(3)+2;
-				}
+					rightZ+=sizeZ+random.nextInt(4)+4;
+				}else
+					rightZ+=random.nextInt(4)+3;
 			}
 		}else{//EAST/WEST
 			int leftX=pathBox.minX()+1;//SOUTH
@@ -302,13 +301,12 @@ public class OldVillageStructure extends Structure{
 					sizeZ=5;
 					if(leftX+sizeX>pathBox.maxX()) break;
 				}
-				if(random.nextFloat()<0.65F){
-					int houseY=context.chunkGenerator().getFirstOccupiedHeight(leftX,pathBox.minZ(),Heightmap.Types.WORLD_SURFACE_WG,context.heightAccessor(),context.randomState());
+				if(random.nextFloat()<0.40F){
+					int houseY=getRealHouseHeight(context,leftX,pathBox.minZ(),seaLevel);
 					buildAbsoluteHouse(builder,placedBoxes,leftX,houseY,pathBox.minZ()-sizeZ,leftX+sizeX-1,houseY+12,pathBox.minZ()-1,Direction.SOUTH,type,villageStyle);
-					leftX+=sizeX+random.nextInt(2)+2;
-				}else{
-					leftX+=random.nextInt(3)+2;
-				}
+					leftX+=sizeX+random.nextInt(4)+4;
+				}else
+					leftX+=random.nextInt(4)+3;
 			}
 			int rightX=pathBox.minX()+1;//NORTH
 			while(rightX<pathBox.maxX()){
@@ -359,13 +357,12 @@ public class OldVillageStructure extends Structure{
 					sizeZ=5;
 					if(rightX+sizeX>pathBox.maxX()) break;
 				}
-				if(random.nextFloat()<0.65F){
-					int houseY=context.chunkGenerator().getFirstOccupiedHeight(rightX,pathBox.maxZ(),Heightmap.Types.WORLD_SURFACE_WG,context.heightAccessor(),context.randomState());
+				if(random.nextFloat()<0.40F){
+					int houseY=getRealHouseHeight(context,rightX,pathBox.maxZ(),seaLevel);
 					buildAbsoluteHouse(builder,placedBoxes,rightX,houseY,pathBox.maxZ()+1,rightX+sizeX-1,houseY+12,pathBox.maxZ()+sizeZ,Direction.NORTH,type,villageStyle);
-					rightX+=sizeX+random.nextInt(2)+2;
-				}else{
-					rightX+=random.nextInt(3)+2;
-				}
+					rightX+=sizeX+random.nextInt(4)+4;
+				}else
+					rightX+=random.nextInt(4)+3;
 			}
 		}
 	}
