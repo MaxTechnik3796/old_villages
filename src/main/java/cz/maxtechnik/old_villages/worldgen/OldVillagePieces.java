@@ -148,7 +148,7 @@ public class OldVillagePieces{
 		private void createBase(WorldGenLevel level,BoundingBox box,int minX,int minZ,int maxX,int maxZ,BlockState blockState){
 			for(int x=minX;x<=maxX;x++){
 				for(int z=minZ;z<=maxZ;z++){
-					for(int yLoc=0;yLoc>=-20;yLoc--){
+					for(int yLoc=0;yLoc>=-200;yLoc--){
 						BlockState bs=this.getBlock(level,x,yLoc,z,box);
 						if(bs.isAir()||bs.is(Blocks.SHORT_GRASS)||bs.is(Blocks.TALL_GRASS)||bs.is(Blocks.OAK_LEAVES)||bs.is(Blocks.SPRUCE_LEAVES)||bs.is(Blocks.WATER))
 							this.setBlock(level,box,x,yLoc,z,blockState);
@@ -158,7 +158,7 @@ public class OldVillagePieces{
 			}
 		}
 		private void createBaseStairs(WorldGenLevel level,BoundingBox box,int x,int z){
-			for(int yLoc=0;yLoc>=-20;yLoc--){
+			for(int yLoc=0;yLoc>=-200;yLoc--){
 				BlockState bs=this.getBlock(level,x,yLoc,z,box);
 				if(bs.isAir()||bs.is(Blocks.SHORT_GRASS)||bs.is(Blocks.TALL_GRASS)){
 					this.setBlock(level,box,x,yLoc,z,cobble);
