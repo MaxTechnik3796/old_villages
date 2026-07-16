@@ -76,28 +76,28 @@ public class OldVillageStructure extends Structure{
 		int y=wellBox.minY();
 		List<PathRecord> pathQueue=new ArrayList<>();
 		List<OldVillagePieces.VillagePiece> deferredPaths=new ArrayList<>();
-		BoundingBox nStart=new BoundingBox(minX+1,y-30,minZ-25,minX+3,y+30,minZ-1);
+		BoundingBox nStart=new BoundingBox(minX+1,y-30,minZ-18,minX+3,y+30,minZ-1);
 		if(isAreaClear(placedBoxes,nStart)){
 			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,nStart,Direction.NORTH,villageStyle);
 			deferredPaths.add(p);
 			placedBoxes.add(nStart);
 			pathQueue.add(new PathRecord(nStart,Direction.NORTH,1));
 		}
-		BoundingBox sStart=new BoundingBox(minX+1,y-30,maxZ+1,minX+3,y+30,maxZ+25);
+		BoundingBox sStart=new BoundingBox(minX+1,y-30,maxZ+1,minX+3,y+30,maxZ+18);
 		if(isAreaClear(placedBoxes,sStart)){
 			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,sStart,Direction.SOUTH,villageStyle);
 			deferredPaths.add(p);
 			placedBoxes.add(sStart);
 			pathQueue.add(new PathRecord(sStart,Direction.SOUTH,1));
 		}
-		BoundingBox wStart=new BoundingBox(minX-25,y-30,minZ+1,minX-1,y+30,minZ+3);
+		BoundingBox wStart=new BoundingBox(minX-18,y-30,minZ+1,minX-1,y+30,minZ+3);
 		if(isAreaClear(placedBoxes,wStart)){
 			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,wStart,Direction.WEST,villageStyle);
 			deferredPaths.add(p);
 			placedBoxes.add(wStart);
 			pathQueue.add(new PathRecord(wStart,Direction.WEST,1));
 		}
-		BoundingBox eStart=new BoundingBox(maxX+1,y-30,minZ+1,maxX+25,y+30,minZ+3);
+		BoundingBox eStart=new BoundingBox(maxX+1,y-30,minZ+1,maxX+18,y+30,minZ+3);
 		if(isAreaClear(placedBoxes,eStart)){
 			OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,1,eStart,Direction.EAST,villageStyle);
 			deferredPaths.add(p);
@@ -121,7 +121,7 @@ public class OldVillageStructure extends Structure{
 					nextDirections.add(currentPath.dir.getClockWise());
 				}
 				for(Direction nextDir: nextDirections){
-					int nextLength=random.nextInt(12)+14;
+					int nextLength=random.nextInt(7)+10;
 					BoundingBox nextPathBox=createNextPathBox(currentPath.box,currentPath.dir,nextDir,nextLength);
 					if(isAreaClear(placedBoxes,nextPathBox)){
 						OldVillagePieces.VillagePiece p=new OldVillagePieces.VillagePiece(1,currentPath.depth+1,nextPathBox,nextDir,villageStyle);

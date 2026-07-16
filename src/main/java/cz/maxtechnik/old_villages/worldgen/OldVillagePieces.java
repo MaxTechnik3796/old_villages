@@ -32,15 +32,15 @@ import org.jetbrains.annotations.NotNull;
 public class OldVillagePieces{
 	public static class VillagePiece extends StructurePiece{
 		//Changeable:
-		BlockState planks=Blocks.OAK_PLANKS.defaultBlockState();//css
-		BlockState planksStairs=Blocks.OAK_STAIRS.defaultBlockState();//sss
-		BlockState log=Blocks.OAK_LOG.defaultBlockState();//ss
+		BlockState planks=Blocks.OAK_PLANKS.defaultBlockState();
+		BlockState planksStairs=Blocks.OAK_STAIRS.defaultBlockState();
+		BlockState log=Blocks.OAK_LOG.defaultBlockState();
 		BlockState door=Blocks.OAK_DOOR.defaultBlockState();
 		BlockState fence=Blocks.OAK_FENCE.defaultBlockState();
 		BlockState pressurePlate=Blocks.OAK_PRESSURE_PLATE.defaultBlockState();
-		BlockState gravel=Blocks.GRAVEL.defaultBlockState();//ss
-		BlockState cobble=Blocks.COBBLESTONE.defaultBlockState();//ss
-		BlockState cobbleStairs=Blocks.COBBLESTONE_STAIRS.defaultBlockState();//sss
+		BlockState gravel=OldVillagesCommonConfig.USE_DIRT_PATH.get()?Blocks.DIRT_PATH.defaultBlockState():Blocks.GRAVEL.defaultBlockState();
+		BlockState cobble=Blocks.COBBLESTONE.defaultBlockState();
+		BlockState cobbleStairs=Blocks.COBBLESTONE_STAIRS.defaultBlockState();
 		//Static:
 		BlockState water=Blocks.WATER.defaultBlockState();
 		BlockState lava=Blocks.LAVA.defaultBlockState();
@@ -66,6 +66,7 @@ public class OldVillagePieces{
 		BlockState composter=Blocks.COMPOSTER.defaultBlockState();
 		BlockState grindstone=Blocks.GRINDSTONE.defaultBlockState().setValue(GrindstoneBlock.FACE,AttachFace.FLOOR);
 		BlockState brewingStand=Blocks.BREWING_STAND.defaultBlockState();
+		BlockState bell=Blocks.BELL.defaultBlockState();
 		BlockState bed=Blocks.RED_BED.defaultBlockState();
 		BlockState smoker=Blocks.SMOKER.defaultBlockState();
 		BlockState air=Blocks.AIR.defaultBlockState();
@@ -220,6 +221,7 @@ public class OldVillagePieces{
 			this.setBlock(level,box,4,3,1,fence);
 			this.setBlock(level,box,4,3,4,fence);
 			this.fillWithBlocks(level,box,1,4,1,4,4,4,cobble);
+			this.setBlock(level,box,1,2,2,bell.setValue(BellBlock.FACING,Direction.WEST));
 		}
 		private void generatePath(WorldGenLevel level,BoundingBox box){
 			BoundingBox pieceBox=this.getBoundingBox();
@@ -238,8 +240,10 @@ public class OldVillagePieces{
 						BlockState currentBlock=level.getBlockState(pathPos);
 						if(currentBlock.is(Blocks.WATER))
 							level.setBlock(pathPos,planks,2);
-						else if(currentBlock.isAir()||currentBlock.is(Blocks.SHORT_GRASS)||currentBlock.is(Blocks.TALL_GRASS)||currentBlock.is(Blocks.GRASS_BLOCK)||currentBlock.is(Blocks.DIRT)||currentBlock.is(Blocks.STONE)||currentBlock.is(Blocks.SAND))
-							level.setBlock(pathPos,gravel,2);
+						else if(currentBlock.isAir()||currentBlock.is(Blocks.SHORT_GRASS)||currentBlock.is(Blocks.TALL_GRASS)||currentBlock.is(Blocks.GRASS_BLOCK)||currentBlock.is(Blocks.DIRT)||currentBlock.is(Blocks.STONE)||currentBlock.is(Blocks.SAND)){
+							if(gravel.is(Blocks.DIRT_PATH)&&!level.getBlockState(pathPos.above()).isAir()) level.setBlock(pathPos,dirt,2);
+							else level.setBlock(pathPos,gravel,2);
+						}
 						BlockPos above1=pathPos.above();
 						BlockState state1=level.getBlockState(above1);
 						if(state1.isAir()||state1.is(Blocks.SHORT_GRASS)||state1.is(Blocks.TALL_GRASS)||state1.is(Blocks.GRASS_BLOCK)||state1.is(Blocks.DIRT))
