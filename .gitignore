@@ -18,6 +18,7 @@ out/
 hs_err_pid*
 
 # Common working directory
-run
+runs/client
 /desktop.ini
-/run-server/
+/runs/server/
+/runs/
