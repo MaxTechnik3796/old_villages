@@ -33,10 +33,10 @@ public class OldVillagesMod{
 		modContainer.registerConfig(ModConfig.Type.COMMON,OldVillagesCommonConfig.SPEC);
 	}
 	private void commonSetup(final FMLCommonSetupEvent event){
-		LOGGER.info("OLD VILLAGES MOD: Common Setup");
+		LOGGER.info("OldVillages: Common Setup");
 	}
 	@SubscribeEvent
 	public void onServerStarting(ServerStartingEvent event){
-		LOGGER.info("OLD VILLAGES MOD: Server Starting");
+		LOGGER.info("OldVillages: Server Starting");
 	}
 }
